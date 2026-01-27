@@ -1,0 +1,6 @@
+flask
+pandas
+requests
+selenium
+undetected-chromedriver
+reportlab
