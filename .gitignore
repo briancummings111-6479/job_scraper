@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+chrome_profile/
+chrome_profile_backup/
+output/
+drivers/
+*.html
+venv/
+env/
+analysis_output.txt

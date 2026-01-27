@@ -20,18 +20,15 @@ class JobScraper:
     def __init__(self, headless=False):
         """Initialize the scraper with undetected Chrome driver"""
         
-        # ChromeDriver path
-        chromedriver_path = r"C:\Users\Shoaib Altaf\Documents\job_scrapper\drivers\chromedriver.exe"
+        # ChromeDriver path - Let uc handle it or use local drivers folder
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
         
-        # Chrome profile path (copied, not live)
-        chrome_profile_path = r"C:\Users\Shoaib Altaf\Documents\job_scrapper\chrome_profile"
+        # Chrome profile path (local folder)
+        chrome_profile_path = os.path.join(self.base_dir, "chrome_profile")
+        if not os.path.exists(chrome_profile_path):
+            os.makedirs(chrome_profile_path)
         
-        # Verify ChromeDriver exists
-        if not os.path.exists(chromedriver_path):
-            raise FileNotFoundError(f"❌ ChromeDriver not found at: {chromedriver_path}")
-        
-        print(f"✓ ChromeDriver found: {chromedriver_path}")
-        print(f"✓ Using Chrome profile: {chrome_profile_path}")
+        print(f"[OK] Using Chrome profile: {chrome_profile_path}")
         
         # UC Options
         options = uc.ChromeOptions()
@@ -42,23 +39,22 @@ class JobScraper:
             options.add_argument('--headless=new')
         
         # Initialize undetected Chrome with profile
-        self.driver = uc.Chrome(
-            driver_executable_path=chromedriver_path,
-            user_data_dir=chrome_profile_path,
-            options=options,
-            version_main=None  # Auto-detect Chrome version
-        )
-        
-        self.wait = WebDriverWait(self.driver, 15)
+        self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path)
+        self.wait = WebDriverWait(self.driver, 20)
         self.short_wait = WebDriverWait(self.driver, 5)
-        self.jobs_data = []
         
-        print("✓ Undetected Chrome opened successfully\n")
-    
-    def random_delay(self, min_seconds=2, max_seconds=5):
-        """Add random delay to mimic human behavior"""
+        self.jobs_data = []
+        self.seen_jobs = set()
+        
+        # Random delays to mimic human behavior
+        min_seconds = 2
+        max_seconds = 5
         time.sleep(random.uniform(min_seconds, max_seconds))
     
+    def random_delay(self, min_s=2, max_s=5):
+        """Add random delay"""
+        time.sleep(random.uniform(min_s, max_s))
+
     def extract_email(self, text):
         """Extract email addresses from text"""
         email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -78,7 +74,216 @@ class JobScraper:
             found = re.findall(pattern, text)
             phones.extend(found)
         return ', '.join(set(phones)) if phones else None
+
+    def extract_pay(self, text):
+        """Extract pay/salary information"""
+        # Look for patterns like $15.00/hr, $50k-$70k, etc.
+        pay_patterns = [
+            r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|yr|hr|annually)?',
+            r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|yr|hr|annually)',
+            r'\d+k\s*(?:-|to)\s*\d+k'
+        ]
+        for pattern in pay_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(0)
+        return None
+
+    def extract_job_type(self, text):
+        """Extract job type (Full-time, Part-time, etc.)"""
+        types = ["Full-time", "Part-time", "Contract", "Temporary", "Internship"]
+        found_types = []
+        for t in types:
+            if re.search(r'\b' + re.escape(t) + r'\b', text, re.IGNORECASE):
+                found_types.append(t)
+        return ', '.join(found_types) if found_types else None
+
+    def extract_shift(self, text):
+        """Extract shift/schedule information"""
+        shifts = ["Day shift", "Night shift", "Overnight shift", "Monday to Friday", "Weekend availability", "8 hour shift", "10 hour shift", "12 hour shift"]
+        found_shifts = []
+        for s in shifts:
+            if re.search(r'\b' + re.escape(s) + r'\b', text, re.IGNORECASE):
+                found_shifts.append(s)
+        return ', '.join(found_shifts) if found_shifts else None
+
+    def is_duplicate(self, job_data):
+        """Check if job is a duplicate based on ID or details"""
+        # 1. Try to get ID from URL (jk parameter)
+        job_url = job_data.get('job_url', '')
+        if job_url and 'jk=' in job_url:
+            match = re.search(r'jk=([a-zA-Z0-9]+)', job_url)
+            if match:
+                jk_id = match.group(1)
+                if jk_id in self.seen_jobs:
+                    return True
+                self.seen_jobs.add(jk_id)
+                return False
+                
+        # 2. Fallback to Title + Company + Location
+        if not job_data['job_title'] or not job_data['company']:
+            return False
+            
+        # Create a unique identifier
+        loc = job_data.get('location', '')
+        job_id = f"{job_data['job_title'].lower()}|{job_data['company'].lower()}|{loc.lower()}"
+        
+        if job_id in self.seen_jobs:
+            return True
+            
+        self.seen_jobs.add(job_id)
+        return False
     
+    def check_cloudflare(self):
+        """Check for Cloudflare security check and try to bypass it"""
+        try:
+            # Quick check of title first
+            if "Security Check" not in self.driver.title and "Just a moment" not in self.driver.title:
+                return
+
+            print("    [!] Cloudflare Security Check detected! Attempting to bypass...")
+            
+            # Switch to default content first
+            self.driver.switch_to.default_content()
+            
+            # 1. Wait for redirect (Just a moment... -> Jobs)
+            print("    [!] Waiting up to 30s for automatic Cloudflare redirect...")
+            from selenium.webdriver.common.action_chains import ActionChains
+            actions = ActionChains(self.driver)
+            
+            for _ in range(30):
+                if "Security Check" not in self.driver.title and "Just a moment" not in self.driver.title:
+                    print(f"    [!] Cloudflare challenge passed! Title: {self.driver.title}")
+                    self.random_delay(2, 4)
+                    return
+                
+                try:
+                    actions.move_by_offset(random.randint(-10, 10), random.randint(-10, 10)).perform()
+                except:
+                    pass
+                
+                print(f"    [!] Title: {self.driver.title}...", end='\r')
+                time.sleep(1)
+            print("")
+            
+            # Refresh if stuck
+            print("    [!] Page stuck on Cloudflare. Refreshing...")
+            self.driver.refresh()
+            self.random_delay(5, 8)
+            
+            if "Security Check" not in self.driver.title and "Just a moment" not in self.driver.title:
+                 print("    [!] Refreshed and passed!")
+                 return
+            # Look for ANY iframe
+            iframes = self.driver.find_elements(By.TAG_NAME, "iframe")
+            print(f"    [!] Found {len(iframes)} total iframes on page")
+            
+            iframe_found = False
+            for i, frame in enumerate(iframes):
+                try:
+                    # Log src for debugging
+                    src = frame.get_attribute("src")
+                    # print(f"      Frame {i} src: {src}")
+                    
+                    if src and ("cloudflare" in src or "turnstile" in src or "challenge" in src):
+                        print(f"    [!] Found Cloudflare iframe (Index {i})! Switching...")
+                        self.driver.switch_to.frame(frame)
+                        
+                        # Try to find the input/checkbox
+                        checkbox = self.short_wait.until(
+                            EC.presence_of_element_located((By.XPATH, "//input[@type='checkbox'] | //div[@class='ctp-checkbox-label'] | //span[@class='mark']"))
+                        )
+                        
+                        if checkbox:
+                            print(f"    [!] Found checkbox in iframe {i}. Clicking...")
+                            self.random_delay(0.5, 1.5)
+                            checkbox.click()
+                            print("    [!] Clicked! Waiting for reload...")
+                            self.random_delay(5, 10)
+                            self.driver.switch_to.default_content()
+                            return 
+                        
+                        self.driver.switch_to.default_content()
+                        iframe_found = True
+                        
+                except Exception as frame_e:
+                    # print(f"      Error in frame {i}: {frame_e}")
+                    self.driver.switch_to.default_content()
+                    continue
+            
+            if not iframe_found:
+                print("    [!] No Cloudflare iframe logic worked. Trying Shadow DOM traversal...")
+                # Try JS injection to find Shadow DOM elements
+                try:
+                    res = self.driver.execute_script("""
+                        function findAndClick() {
+                            const all = document.querySelectorAll('*');
+                            let shadowsFound = 0;
+                            let dumped = "";
+                            
+                            for (const el of all) {
+                                if (el.shadowRoot) {
+                                    shadowsFound++;
+                                    // Try to click any input
+                                    const input = el.shadowRoot.querySelector('input');
+                                    if (input) {
+                                        input.click();
+                                        return {status: true, msg: "Clicked input in shadow root"};
+                                    }
+                                    
+                                    // Try to click the wrapper if no input
+                                    const wrapper = el.shadowRoot.querySelector('div');
+                                    if (wrapper) {
+                                        // wrapper.click(); // Risky, might not be the right one
+                                        // Just dump the content
+                                        dumped = el.shadowRoot.innerHTML;
+                                    }
+                                }
+                            }
+                            return {status: false, msg: "Found " + shadowsFound + " shadow roots", dump: dumped};
+                        }
+                        return findAndClick();
+                    """)
+                    
+                    if isinstance(res, dict):
+                        if res.get('status'):
+                            print(f"    [!] Success: {res.get('msg')}")
+                            self.random_delay(5, 10)
+                            return
+                        else:
+                            print(f"    [!] Failed: {res.get('msg')}")
+                            if res.get('dump'):
+                                with open("debug_shadow.html", "w", encoding="utf-8") as f:
+                                    f.write(res.get('dump'))
+                                print("    [!] Dumped shadow root content to debug_shadow.html")
+                            
+                except Exception as js_e:
+                    print(f"    [!] JS Shadow DOM error: {js_e}")
+
+            # If no iframe logic worked, just wait a bit and hope
+            print("    [!] No actionable element found. Waiting for implicit bypass...")
+            
+            # Manual Fallback: Explicitly ask user to solve it
+            print("    [!] AUTOMATED BYPASS FAILED/INCOMPLETE.")
+            print("    [!] ACTION REQUIRED: Please solve the Cloudflare check manually in the browser window.")
+            print("    [!] The scraper will wait until the page title changes from 'Just a moment...'")
+            
+            # Wait up to 5 minutes for manual solve
+            start_wait = time.time()
+            while time.time() - start_wait < 300:
+                if "Security Check" not in self.driver.title and "Just a moment" not in self.driver.title:
+                    print(f"    [!] Cloudflare challenge passed! Resume scraping... (Title: {self.driver.title})")
+                    self.random_delay(2, 4)
+                    return
+                time.sleep(1)
+            
+            print("    [!] Timed out waiting 5 minutes for manual solution.")            
+            
+        except Exception as e:
+            # Don't let check_cloudflare crash the whole scraper
+            print(f"    [WARN] Error in Cloudflare check: {e}")
+            self.driver.switch_to.default_content()
+
     def close_popups(self):
         """Close common popups and modals"""
         popup_selectors = [
@@ -100,211 +305,326 @@ class JobScraper:
                 )
                 close_btn.click()
                 self.random_delay(0.5, 1)
-                print("    ✓ Closed popup")
+                print("    [OK] Closed popup")
             except:
                 continue
     
-    def scrape_indeed(self, job_title="Flutter Developer", location="Lahore", max_pages=3):
+    def scrape_indeed(self, job_title="Flutter Developer", location="Lahore", radius=25, job_types=["fulltime"], days_ago=7, max_pages=3):
         """Scrape jobs from Indeed - UC Version"""
         print(f"\n{'='*60}")
         print(f"Starting Indeed scraping for: {job_title} in {location}")
+        print(f"Filters: Radius={radius}m, Types={job_types}, Days={days_ago}")
         print(f"{'='*60}\n")
         
         try:
-            # Build search URL
-            base_url = "https://pk.indeed.com/jobs"
-            search_url = f"{base_url}?q={job_title.replace(' ', '+')}&l={location.replace(' ', '+')}"
+            base_url = "https://www.indeed.com/jobs"
             
-            self.driver.get(search_url)
-            print("✓ Indeed page loaded - bypassing Cloudflare...")
-            self.random_delay(5, 8)  # Wait for Cloudflare check
-            
-            # Close any popups
-            self.close_popups()
-            
-            page_count = 0
-            
-            while page_count < max_pages:
-                print(f"\nScraping Indeed page {page_count + 1}...")
+            for jt in job_types:
+                print(f"\n--- Searching for Job Type: {jt} ---")
                 
-                try:
-                    # Updated selectors for 2025
-                    job_cards_selectors = [
-                        "div.job_seen_beacon",
-                        "div.cardOutline",
-                        "article.job_card",
-                        "div[data-testid='job-card']",
-                        "li.job_card",
-                        "div.slider_item"
-                    ]
+                query_params = [
+                    f"q={job_title.replace(' ', '+')}",
+                    f"l={location.replace(' ', '+')}",
+                    f"radius={radius}",
+                    f"fromage={days_ago}",
+                    f"jt={jt}"
+                ]
+                
+                search_url = f"{base_url}?{'&'.join(query_params)}"
+                
+                self.driver.get(search_url)
+                print("[OK] Indeed page loaded - bypassing Cloudflare...")
+                self.random_delay(5, 8)
+                self.check_cloudflare() # Check immediately after load
+                
+                self.close_popups()
+                
+                # Double check
+                self.check_cloudflare()
+                
+                page_count = 0
+                
+                while page_count < max_pages:
+                    print(f"\nScraping Indeed page {page_count + 1} (Type: {jt})...")
+                    self.check_cloudflare() # Check before scraping page
                     
-                    job_cards = None
-                    for selector in job_cards_selectors:
-                        try:
-                            job_cards = self.wait.until(
-                                EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector))
-                            )
-                            print(f"  ✓ Using selector: {selector}")
-                            break
-                        except:
-                            continue
-                    
-                    if not job_cards:
-                        print("  ✗ Could not find job cards with any known selector")
-                        break
-                    
-                    print(f"  Found {len(job_cards)} job listings on this page")
-                    
-                    for idx, card in enumerate(job_cards, 1):
-                        try:
-                            print(f"  Processing job {idx}/{len(job_cards)}...")
-                            
-                            # Scroll to element
-                            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
-                            self.random_delay(0.5, 1)
-                            
-                            # Click on job card
-                            card.click()
-                            self.random_delay(2, 3)
-                            
-                            job_data = {
-                                'source': 'Indeed',
-                                'job_title': None,
-                                'company': None,
-                                'location': location,
-                                'experience': None,
-                                'email': None,
-                                'phone': None,
-                                'company_website': None,
-                                'job_url': self.driver.current_url,
-                                'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            }
-                            
-                            # Extract job title
-                            title_selectors = [
-                                "h2.jobsearch-JobInfoHeader-title",
-                                "h1.jobsearch-JobInfoHeader-title",
-                                "h2[data-testid='jobsearch-JobInfoHeader-title']",
-                                "span.jobsearch-JobInfoHeader-title-container",
-                                "h1.icl-u-xs-mb--xs"
-                            ]
-                            for selector in title_selectors:
-                                try:
-                                    title_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                    job_data['job_title'] = title_elem.text.strip()
-                                    break
-                                except:
-                                    continue
-                            
-                            # Extract company name
-                            company_selectors = [
-                                "[data-testid='inlineHeader-companyName']",
-                                "[data-company-name='true']",
-                                "div[data-testid='company-name']",
-                                "a[data-testid='company-name']",
-                                "span.companyName",
-                                "div.icl-u-lg-mr--sm"
-                            ]
-                            for selector in company_selectors:
-                                try:
-                                    company_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                    job_data['company'] = company_elem.text.strip()
-                                    break
-                                except:
-                                    continue
-                            
-                            # Extract full job description
-                            desc_selectors = [
-                                "#jobDescriptionText",
-                                "div.jobsearch-jobDescriptionText",
-                                "[data-testid='job-description']",
-                                "div.jobsearch-JobComponent-description"
-                            ]
-                            description = ""
-                            for selector in desc_selectors:
-                                try:
-                                    desc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                    description = desc_elem.text
-                                    break
-                                except:
-                                    continue
-                            
-                            if description:
-                                job_data['email'] = self.extract_email(description)
-                                job_data['phone'] = self.extract_phone(description)
-                                
-                                # Extract experience
-                                exp_patterns = [
-                                    r'(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)',
-                                    r'(\d+[\+]?\s*(?:to\s+\d+)?\s*years?)',
-                                    r'experience:\s*(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)'
-                                ]
-                                for pattern in exp_patterns:
-                                    exp_match = re.search(pattern, description, re.IGNORECASE)
-                                    if exp_match:
-                                        job_data['experience'] = exp_match.group(1).strip()
-                                        break
-                            
-                            self.jobs_data.append(job_data)
-                            print(f"    ✓ Extracted: {job_data['job_title']} at {job_data['company']}")
-                            if job_data['email']:
-                                print(f"      📧 Email: {job_data['email']}")
-                            if job_data['phone']:
-                                print(f"      📞 Phone: {job_data['phone']}")
-                            
-                        except Exception as e:
-                            print(f"    ✗ Error processing job: {str(e)}")
-                            continue
-                    
-                    # Try to go to next page
                     try:
-                        next_selectors = [
-                            "[data-testid='pagination-page-next']",
-                            "a[aria-label='Next Page']",
-                            "a[data-testid='pagination-page-next']",
-                            "a.np"
-                        ]
-                        for selector in next_selectors:
-                            try:
-                                next_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                self.driver.execute_script("arguments[0].scrollIntoView();", next_button)
-                                self.random_delay(1, 2)
-                                next_button.click()
-                                self.random_delay(3, 5)
-                                page_count += 1
-                                break
-                            except:
-                                continue
-                        else:
-                            print("  No more pages available")
-                            break
-                    except Exception as e:
-                        print(f"  Pagination error: {str(e)}")
-                        break
+                        # 1. Wait for the main results container
+                        try:
+                            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#mosaic-provider-jobcards ul, .jobsearch-ResultsList")))
+                            print("  [OK] Main results container loaded")
+                        except:
+                            print("  [WARN] Main results container not found, falling back to card detection")
+
+                        # 2. Find all potential job card containers (li elements)
+                        # Indeed usually puts cards in <li> inside the results list
+                        potential_cards = self.driver.find_elements(By.CSS_SELECTOR, "#mosaic-provider-jobcards ul > li, .jobsearch-ResultsList > li")
                         
-                except TimeoutException:
-                    print("  Timeout waiting for job listings")
-                    break
+                        job_cards = []
+                        if potential_cards:
+                            print(f"  Found {len(potential_cards)} list items. Filtering for validity...")
+                            for card in potential_cards:
+                                # Check if it's a real job card (has title or company)
+                                # Exclude ads/mosaics that aren't jobs
+                                try:
+                                    if card.find_elements(By.CSS_SELECTOR, "h2.jobsearch-JobInfoHeader-title, h2 a, span[id^='jobTitle']"):
+                                        job_cards.append(card)
+                                except:
+                                    pass
+                        
+                        if not job_cards:
+                            print("  [INFO] No cards found via list items. Trying strict selectors...")
+                            job_cards_selectors = [
+                                "div.job_seen_beacon",
+                                "div.cardOutline",
+                                "article.job_card",
+                                "div[data-testid='job-card']",
+                                "li.job_card",
+                                "div.slider_item"
+                            ]
+                            
+                            for selector in job_cards_selectors:
+                                try:
+                                    found = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                    if found:
+                                        print(f"  [OK] Using selector: {selector} (Found {len(found)})")
+                                        job_cards = found
+                                        break
+                                except:
+                                    continue
+                        
+                        if not job_cards:
+                            print("  [X] Could not find job cards with any method")
+                            # Debug dump
+                            with open("debug_failed_scrape.html", "w", encoding="utf-8") as f:
+                                f.write(self.driver.page_source)
+                            print("    [!] Dumped HTML to debug_failed_scrape.html")
+                            break
+                        
+                        print(f"  Found {len(job_cards)} job listings on this page")
+                        
+                        # DEBUG: Dump the page to see what we might be missing
+                        try:
+                            debug_filename = f"debug_scraped_page_{page_count+1}.html"
+                            with open(debug_filename, "w", encoding="utf-8") as f:
+                                f.write(self.driver.page_source)
+                            print(f"    [!] Dumped page HTML to {debug_filename} for analysis")
+                        except:
+                            pass
+                        
+                        for idx, card in enumerate(job_cards, 1):
+                            try:
+                                print(f"  Processing job {idx}/{len(job_cards)}...")
+                                
+                                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
+                                self.random_delay(0.5, 1)
+                                
+                                card.click()
+                                self.random_delay(2, 3)
+                                
+                                job_data = {
+                                    'source': 'Indeed',
+                                    'job_title': None,
+                                    'company': None,
+                                    'location': location,
+                                    'pay': None,
+                                    'job_type_extracted': None,
+                                    'shift_schedule': None,
+                                    'experience': None,
+                                    'email': None,
+                                    'phone': None,
+                                    'company_website': None,
+                                    'company_website': None,
+                                    'job_url': self.driver.current_url, # Default
+                                    'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                }
+
+                                try:
+                                    # Target specifically the "Link" button seen in the screenshot (usually chain icon)
+                                    # This button typically copies the link or is an anchor.
+                                    # If it's a Copy Link button, we might need to get the "canonical" link instead.
+                                    # However, let's try to find the button and see if it wraps an href first.
+                                    link_btn = self.driver.find_element(By.CSS_SELECTOR, "div.jobsearch-JobInfoHeader-actions button[aria-label='Copy link'], button.jobsearch-JobInfoHeader-share-button")
+                                    # If found, we can try to get the canonical URL because "Copy link" implies the canonical one.
+                                    # Or we can check if it's an anchor.
+                                    
+                                    # A safer bet that matches "Link from the icon" without risking the copy-paste action
+                                    # is to get the canonical link from the page head, which is what that button usually shares.
+                                    canonical = self.driver.find_element(By.CSS_SELECTOR, "link[rel='canonical']")
+                                    if canonical:
+                                        href = canonical.get_attribute("href")
+                                        if href:
+                                            job_data['job_url'] = href
+                                except:
+                                    # If any of this fails, we just keep the default current_url
+                                    pass
+                                
+                                # Extract job title
+                                title_selectors = [
+                                    "h2.jobsearch-JobInfoHeader-title",
+                                    "h1.jobsearch-JobInfoHeader-title",
+                                    "h2[data-testid='jobsearch-JobInfoHeader-title']",
+                                    "span.jobsearch-JobInfoHeader-title-container",
+                                    "h1.icl-u-xs-mb--xs"
+                                ]
+                                for selector in title_selectors:
+                                    try:
+                                        title_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                        job_data['job_title'] = title_elem.text.strip()
+                                        break
+                                    except:
+                                        continue
+                                
+                                # Extract company name
+                                company_selectors = [
+                                    "[data-testid='inlineHeader-companyName']",
+                                    "[data-company-name='true']",
+                                    "div[data-testid='company-name']",
+                                    "a[data-testid='company-name']",
+                                    "span.companyName",
+                                    "div.icl-u-lg-mr--sm"
+                                ]
+                                for selector in company_selectors:
+                                    try:
+                                        company_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                        job_data['company'] = company_elem.text.strip()
+                                        break
+                                    except:
+                                        continue
+                                
+                                # Extract specific location
+                                location_selectors = [
+                                    "[data-testid='text-location']",
+                                    ".companyLocation",
+                                    "div[data-testid='text-location']",
+                                    "div.companyLocation",
+                                    "span.companyLocation",
+                                    "div[data-testid='inlineHeader-companyLocation']"
+                                ]
+                                for selector in location_selectors:
+                                    try:
+                                        loc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                        specific_location = loc_elem.text.strip()
+                                        if specific_location:
+                                            job_data['location'] = specific_location
+                                            break
+                                    except:
+                                        continue
+
+                                # Extract full job description
+                                desc_selectors = [
+                                    "#jobDescriptionText",
+                                    "div.jobsearch-jobDescriptionText",
+                                    "[data-testid='job-description']",
+                                    "div.jobsearch-JobComponent-description"
+                                ]
+                                description = ""
+                                for selector in desc_selectors:
+                                    try:
+                                        desc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                        description = desc_elem.text
+                                        break
+                                    except:
+                                        continue
+                                
+                                # Extract metadata (Pay, Job Type, Shift) from header/metadata section
+                                try:
+                                    metadata_elem = self.driver.find_element(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
+                                    metadata_text = metadata_elem.text
+                                    job_data['pay'] = self.extract_pay(metadata_text)
+                                    job_data['job_type_extracted'] = self.extract_job_type(metadata_text)
+                                    job_data['shift_schedule'] = self.extract_shift(metadata_text)
+                                except:
+                                    pass
+
+                                if description:
+                                    job_data['email'] = self.extract_email(description)
+                                    job_data['phone'] = self.extract_phone(description)
+                                    
+                                    # Fallback extraction from description
+                                    if not job_data['pay']:
+                                        job_data['pay'] = self.extract_pay(description)
+                                    if not job_data['job_type_extracted']:
+                                        job_data['job_type_extracted'] = self.extract_job_type(description)
+                                    if not job_data['shift_schedule']:
+                                        job_data['shift_schedule'] = self.extract_shift(description)
+
+                                    # Extract experience
+                                    exp_patterns = [
+                                        r'(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)',
+                                        r'(\d+[\+]?\s*(?:to\s+\d+)?\s*years?)',
+                                        r'experience:\s*(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)'
+                                    ]
+                                    for pattern in exp_patterns:
+                                        exp_match = re.search(pattern, description, re.IGNORECASE)
+                                        if exp_match:
+                                            job_data['experience'] = exp_match.group(1).strip()
+                                            break
+                                
+                                # Check for duplicates
+                                if self.is_duplicate(job_data):
+                                    print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
+                                    continue
+
+                                self.jobs_data.append(job_data)
+                                print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
+                                if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
+                                if job_data['job_type_extracted']: print(f"      (Type) Type: {job_data['job_type_extracted']}")
+                                
+                            except Exception as e:
+                                print(f"    [X] Error processing job: {str(e)}")
+                                continue
+                        
+                        try:
+                            next_selectors = [
+                                "[data-testid='pagination-page-next']",
+                                "a[aria-label='Next Page']",
+                                "a[data-testid='pagination-page-next']",
+                                "a.np"
+                            ]
+                            for selector in next_selectors:
+                                try:
+                                    next_button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                    self.driver.execute_script("arguments[0].scrollIntoView();", next_button)
+                                    self.random_delay(1, 2)
+                                    next_button.click()
+                                    self.random_delay(5, 10) # Increased delay between pages
+                                    self.check_cloudflare() # Check after navigation
+                                    page_count += 1
+                                    break
+                                except:
+                                    continue
+                            else:
+                                print("  No more pages available")
+                                # Dump to see why
+                                with open(f"debug_pagination_end_page_{page_count}.html", "w", encoding="utf-8") as f:
+                                    f.write(self.driver.page_source)
+                                break
+                        except Exception as e:
+                            print(f"  Pagination error: {str(e)}")
+                            break
+                            
+                    except TimeoutException:
+                        print("  Timeout waiting for job listings")
+                        break
                     
         except Exception as e:
-            print(f"❌ Error during Indeed scraping: {str(e)}")
+            print(f"[ERROR] Error during Indeed scraping: {str(e)}")
     
-    def scrape_glassdoor(self, job_title="Flutter Developer", location="Lahore", max_pages=3):
+    def scrape_glassdoor(self, job_title="Flutter Developer", location="Lahore", radius=25, job_types=["fulltime"], days_ago=7, max_pages=3):
         """Scrape jobs from Glassdoor - UC Version with manual search"""
         print(f"\n{'='*60}")
         print(f"Starting Glassdoor scraping for: {job_title} in {location}")
+        print(f"Filters: Radius={radius}m, Types={job_types}, Days={days_ago}")
         print(f"{'='*60}\n")
         
         try:
-            # Go to Glassdoor homepage first
             self.driver.get("https://www.glassdoor.com")
-            print("✓ Glassdoor homepage loaded - bypassing Cloudflare...")
+            print("[OK] Glassdoor homepage loaded - bypassing Cloudflare...")
             self.random_delay(5, 8)
             
-            # Close popups
             self.close_popups()
             
-            # Find and fill job title search box
             try:
                 job_search_selectors = [
                     "input#searchBar-jobTitle",
@@ -319,7 +639,7 @@ class JobScraper:
                         job_input = self.wait.until(
                             EC.presence_of_element_located((By.CSS_SELECTOR, selector))
                         )
-                        print(f"  ✓ Found job search box: {selector}")
+                        print(f"  [OK] Found job search box: {selector}")
                         break
                     except:
                         continue
@@ -328,12 +648,11 @@ class JobScraper:
                     job_input.clear()
                     job_input.send_keys(job_title)
                     self.random_delay(1, 2)
-                    print(f"  ✓ Entered job title: {job_title}")
+                    print(f"  [OK] Entered job title: {job_title}")
                 
             except Exception as e:
-                print(f"  ⚠️ Could not enter job title: {str(e)}")
+                print(f"  [WARN] Could not enter job title: {str(e)}")
             
-            # Find and fill location search box
             try:
                 location_search_selectors = [
                     "input#searchBar-location",
@@ -346,7 +665,7 @@ class JobScraper:
                 for selector in location_search_selectors:
                     try:
                         location_input = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        print(f"  ✓ Found location box: {selector}")
+                        print(f"  [OK] Found location box: {selector}")
                         break
                     except:
                         continue
@@ -355,20 +674,18 @@ class JobScraper:
                     location_input.clear()
                     self.random_delay(0.5, 1)
                     location_input.send_keys(location)
-                    self.random_delay(2, 3)  # Wait for autocomplete
-                    print(f"  ✓ Entered location: {location}")
+                    self.random_delay(2, 3)
+                    print(f"  [OK] Entered location: {location}")
                     
-                    # Press Enter or click first suggestion
                     from selenium.webdriver.common.keys import Keys
                     location_input.send_keys(Keys.RETURN)
-                    print("  ✓ Submitted search")
+                    print("  [OK] Submitted search")
                     
             except Exception as e:
-                print(f"  ⚠️ Could not enter location: {str(e)}")
+                print(f"  [WARN] Could not enter location: {str(e)}")
             
-            self.random_delay(5, 8)  # Wait for results to load
+            self.random_delay(5, 8)
             
-            # Handle multiple popups
             self.close_popups()
             self.random_delay(1, 2)
             self.close_popups()
@@ -379,7 +696,6 @@ class JobScraper:
                 print(f"\nScraping Glassdoor page {page_count + 1}...")
                 
                 try:
-                    # Updated selector for 2025
                     job_cards = self.wait.until(
                         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article[data-test='job-card']"))
                     )
@@ -390,15 +706,12 @@ class JobScraper:
                         try:
                             print(f"  Processing job {idx}/{len(job_cards)}...")
                             
-                            # Scroll to card
                             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
                             self.random_delay(1, 2)
                             
-                            # Click on job card
                             card.click()
                             self.random_delay(2, 4)
                             
-                            # Close any new popups
                             self.close_popups()
                             
                             job_data = {
@@ -406,6 +719,9 @@ class JobScraper:
                                 'job_title': None,
                                 'company': None,
                                 'location': location,
+                                'pay': None,
+                                'job_type_extracted': None,
+                                'shift_schedule': None,
                                 'experience': None,
                                 'email': None,
                                 'phone': None,
@@ -414,7 +730,6 @@ class JobScraper:
                                 'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             }
                             
-                            # Extract from card
                             try:
                                 title_elem = card.find_element(By.CSS_SELECTOR, "[data-test='job-title']")
                                 job_data['job_title'] = title_elem.text.strip()
@@ -427,7 +742,6 @@ class JobScraper:
                             except:
                                 pass
                             
-                            # Wait for description panel
                             desc_selectors = [
                                 "[data-test='jobDescriptionContent']",
                                 "div.JobDetails_jobDescription__uW_fK",
@@ -450,25 +764,23 @@ class JobScraper:
                             if description:
                                 job_data['email'] = self.extract_email(description)
                                 job_data['phone'] = self.extract_phone(description)
+                                job_data['pay'] = self.extract_pay(description)
+                                job_data['job_type_extracted'] = self.extract_job_type(description)
+                                job_data['shift_schedule'] = self.extract_shift(description)
                                 
-                                # Extract experience
                                 if 'year' in description.lower():
                                     exp_match = re.search(r'(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)', description, re.IGNORECASE)
                                     if exp_match:
                                         job_data['experience'] = exp_match.group(1).strip()
                             
                             self.jobs_data.append(job_data)
-                            print(f"    ✓ Extracted: {job_data['job_title']} at {job_data['company']}")
-                            if job_data['email']:
-                                print(f"      📧 Email: {job_data['email']}")
-                            if job_data['phone']:
-                                print(f"      📞 Phone: {job_data['phone']}")
+                            print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
+                            if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
                             
                         except Exception as e:
-                            print(f"    ✗ Error processing job: {str(e)}")
+                            print(f"    [X] Error processing job: {str(e)}")
                             continue
                     
-                    # Try pagination
                     try:
                         next_button = self.driver.find_element(By.CSS_SELECTOR, "button[data-test='pagination-next']")
                         if next_button.is_enabled():
@@ -489,12 +801,12 @@ class JobScraper:
                     break
                     
         except Exception as e:
-            print(f"❌ Error during Glassdoor scraping: {str(e)}")
+            print(f"[ERROR] Error during Glassdoor scraping: {str(e)}")
     
     def save_to_excel(self, filename="job_listings.xlsx"):
         """Save collected data to Excel file"""
         if not self.jobs_data:
-            print("\n⚠️ No data to save!")
+            print("\n[WARN] No data to save!")
             return
         
         df = pd.DataFrame(self.jobs_data)
@@ -502,79 +814,87 @@ class JobScraper:
         # Reorder columns
         column_order = [
             'source', 'job_title', 'company', 'location', 
+            'pay', 'job_type_extracted', 'shift_schedule',
             'experience', 'email', 'phone', 'company_website', 
             'job_url', 'scraped_date'
         ]
+        # Ensure all columns exist
+        for col in column_order:
+            if col not in df.columns:
+                df[col] = None
+            
         df = df[column_order]
         
         # Save to Excel
         df.to_excel(filename, index=False, engine='openpyxl')
         print(f"\n{'='*60}")
-        print(f"✓ Data saved to {filename}")
+        print(f"  [OK] Data saved to {filename}")
         print(f"  Total jobs scraped: {len(self.jobs_data)}")
         print(f"  Indeed jobs: {len([j for j in self.jobs_data if j['source'] == 'Indeed'])}")
         print(f"  Glassdoor jobs: {len([j for j in self.jobs_data if j['source'] == 'Glassdoor'])}")
-        print(f"  Jobs with email: {len([j for j in self.jobs_data if j['email']])}")
-        print(f"  Jobs with phone: {len([j for j in self.jobs_data if j['phone']])}")
         print(f"{'='*60}\n")
-    
+
     def close(self):
         """Close the browser"""
         self.driver.quit()
 
-
-def main():
-    """Main execution function"""
+def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, days_ago=None, max_pages=None):
+    """Run the scraping job and return the path to the generated Excel file"""
+    
+    # Defaults
+    if keywords is None: keywords = ["warehouse", "store", "restaurant", "fast food", "retail", "laborer", "clerk", "security guard", "crew", "cashier", "delivery"]
+    if location is None: location = "Redding, CA 96002"
+    if radius is None: radius = 15
+    if job_types is None: job_types = ["parttime", "fulltime"]
+    if days_ago is None: days_ago = 3
+    if max_pages is None: max_pages = 5
+    
+    scraper = None
+    output_file = None
+    
     print("\n" + "="*60)
-    print("JOB SCRAPER - UC VERSION (Cloudflare Bypass)")
-    print("Educational purposes only - Ensure ToS compliance")
+    print("JOB SCRAPER - APP MODE")
     print("="*60 + "\n")
     
-    # Configuration
-    JOB_TITLE = "Flutter Developer"
-    LOCATION = "Lahore"
-    MAX_PAGES = 2
-    
-    print("⚠️  First time? You'll need to login to Indeed/Glassdoor manually once.")
-    print("    After that, sessions are saved in chrome_profile folder.")
-    print("\nPress Enter to continue...")
-    input()
-    
-    # Initialize scraper
-    scraper = JobScraper(headless=False)
-    
     try:
-        # Scrape Indeed
-        scraper.scrape_indeed(job_title=JOB_TITLE, location=LOCATION, max_pages=MAX_PAGES)
+        scraper = JobScraper(headless=False) # Keep visible for now as per original script
         
-        # Delay between sites
-        print("\n" + "="*60)
-        print("Waiting before switching to Glassdoor...")
-        print("="*60)
+        # Initial delay
+        print("Waiting 5 seconds for initial checks...")
         scraper.random_delay(5, 8)
         
-        # Scrape Glassdoor
-        scraper.scrape_glassdoor(job_title=JOB_TITLE, location=LOCATION, max_pages=MAX_PAGES)
-        
+        for keyword in keywords:
+            print(f"Processing Keyword: {keyword}")
+            scraper.scrape_indeed(
+                job_title=keyword, 
+                location=location, 
+                radius=radius,
+                job_types=job_types,
+                days_ago=days_ago,
+                max_pages=max_pages
+            )
+            scraper.random_delay(3, 5)
+            
         # Save results
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_folder = r"C:\Users\Shoaib Altaf\Downloads"
-        filename = os.path.join(output_folder, f"flutter_jobs_lahore_{timestamp}.xlsx")
-        scraper.save_to_excel(filename)
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_folder = os.path.join(base_dir, "output")
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
+            
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")    
+        output_file = os.path.join(output_folder, f"redding_jobs_{timestamp}.xlsx")
         
-        print(f"\n✓ Complete! Check your Downloads folder for the Excel file.")
+        scraper.save_to_excel(output_file)
+        return output_file
         
-    except KeyboardInterrupt:
-        print("\n\n⚠️ Scraping interrupted by user")
     except Exception as e:
-        print(f"\n\n❌ Error during scraping: {str(e)}")
+        print(f"Error during scraping: {str(e)}")
         import traceback
         traceback.print_exc()
+        return None
     finally:
-        scraper.close()
-        print("\n✓ Browser closed. Scraping complete.")
-        input("\nPress Enter to exit...")
-
+        if scraper:
+            scraper.close()
 
 if __name__ == "__main__":
-    main()
+    run_scraping_job()
