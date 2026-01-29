@@ -13,7 +13,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import re
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 import os
 
 class JobScraper:
@@ -39,7 +40,8 @@ class JobScraper:
             options.add_argument('--headless=new')
         
         # Initialize undetected Chrome with profile
-        self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path)
+        # Fix for version mismatch (Browser 144 vs Driver 145)
+        self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path, version_main=144)
         self.wait = WebDriverWait(self.driver, 20)
         self.short_wait = WebDriverWait(self.driver, 5)
         
@@ -97,6 +99,225 @@ class JobScraper:
             if re.search(r'\b' + re.escape(t) + r'\b', text, re.IGNORECASE):
                 found_types.append(t)
         return ', '.join(found_types) if found_types else None
+
+    def extract_min_age(self, text):
+        """Extract minimum age from text"""
+        # Patterns like "16 years or older", "Must be 18", "Minimum age 21"
+        age_patterns = [
+            r'(\d{2})\s*years\s*(?:or)?\s*older',
+            r'must\s*be\s*(\d{2})',
+            r'minimum\s*age\s*(\d{2})',
+            r'(\d{2})\+',
+            r'at\s*least\s*(\d{2})'
+        ]
+        for pattern in age_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return match.group(1)
+        return None
+
+    def extract_date_posted(self, text):
+        """Calculate date posted from relative text"""
+        if not text: return None
+        
+        today = datetime.now()
+        text = text.lower().strip()
+        
+        if "today" in text:
+            return today.strftime("%Y-%m-%d")
+        if "yesterday" in text:
+            return (today - timedelta(days=1)).strftime("%Y-%m-%d")
+            
+        # "30+ days ago", "5 days ago", "1d ago"
+        try:
+            days_match = re.search(r'(\d+)\+?\s*d', text)
+            if days_match:
+                days = int(days_match.group(1))
+                return (today - timedelta(days=days)).strftime("%Y-%m-%d")
+        except: pass
+            
+        return "N/A"
+
+    def scrape_snagajob(self, job_title="full time", location="96001", max_pages=3):
+        """Scrape Snagajob listings with keyword and location"""
+        search_url = f"https://www.snagajob.com/search?q={job_title.replace(' ', '+')}&w={location.replace(' ', '+')}"
+        print(f"Starting Snagajob scrape: {search_url}")
+        
+        try:
+            self.driver.get(search_url)
+            self.check_cloudflare()
+            
+            for page in range(max_pages):
+                print(f"Scraping page {page + 1}")
+                self.random_delay()
+                
+                # Scroll to load dynamic content
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                self.random_delay(2, 4)
+                
+                # Find all job cards
+                try:
+                    self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "job-card")))
+                    job_cards = self.driver.find_elements(By.TAG_NAME, "job-card")
+                except TimeoutException:
+                    print("No job cards found on this page.")
+                    break
+                
+                print(f"Found {len(job_cards)} job cards. Processing...")
+                
+                # Extract links first to avoid stale elements when navigating back/forth
+                job_links = []
+                for card in job_cards:
+                    try:
+                        # Extract basic info from card for fallback
+                        link_elem = card.find_element(By.TAG_NAME, "a")
+                        url = link_elem.get_attribute("href")
+                        if url:
+                            job_links.append(url)
+                    except Exception as e:
+                        print(f"Error extracting link from card: {e}")
+                        continue
+                        
+                # Visit each job page
+                for url in job_links:
+                    if url in self.seen_jobs:
+                        continue
+                    
+                    try:
+                        print(f"  Visiting: {url}")
+                        self.driver.get(url)
+                        self.random_delay(2, 4)
+                        self.check_cloudflare() 
+                        
+                        # Extract Fields
+                        job_data = {
+                            "source": "Snagajob",
+                            "job_title": "N/A",
+                            "company": "N/A",
+                            "location": "N/A",
+                            "pay": "N/A",
+                            "job_type_extracted": "N/A",
+                            "shift_schedule": "N/A",
+                            "experience": "N/A", # Will store Min Age or extracted experience
+                            "date_posted": "N/A",
+                            "job_url": url,
+                            "scraped_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                        
+                        # Scope to main content if possible
+                        try:
+                            main_content = self.driver.find_element(By.ID, "main-content")
+                        except:
+                            main_content = self.driver
+
+                        # Job Title - Prefer H1 or ID
+                        try:
+                            # Try id="jobTitle" first (most specific from dump)
+                            job_data["job_title"] = main_content.find_element(By.ID, "jobTitle").text.strip()
+                        except:
+                            try:
+                                job_data["job_title"] = main_content.find_element(By.TAG_NAME, "h1").text.strip()
+                            except: 
+                                try:
+                                    job_data["job_title"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-title']").text.strip()
+                                except: pass
+
+                        # Company
+                        try:
+                            job_data["company"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='company-name']").text.strip()
+                        except: pass
+                        
+                        # Location
+                        try:
+                            job_data["location"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='location']").text.strip()
+                        except: pass
+                        
+                        # Pay
+                        try:
+                            job_data["pay"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-est-wage']").text.strip()
+                        except:
+                            try:
+                                job_data["pay"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-verified-wage']").text.strip()
+                            except: pass
+                            
+                        # Type/Shift
+                        try:
+                            job_data["job_type_extracted"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-categories']").text.strip()
+                        except: pass
+                        
+                        # Date Posted (Look for bullet separator near company or generic text)
+                        try:
+                            # Strategy: Find the company element, then look for the next sibling div or text
+                            # From structure: Company -> div -> div with bullet
+                            # XPath: //a[@data-snagtag='company-name']/../../following-sibling::div[contains(text(), 'ago') or contains(text(), 'Today')]
+                            # Simplified: Look for any element containing "days ago" or "Today" inside the header area
+                            
+                            # Let's try to find text relative to Company Name which we have
+                             # The dump shows: <div ...><span ...>•</span>14 days ago </div>
+                             # It's a div.text-gray-700.body-lg...
+                             
+                             # Try XPath relative to company name link
+                            company_elem = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='company-name']")
+                            # Parent is div, Parent is div. Next Sibling is the Date div.
+                            date_elem = company_elem.find_element(By.XPATH, "./../../following-sibling::div[contains(@class, 'text-gray-700')]")
+                            date_text = date_elem.text.replace("•", "").strip()
+                            job_data["date_posted"] = self.extract_date_posted(date_text)
+                        except: 
+                            # Fallback: Search for any element with "days ago"
+                            try:
+                                # This might be risky if there are similar jobs, but we scoped to main_content
+                                potential_date = main_content.find_element(By.XPATH, ".//div[contains(text(), 'days ago') or contains(text(), 'Today') or contains(text(), 'Yesterday')]")
+                                job_data["date_posted"] = self.extract_date_posted(potential_date.text.replace("•", "").strip())
+                            except: pass
+
+                        # Description (for Min Age/Exp/Email/Phone)
+                        try:
+                            desc_elem = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-description']")
+                            full_desc = desc_elem.text
+                            # job_data["description"] = full_desc # Not in target excel but useful? Leaving out to match requested format strictly
+                            
+                            # Extract Min Age -> Experience
+                            age = self.extract_min_age(full_desc)
+                            if age:
+                                job_data["experience"] = f"{age}+ years old"
+                            else:
+                                # Try standard experience extraction if age fails or in addition?
+                                # Simple regex for now similar to age or just leave as N/A
+                                pass
+                                
+                        except: pass
+                        
+                        # Add to results
+                        self.jobs_data.append(job_data)
+                        self.seen_jobs.add(url)
+                        print(f"    -> Extracted: {job_data['job_title']} at {job_data['company']}")
+                        
+                    except Exception as e:
+                        print(f"Error processing job page {url}: {e}")
+                        
+                # Pagination - Check for 'Next' button
+                # Selector for next button: button with aria-label="Next page" or similar
+                # From dump search page, pagination seems complex or infinite scroll.
+                # Let's try to find a next button. If not found, break.
+                # Snagajob often uses numbering. Let's assume passed search_url handles it or just do 1 page for now if pagination is hard.
+                # The URL includes page params sometimes.
+                # For safety, let's just break for now unless we see an obvious next button provided by new request details from user.
+                # User URL had no 'page' param explicitly visible (maybe implicit).
+                # Implementation Note: We will stick to the provided URL for now. 
+                # If pagination is needed, we'd look for pagination controls.
+                # Since we extracted links from search, let's assume we proceed.
+                
+                # If we want to support pagination, we might need to click "Next".
+                # But to start simple and safer:
+                if max_pages > 1:
+                     print("Pagination not fully implemented for Snagajob yet, verifying with one page.")
+                     break
+                     
+        except Exception as e:
+            print(f"Snagajob scrape error: {e}")
+            import traceback
+            traceback.print_exc() 
+
 
     def extract_shift(self, text):
         """Extract shift/schedule information"""
@@ -431,10 +652,7 @@ class JobScraper:
                                     'job_type_extracted': None,
                                     'shift_schedule': None,
                                     'experience': None,
-                                    'email': None,
-                                    'phone': None,
-                                    'company_website': None,
-                                    'company_website': None,
+                                    'date_posted': None,
                                     'job_url': self.driver.current_url, # Default
                                     'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 }
@@ -511,6 +729,24 @@ class JobScraper:
                                     except:
                                         continue
 
+                                # Extract Date Posted
+                                date_selectors = [
+                                    "span.date",
+                                    "span.myJobsStateDate",
+                                    "[data-testid='myJobsStateDate']",
+                                    "span.css-qs2091",
+                                    "span.css-10pe3me",
+                                    "span.css-10pe3me.eu4oa1w0"
+                                ]
+                                for selector in date_selectors:
+                                    try:
+                                        date_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
+                                        raw_date = date_elem.text.replace('Posted', '').strip()
+                                        job_data['date_posted'] = self.extract_date_posted(raw_date)
+                                        break
+                                    except:
+                                        continue
+
                                 # Extract full job description
                                 desc_selectors = [
                                     "#jobDescriptionText",
@@ -538,8 +774,6 @@ class JobScraper:
                                     pass
 
                                 if description:
-                                    job_data['email'] = self.extract_email(description)
-                                    job_data['phone'] = self.extract_phone(description)
                                     
                                     # Fallback extraction from description
                                     if not job_data['pay']:
@@ -611,197 +845,7 @@ class JobScraper:
         except Exception as e:
             print(f"[ERROR] Error during Indeed scraping: {str(e)}")
     
-    def scrape_glassdoor(self, job_title="Flutter Developer", location="Lahore", radius=25, job_types=["fulltime"], days_ago=7, max_pages=3):
-        """Scrape jobs from Glassdoor - UC Version with manual search"""
-        print(f"\n{'='*60}")
-        print(f"Starting Glassdoor scraping for: {job_title} in {location}")
-        print(f"Filters: Radius={radius}m, Types={job_types}, Days={days_ago}")
-        print(f"{'='*60}\n")
-        
-        try:
-            self.driver.get("https://www.glassdoor.com")
-            print("[OK] Glassdoor homepage loaded - bypassing Cloudflare...")
-            self.random_delay(5, 8)
-            
-            self.close_popups()
-            
-            try:
-                job_search_selectors = [
-                    "input#searchBar-jobTitle",
-                    "input[name='sc.keyword']",
-                    "input[placeholder*='Job title']",
-                    "input[data-test='job-search-bar-input']"
-                ]
-                
-                job_input = None
-                for selector in job_search_selectors:
-                    try:
-                        job_input = self.wait.until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                        )
-                        print(f"  [OK] Found job search box: {selector}")
-                        break
-                    except:
-                        continue
-                
-                if job_input:
-                    job_input.clear()
-                    job_input.send_keys(job_title)
-                    self.random_delay(1, 2)
-                    print(f"  [OK] Entered job title: {job_title}")
-                
-            except Exception as e:
-                print(f"  [WARN] Could not enter job title: {str(e)}")
-            
-            try:
-                location_search_selectors = [
-                    "input#searchBar-location",
-                    "input[name='sc.location']",
-                    "input[placeholder*='Location']",
-                    "input[data-test='location-search-bar-input']"
-                ]
-                
-                location_input = None
-                for selector in location_search_selectors:
-                    try:
-                        location_input = self.driver.find_element(By.CSS_SELECTOR, selector)
-                        print(f"  [OK] Found location box: {selector}")
-                        break
-                    except:
-                        continue
-                
-                if location_input:
-                    location_input.clear()
-                    self.random_delay(0.5, 1)
-                    location_input.send_keys(location)
-                    self.random_delay(2, 3)
-                    print(f"  [OK] Entered location: {location}")
-                    
-                    from selenium.webdriver.common.keys import Keys
-                    location_input.send_keys(Keys.RETURN)
-                    print("  [OK] Submitted search")
-                    
-            except Exception as e:
-                print(f"  [WARN] Could not enter location: {str(e)}")
-            
-            self.random_delay(5, 8)
-            
-            self.close_popups()
-            self.random_delay(1, 2)
-            self.close_popups()
-            
-            page_count = 0
-            
-            while page_count < max_pages:
-                print(f"\nScraping Glassdoor page {page_count + 1}...")
-                
-                try:
-                    job_cards = self.wait.until(
-                        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "article[data-test='job-card']"))
-                    )
-                    
-                    print(f"  Found {len(job_cards)} job listings on this page")
-                    
-                    for idx, card in enumerate(job_cards, 1):
-                        try:
-                            print(f"  Processing job {idx}/{len(job_cards)}...")
-                            
-                            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
-                            self.random_delay(1, 2)
-                            
-                            card.click()
-                            self.random_delay(2, 4)
-                            
-                            self.close_popups()
-                            
-                            job_data = {
-                                'source': 'Glassdoor',
-                                'job_title': None,
-                                'company': None,
-                                'location': location,
-                                'pay': None,
-                                'job_type_extracted': None,
-                                'shift_schedule': None,
-                                'experience': None,
-                                'email': None,
-                                'phone': None,
-                                'company_website': None,
-                                'job_url': self.driver.current_url,
-                                'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            }
-                            
-                            try:
-                                title_elem = card.find_element(By.CSS_SELECTOR, "[data-test='job-title']")
-                                job_data['job_title'] = title_elem.text.strip()
-                            except:
-                                pass
-                            
-                            try:
-                                company_elem = card.find_element(By.CSS_SELECTOR, "[data-test='employer-name']")
-                                job_data['company'] = company_elem.text.strip()
-                            except:
-                                pass
-                            
-                            desc_selectors = [
-                                "[data-test='jobDescriptionContent']",
-                                "div.JobDetails_jobDescription__uW_fK",
-                                "div[class*='jobDescriptionContent']",
-                                "div.desc",
-                                "div[class*='JobDescription']"
-                            ]
-                            
-                            description = ""
-                            for selector in desc_selectors:
-                                try:
-                                    desc_elem = self.wait.until(
-                                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-                                    )
-                                    description = desc_elem.text
-                                    break
-                                except:
-                                    continue
-                            
-                            if description:
-                                job_data['email'] = self.extract_email(description)
-                                job_data['phone'] = self.extract_phone(description)
-                                job_data['pay'] = self.extract_pay(description)
-                                job_data['job_type_extracted'] = self.extract_job_type(description)
-                                job_data['shift_schedule'] = self.extract_shift(description)
-                                
-                                if 'year' in description.lower():
-                                    exp_match = re.search(r'(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)', description, re.IGNORECASE)
-                                    if exp_match:
-                                        job_data['experience'] = exp_match.group(1).strip()
-                            
-                            self.jobs_data.append(job_data)
-                            print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
-                            if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
-                            
-                        except Exception as e:
-                            print(f"    [X] Error processing job: {str(e)}")
-                            continue
-                    
-                    try:
-                        next_button = self.driver.find_element(By.CSS_SELECTOR, "button[data-test='pagination-next']")
-                        if next_button.is_enabled():
-                            self.driver.execute_script("arguments[0].scrollIntoView();", next_button)
-                            self.random_delay(1, 2)
-                            next_button.click()
-                            self.random_delay(4, 6)
-                            page_count += 1
-                        else:
-                            print("  Next button disabled - no more pages")
-                            break
-                    except NoSuchElementException:
-                        print("  No more pages available")
-                        break
-                        
-                except TimeoutException:
-                    print("  Timeout waiting for job listings")
-                    break
-                    
-        except Exception as e:
-            print(f"[ERROR] Error during Glassdoor scraping: {str(e)}")
+
     
     def save_to_excel(self, filename="job_listings.xlsx"):
         """Save collected data to Excel file"""
@@ -815,7 +859,7 @@ class JobScraper:
         column_order = [
             'source', 'job_title', 'company', 'location', 
             'pay', 'job_type_extracted', 'shift_schedule',
-            'experience', 'email', 'phone', 'company_website', 
+            'experience', 'date_posted', 
             'job_url', 'scraped_date'
         ]
         # Ensure all columns exist
@@ -831,7 +875,7 @@ class JobScraper:
         print(f"  [OK] Data saved to {filename}")
         print(f"  Total jobs scraped: {len(self.jobs_data)}")
         print(f"  Indeed jobs: {len([j for j in self.jobs_data if j['source'] == 'Indeed'])}")
-        print(f"  Glassdoor jobs: {len([j for j in self.jobs_data if j['source'] == 'Glassdoor'])}")
+        print(f"  Snagajob jobs: {len([j for j in self.jobs_data if j['source'] == 'Snagajob'])}")
         print(f"{'='*60}\n")
 
     def close(self):
@@ -872,6 +916,13 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
                 job_types=job_types,
                 days_ago=days_ago,
                 max_pages=max_pages
+            )
+            scraper.random_delay(3, 5)
+            
+            scraper.scrape_snagajob(
+                job_title=keyword,
+                location=location,
+                max_pages=min(2, max_pages) # Lower max pages for Snagajob safety
             )
             scraper.random_delay(3, 5)
             
