@@ -53,6 +53,37 @@ class JobScraper:
         max_seconds = 5
         time.sleep(random.uniform(min_seconds, max_seconds))
     
+    def determine_industry(self, job_title, company):
+        """Determine industry based on keywords"""
+        title = str(job_title).lower() if job_title else ""
+        comp = str(company).lower() if company else ""
+        text = f"{title} {comp}"
+        
+        keywords = {
+            'Restaurant': ['restaurant', 'food', 'cook', 'chef', 'server', 'dining', 'kitchen', 'bar', 'pizza', 'burger', 'taco', 'cafe', 'baker', 'dishwasher'],
+            'Retail': ['retail', 'store', 'cashier', 'shop', 'mart', 'sales associate', 'merchandiser', 'stocker'],
+            'Sales': ['sales', 'representative', 'consultant', 'account executive'],
+            'Office': ['office', 'admin', 'clerk', 'receptionist', 'assistant', 'secretary', 'data entry', 'coordinator', 'customer service'],
+            'Construction': ['construction', 'laborer', 'carpenter', 'builder', 'site', 'heavy equipment', 'foreman'],
+            'Health Care': ['health', 'medical', 'nurse', 'patient', 'care', 'caregiver', 'rn', 'cna', 'clinic', 'hospital', 'dental', 'pharmacy', 'therapist'],
+            'Driver': ['driver', 'delivery', 'transport', 'truck', 'courier', 'cdl'],
+            'Technical': ['technician', 'engineer', 'software', 'developer', 'support', 'it', 'network', 'systems'],
+            'Trades': ['mechanic', 'welder', 'electrician', 'plumber', 'maintenance', 'hvac', 'technician'],
+            'Management': ['management', 'manager', 'supervisor', 'director', 'executive', 'lead', 'team lead', 'vp', 'chief']
+        }
+        
+        for industry, tags in keywords.items():
+            for tag in tags:
+                 # Simple substring check
+                 # Special handling for short words like 'it'
+                if tag == 'it':
+                    if f" {tag} " in f" {text} " or text.startswith(tag + " ") or text.endswith(" " + tag):
+                        return industry
+                elif tag in text:
+                    return industry
+                    
+        return "Other"
+
     def random_delay(self, min_s=2, max_s=5):
         """Add random delay"""
         time.sleep(random.uniform(min_s, max_s))
@@ -853,14 +884,59 @@ class JobScraper:
             print("\n[WARN] No data to save!")
             return
         
-        df = pd.DataFrame(self.jobs_data)
+        # --- Post-Processing: Filtering & Classification ---
+        processed_data = []
+        unique_hashes = set()
+        
+        cutoff_date = datetime.now() - timedelta(days=7)
+        cutoff_date = cutoff_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        print(f"\nProcessing {len(self.jobs_data)} collected jobs...")
+        
+        for job in self.jobs_data:
+            # 1. Date Filter (Strict 7 days)
+            # date_posted is string YYYY-MM-DD or N/A
+            d_str = job.get('date_posted', 'N/A')
+            if d_str and d_str != 'N/A':
+                try:
+                     d_date = datetime.strptime(d_str, "%Y-%m-%d")
+                     if d_date < cutoff_date:
+                         # Skip old jobs
+                         continue
+                except:
+                    pass # Keep if parse fails? Or drop? Keeping for safety.
+            
+            # 2. Industry Classification
+            job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'))
+            
+            # 3. Deduplication (Strict Title+Company+Location)
+            # Normalize for hash
+            t = str(job.get('job_title', '')).lower().strip()
+            c = str(job.get('company', '')).lower().strip()
+            l = str(job.get('location', '')).lower().strip()
+            
+            # Use tuple hash
+            job_hash = (t, c, l)
+            if job_hash in unique_hashes:
+                continue
+            unique_hashes.add(job_hash)
+            
+            processed_data.append(job)
+            
+        print(f"Refined job count: {len(processed_data)} (after date filtering and deduplication)")
+        
+        if not processed_data:
+             print("[WARN] No jobs remained after filtering.")
+             return
+
+        df = pd.DataFrame(processed_data)
         
         # Reorder columns
         column_order = [
             'source', 'job_title', 'company', 'location', 
             'pay', 'job_type_extracted', 'shift_schedule',
             'experience', 'date_posted', 
-            'job_url', 'scraped_date'
+            'job_url', 'scraped_date', 'industry'
         ]
         # Ensure all columns exist
         for col in column_order:
@@ -870,13 +946,14 @@ class JobScraper:
         df = df[column_order]
         
         # Save to Excel
-        df.to_excel(filename, index=False, engine='openpyxl')
-        print(f"\n{'='*60}")
-        print(f"  [OK] Data saved to {filename}")
-        print(f"  Total jobs scraped: {len(self.jobs_data)}")
-        print(f"  Indeed jobs: {len([j for j in self.jobs_data if j['source'] == 'Indeed'])}")
-        print(f"  Snagajob jobs: {len([j for j in self.jobs_data if j['source'] == 'Snagajob'])}")
-        print(f"{'='*60}\n")
+        try:
+            df.to_excel(filename, index=False, engine='openpyxl')
+            print(f"\n{'='*60}")
+            print(f"  [OK] Data saved to {filename}")
+            print(f"  Total jobs saved: {len(df)}")
+            print(f"{'='*60}\n")
+        except Exception as e:
+            print(f"[ERROR] Could not save Excel: {e}")
 
     def close(self):
         """Close the browser"""
@@ -886,7 +963,7 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
     """Run the scraping job and return the path to the generated Excel file"""
     
     # Defaults
-    if keywords is None: keywords = ["warehouse", "store", "restaurant", "fast food", "retail", "laborer", "clerk", "security guard", "crew", "cashier", "delivery"]
+    if keywords is None: keywords = ["warehouse", "store", "restaurant", "fast food", "retail", "laborer", "clerk", "security guard", "crew", "cashier", "delivery", "caregiver"]
     if location is None: location = "Redding, CA 96002"
     if radius is None: radius = 15
     if job_types is None: job_types = ["parttime", "fulltime"]

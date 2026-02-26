@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 import os
 import sys
+import setuptools # Required for Python 3.12+ (distutils support)
 from generate_report import run_report_generation
 from scrapper import run_scraping_job
 

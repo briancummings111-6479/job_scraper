@@ -1,11 +1,13 @@
 @echo off
+cd /d "%~dp0"
+
 echo Starting Career Miner App...
 
-:: Check if Flask is installed, install if not
-python -c "import flask" 2>NUL
+:: Check if pandas/flask are installed, if not, install all requirements
+python -c "import pandas" 2>NUL
 if %errorlevel% neq 0 (
-    echo Flask not found. Installing...
-    pip install flask
+    echo Dependencies mismatch or missing. Installing from requirements.txt...
+    python -m pip install -r requirements.txt
 )
 
 :: Start the browser in a separate process after a short delay

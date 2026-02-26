@@ -4,3 +4,5 @@ requests
 selenium
 undetected-chromedriver
 reportlab
+setuptools
+openpyxl
