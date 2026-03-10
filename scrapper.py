@@ -41,7 +41,12 @@ class JobScraper:
         
         # Initialize undetected Chrome with profile
         # Fix for version mismatch (Browser 144 vs Driver 145)
-        self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path, version_main=144)
+        driver_path = os.path.join(self.base_dir, "drivers", "chromedriver.exe")
+        if os.path.exists(driver_path):
+            print(f"[OK] Using local chromedriver: {driver_path}")
+            self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path, driver_executable_path=driver_path, version_main=144)
+        else:
+            self.driver = uc.Chrome(options=options, user_data_dir=chrome_profile_path, version_main=144)
         self.wait = WebDriverWait(self.driver, 20)
         self.short_wait = WebDriverWait(self.driver, 5)
         
@@ -64,11 +69,10 @@ class JobScraper:
             'Retail': ['retail', 'store', 'cashier', 'shop', 'mart', 'sales associate', 'merchandiser', 'stocker'],
             'Sales': ['sales', 'representative', 'consultant', 'account executive'],
             'Office': ['office', 'admin', 'clerk', 'receptionist', 'assistant', 'secretary', 'data entry', 'coordinator', 'customer service'],
-            'Construction': ['construction', 'laborer', 'carpenter', 'builder', 'site', 'heavy equipment', 'foreman'],
             'Health Care': ['health', 'medical', 'nurse', 'patient', 'care', 'caregiver', 'rn', 'cna', 'clinic', 'hospital', 'dental', 'pharmacy', 'therapist'],
             'Driver': ['driver', 'delivery', 'transport', 'truck', 'courier', 'cdl'],
             'Technical': ['technician', 'engineer', 'software', 'developer', 'support', 'it', 'network', 'systems'],
-            'Trades': ['mechanic', 'welder', 'electrician', 'plumber', 'maintenance', 'hvac', 'technician'],
+            'Trades': ['mechanic', 'welder', 'electrician', 'plumber', 'maintenance', 'hvac', 'technician', 'construction', 'laborer', 'carpenter', 'builder', 'site', 'heavy equipment', 'foreman'],
             'Management': ['management', 'manager', 'supervisor', 'director', 'executive', 'lead', 'team lead', 'vp', 'chief']
         }
         
@@ -878,12 +882,20 @@ class JobScraper:
     
 
     
-    def save_to_excel(self, filename="job_listings.xlsx"):
+    def save_to_excel(self, filename="job_listings.xlsx", rejected_titles=None, rejected_employers=None):
         """Save collected data to Excel file"""
         if not self.jobs_data:
             print("\n[WARN] No data to save!")
             return
-        
+            
+        if rejected_titles is None:
+            rejected_titles = ["surrogate"]
+        if rejected_employers is None:
+            rejected_employers = ["navy", "doordash"]
+            
+        rej_titles_lower = [t.lower() for t in rejected_titles]
+        rej_emp_lower = [e.lower() for e in rejected_employers]
+
         # --- Post-Processing: Filtering & Classification ---
         processed_data = []
         unique_hashes = set()
@@ -894,6 +906,18 @@ class JobScraper:
         print(f"\nProcessing {len(self.jobs_data)} collected jobs...")
         
         for job in self.jobs_data:
+            # 0. Rejection Filter
+            t_lower = str(job.get('job_title', '')).lower().strip()
+            c_lower = str(job.get('company', '')).lower().strip()
+            
+            if any(rej in t_lower for rej in rej_titles_lower):
+                print(f"Skipping rejected title: {job.get('job_title')} at {job.get('company')}")
+                continue
+                
+            if any(rej in c_lower for rej in rej_emp_lower):
+                print(f"Skipping rejected employer: {job.get('company')} ({job.get('job_title')})")
+                continue
+
             # 1. Date Filter (Strict 7 days)
             # date_posted is string YYYY-MM-DD or N/A
             d_str = job.get('date_posted', 'N/A')
@@ -959,16 +983,18 @@ class JobScraper:
         """Close the browser"""
         self.driver.quit()
 
-def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, days_ago=None, max_pages=None):
+def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, days_ago=None, max_pages=None, rejected_titles=None, rejected_employers=None):
     """Run the scraping job and return the path to the generated Excel file"""
     
     # Defaults
-    if keywords is None: keywords = ["warehouse", "store", "restaurant", "fast food", "retail", "laborer", "clerk", "security guard", "crew", "cashier", "delivery", "caregiver"]
+    if keywords is None: keywords = ["warehouse", "store", "restaurant", "fast food", "retail", "laborer", "clerk", "security guard", "crew", "cashier", "delivery", "caregiver", "housekeeper", "janitor"]
     if location is None: location = "Redding, CA 96002"
     if radius is None: radius = 15
     if job_types is None: job_types = ["parttime", "fulltime"]
     if days_ago is None: days_ago = 3
     if max_pages is None: max_pages = 5
+    if rejected_titles is None: rejected_titles = ["surrogate"]
+    if rejected_employers is None: rejected_employers = ["navy", "doordash"]
     
     scraper = None
     output_file = None
@@ -1012,7 +1038,7 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")    
         output_file = os.path.join(output_folder, f"redding_jobs_{timestamp}.xlsx")
         
-        scraper.save_to_excel(output_file)
+        scraper.save_to_excel(output_file, rejected_titles=rejected_titles, rejected_employers=rejected_employers)
         return output_file
         
     except Exception as e:

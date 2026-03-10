@@ -27,11 +27,10 @@ def determine_industry(row):
         'Retail': ['retail', 'store', 'cashier', 'shop', 'mart', 'sales associate'],
         'Sales': ['sales', 'representative'],
         'Office': ['office', 'admin', 'clerk', 'receptionist', 'assistant', 'secretary', 'data entry'],
-        'Construction': ['construction', 'laborer', 'carpenter', 'builder', 'site'],
         'Health Care': ['health', 'medical', 'nurse', 'patient', 'care', 'caregiver', 'rn', 'cna', 'clinic', 'hospital'],
         'Driver': ['driver', 'delivery', 'transport', 'truck', 'courier'],
         'Technical': ['technician', 'engineer', 'software', 'developer', 'support', 'it'],
-        'Trades': ['mechanic', 'welder', 'electrician', 'plumber', 'maintenance', 'hvac'],
+        'Trades': ['mechanic', 'welder', 'electrician', 'plumber', 'maintenance', 'hvac', 'construction', 'laborer', 'carpenter', 'builder', 'site'],
         'Management': ['management', 'manager', 'supervisor', 'director', 'executive', 'lead', 'team lead']
     }
     
