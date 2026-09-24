@@ -6,7 +6,7 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title: return ""
@@ -15,6 +15,8 @@ except ImportError:
         return False
     def is_rejected_job(title: str, company: str = "", description: str = "") -> tuple:
         return False, ""
+    def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
+        return "Other"
 
 try:
     from dotenv import load_dotenv
@@ -79,11 +81,15 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if posted_date < cutoff_date:
             continue
 
+        sector = j.get("industry")
+        if not sector or sector == "Other":
+            sector = determine_industry(clean_title, j.get("company", ""), raw_desc)
+
         rows.append({
             "Date Posted": posted_date,
             "Job Title": clean_title,
             "Company": j.get("company", ""),
-            "Sector": j.get("industry", "Other"),
+            "Sector": sector,
             "Location": j.get("location", "Redding, CA"),
             "Pay Rate": j.get("pay") or "N/A",
             "Job Type": j.get("job_type_extracted") or "N/A",

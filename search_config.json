@@ -280,7 +280,21 @@
     "paramedic",
     "optometrist",
     "ophthalmologist",
-    "chiropractor"
+    "chiropractor",
+    "coordinator",
+    "pastor",
+    "ministry",
+    "gestational",
+    "surrogate",
+    "instructor",
+    "adjunct",
+    "accountant",
+    "scientist",
+    "specialist",
+    "arborist",
+    "cota",
+    "financial planner",
+    "preceptor"
   ],
   "rejected_employers": [
     "navy",
@@ -294,130 +308,104 @@
   ],
   "industry_keywords": {
     "Food & Restaurant": [
-      "cook",
-      "prep cook",
-      "line cook",
-      "dishwasher",
-      "server",
-      "busser",
-      "host",
-      "barista",
-      "kitchen"
+      "cook", "prep cook", "line cook", "chef", "baker", "bakery",
+      "dishwasher", "dishwashing", "server", "waiter", "waitress",
+      "waitstaff", "busser", "bussing", "host", "hostess", "barista",
+      "bartender", "bartending", "kitchen", "restaurant", "dining",
+      "catering", "food service", "food prep", "fast food", "deli",
+      "culinary", "diet aid", "dietary", "cafe", "pizzeria", "grill",
+      "crew member", "hot chicken", "burger king", "popeyes",
+      "taco bell", "mcdonald", "subway", "starbucks", "dutch bros",
+      "cake decorator", "in-n-out", "chipotle", "applebee", "bistro",
+      "nutrition service"
     ],
     "Retail & Merchandising": [
-      "cashier",
-      "retail",
-      "stocker",
-      "merchandiser",
-      "store clerk",
-      "associate"
+      "cashier", "retail", "stocker", "stocking", "stock associate",
+      "merchandis", "store clerk", "sales associate", "sales rep",
+      "store associate", "grocery clerk", "produce clerk", "meat clerk",
+      "framer", "framing", "apparel", "checkout", "hobby lobby",
+      "convenience store", "hardware store", "cart attendant",
+      "demonstrator", "club demonstration", "product demo", "costco",
+      "walmart", "target", "home depot", "lowe's", "safeway", "raley",
+      "winco", "grocery outlet", "dollar tree", "dollar general",
+      "ross", "tj maxx", "marshalls", "autozone", "o'reilly",
+      "brand representative", "parts & service rep", "parts specialist"
     ],
     "Warehouse & Logistics": [
-      "warehouse",
-      "material handler",
-      "package handler",
-      "loader",
-      "unloader",
-      "shipping"
+      "warehouse", "material handler", "package handler", "loader",
+      "unloader", "loading", "unloading", "shipping", "receiving",
+      "forklift", "pallet", "freight", "order picker", "picker",
+      "packer", "fulfillment", "distribution center", "logistics",
+      "staging", "dock worker", "parts puller", "puller", "inventory control",
+      "cross-dock", "fedex", "ups", "amazon", "dhl", "ontrac"
     ],
     "Transportation & Delivery": [
-      "delivery",
-      "courier",
-      "van driver",
-      "route driver"
+      "delivery", "courier", "van driver", "route driver", "box truck",
+      "local driver", "truck driver", "transport", "shuttle driver",
+      "non-cdl", "septic truck", "hauling", "driver", "transit driver",
+      "parts delivery", "distributor"
     ],
     "Janitorial & Facilities": [
-      "janitor",
-      "custodian",
-      "cleaner",
-      "housekeeper",
-      "floor technician"
+      "janitor", "custodian", "custodial", "cleaner", "cleaning",
+      "housekeep", "room attendant", "floor tech", "sanitation",
+      "sweeper", "laundry", "commercial clean", "building clean",
+      "evs tech", "environmental services", "disinfect"
     ],
     "Trades & Labor Helpers": [
-      "laborer",
-      "helper",
-      "apprentice",
-      "construction",
-      "maintenance",
-      "carpenter",
-      "painter"
+      "laborer", "general labor", "helper", "apprentice", "construction",
+      "carpenter", "carpentry", "painter", "painting", "maintenance",
+      "mechanic", "auto tech", "automotive tech", "lube tech", "tire tech",
+      "welder", "welding", "installer", "installation", "electrician helper",
+      "plumber helper", "groundskeeper", "landscap", "lawn care",
+      "mitigation", "restoration", "detailer", "detailing", "car wash",
+      "auto body", "window tint", "flagger", "traffic control", "pool tech",
+      "parts washer", "sierra pacific", "mill worker", "sawmill", "labor",
+      "qa tech", "quality assurance tech", "hvac", "coolsys", "servpro"
     ],
     "Healthcare & Caregiving": [
-      "caregiver",
-      "home health aide",
-      "cna",
-      "nursing assistant"
+      "caregiver", "caregiving", "home health", "cna", "nursing assistant",
+      "direct support", "dsp", "personal care", "companion",
+      "home care", "resident assistant", "assisted living", "patient attendant",
+      "sterilization tech", "dental assistant", "visiting angels", "pharmacy tech",
+      "pharmacy liaison", "rx relief", "partners in care", "oak river",
+      "marquis", "patient care"
+    ],
+    "Customer Service & Hospitality": [
+      "customer service", "csr", "call center", "guest service",
+      "front desk", "hotel", "motel", "hospitality", "night auditor",
+      "concierge", "client service", "member service", "intake rep",
+      "service intake", "patient representative", "patient services rep",
+      "towneplace", "my place hotels", "hilton", "marriott", "holiday inn"
     ],
     "Office & Clerical": [
-      "clerk",
-      "receptionist",
-      "assistant",
-      "data entry",
-      "office assistant"
+      "clerk", "receptionist", "office assistant", "administrative assistant",
+      "admin assistant", "data entry", "office clerk", "file clerk",
+      "scheduler", "records clerk", "interpreter", "translator",
+      "bilingual", "job coach", "escrow", "title company", "teller",
+      "financial services assoc", "credit union", "survey rep",
+      "telephone survey", "office support"
+    ],
+    "Childcare & Education Support": [
+      "babysitter", "nanny", "child care", "childcare", "daycare",
+      "preschool aide", "school age child care", "instructional aide",
+      "tutor", "youth", "family advocate"
+    ],
+    "Personal Care & Services": [
+      "hair stylist", "barber", "cosmetolog", "salon", "great clips",
+      "supercuts", "pet bather", "groomer"
     ]
   },
   "keyword_groups": {
-    "Food & Restaurant": [
-      "cook",
-      "prep cook",
-      "line cook",
-      "dishwasher",
-      "server",
-      "busser",
-      "host",
-      "barista",
-      "kitchen"
-    ],
-    "Healthcare & Caregiving": [
-      "caregiver",
-      "home health aide",
-      "cna",
-      "nursing assistant"
-    ],
-    "Janitorial & Facilities": [
-      "janitor",
-      "custodian",
-      "cleaner",
-      "housekeeper",
-      "floor technician"
-    ],
-    "Office & Clerical": [
-      "clerk",
-      "receptionist",
-      "assistant",
-      "data entry",
-      "office assistant"
-    ],
-    "Retail & Merchandising": [
-      "cashier",
-      "retail",
-      "stocker",
-      "merchandiser",
-      "store clerk",
-      "associate"
-    ],
-    "Trades & Labor Helpers": [
-      "laborer",
-      "helper",
-      "apprentice",
-      "construction",
-      "maintenance",
-      "carpenter",
-      "painter"
-    ],
-    "Transportation & Delivery": [
-      "delivery",
-      "courier",
-      "van driver",
-      "route driver"
-    ],
-    "Warehouse & Logistics": [
-      "warehouse",
-      "material handler",
-      "package handler",
-      "loader",
-      "unloader",
-      "shipping"
-    ]
+    "Food & Restaurant": ["cook", "dishwasher", "server", "busser", "host", "barista", "kitchen", "prep cook", "dining"],
+    "Retail & Merchandising": ["cashier", "retail", "stocker", "merchandiser", "store clerk", "sales associate"],
+    "Warehouse & Logistics": ["warehouse", "material handler", "package handler", "loader", "unloader", "shipping", "forklift"],
+    "Transportation & Delivery": ["delivery", "courier", "van driver", "route driver", "driver"],
+    "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician"],
+    "Trades & Labor Helpers": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter", "mechanic", "landscaper"],
+    "Healthcare & Caregiving": ["caregiver", "home health aide", "cna", "nursing assistant", "dsp", "direct support"],
+    "Customer Service & Hospitality": ["customer service", "csr", "guest service", "front desk", "hotel"],
+    "Office & Clerical": ["clerk", "receptionist", "assistant", "data entry", "office assistant", "teller"],
+    "Childcare & Education Support": ["babysitter", "nanny", "child care", "daycare"],
+    "Personal Care & Services": ["hair stylist", "barber", "salon"]
   }
 }

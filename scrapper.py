@@ -215,6 +215,34 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     return False, ""
 
 
+def determine_industry(job_title, company, description=""):
+    title = str(job_title).lower() if job_title else ""
+    comp = str(company).lower() if company else ""
+    desc = str(description).lower() if description else ""
+    t_c = f"{title} {comp}"
+    
+    config = load_search_config()
+    keywords = config.get('industry_keywords', {})
+    
+    # Pass 1: Title + Company
+    for industry, tags in keywords.items():
+        for tag in tags:
+            pattern = r'\b' + re.escape(tag.lower())
+            if re.search(pattern, t_c):
+                return industry
+
+    # Pass 2: Description (duties and context)
+    if desc:
+        for industry, tags in keywords.items():
+            for tag in tags:
+                pattern = r'\b' + re.escape(tag.lower())
+                if re.search(pattern, desc):
+                    return industry
+                    
+    return "Other"
+
+
+
 def extract_pay(text):
     if not text:
         return None
@@ -1041,21 +1069,8 @@ class JobScraper:
         
         time.sleep(random.uniform(2, 5))
     
-    def determine_industry(self, job_title, company):
-        title = str(job_title).lower() if job_title else ""
-        comp = str(company).lower() if company else ""
-        text = f"{title} {comp}"
-        
-        config = load_search_config()
-        keywords = config.get('industry_keywords', {})
-        
-        for industry, tags in keywords.items():
-            for tag in tags:
-                pattern = r'\b' + re.escape(tag.lower()) + r'\b'
-                if re.search(pattern, text):
-                    return industry
-                    
-        return "Other"
+    def determine_industry(self, job_title, company, description=""):
+        return determine_industry(job_title, company, description)
 
     def random_delay(self, min_s=2, max_s=5):
         time.sleep(random.uniform(min_s, max_s))
@@ -2471,6 +2486,7 @@ class JobScraper:
                             print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
                             continue
                         
+                        job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
                         self.jobs_data.append(job_data)
                         self.seen_jobs.add(url)
                         print(f"    -> Extracted: {job_data['job_title']} at {job_data['company']}")
@@ -2949,6 +2965,7 @@ class JobScraper:
                                     print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
                                     continue
 
+                                job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
                                 self.jobs_data.append(job_data)
                                 print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
                                 if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")

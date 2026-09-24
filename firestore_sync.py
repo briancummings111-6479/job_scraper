@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title:
@@ -24,6 +24,9 @@ except ImportError:
 
     def is_rejected_job(title: str, company: str = "", description: str = "") -> tuple:
         return False, ""
+
+    def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
+        return "Other"
 
 def get_firestore_client():
     if firebase_admin._apps:
@@ -184,12 +187,16 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
 
         final_desc = raw_desc if raw_desc and raw_desc != "N/A" else (parsed_attrs.get("description") or "N/A")
 
+        sector = job.get("industry")
+        if not sector or sector == "Other":
+            sector = determine_industry(clean_title, job.get("company", ""), final_desc)
+
         payload = {
             "title": clean_title,
             "company": job.get("company", "").strip(),
             "location": job.get("location", "Redding, CA").strip(),
-            "sector": job.get("industry", "Other"),
-            "category": job.get("industry", "Other"),
+            "sector": sector,
+            "category": sector,
             "pay": job.get("pay") or "N/A",
             "jobType": job.get("job_type_extracted") or "N/A",
             "schedule": job.get("shift_schedule") or "N/A",

@@ -1,7 +1,7 @@
 import sys
 import argparse
 from firestore_sync import get_firestore_client
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
 
 def cleanup_jobs(dry_run=True):
     db = get_firestore_client()
@@ -10,7 +10,7 @@ def cleanup_jobs(dry_run=True):
     print(f"Total documents found in 'jobs' collection: {len(docs)}")
     
     to_delete = []
-    to_update_title = []
+    to_update = []
     retained = []
 
     for d in docs:
@@ -28,23 +28,38 @@ def cleanup_jobs(dry_run=True):
             reason = "Expired job listing" if is_exp else rej_reason
             to_delete.append((d.id, raw_title, company, reason))
         else:
+            fields_to_update = {}
             if raw_title != cleaned_title:
-                to_update_title.append((d.id, raw_title, cleaned_title))
-            retained.append((d.id, cleaned_title, company))
+                fields_to_update['title'] = cleaned_title
+
+            current_sector = data.get('sector')
+            new_sector = determine_industry(cleaned_title, company, desc)
+            if current_sector != new_sector or not data.get('category'):
+                fields_to_update['sector'] = new_sector
+                fields_to_update['category'] = new_sector
+
+            if fields_to_update:
+                to_update.append((d.id, fields_to_update, cleaned_title, current_sector, new_sector))
+
+            retained.append((d.id, cleaned_title, company, new_sector))
 
     print(f"\n--- Scan Results ---")
     print(f"Jobs to be DELETED (Expired or Non-Entry-Level): {len(to_delete)}")
-    print(f"Jobs to have TITLE CLEANED (Strip '- job post'): {len(to_update_title)}")
+    print(f"Jobs to be UPDATED (Clean Title / Update Sector): {len(to_update)}")
     print(f"Jobs to be RETAINED: {len(retained)}")
 
     print("\nSample Jobs to Delete:")
     for item in to_delete[:10]:
         print(f"  - [{item[3]}] {item[1]} at {item[2]} (id: {item[0]})")
 
+    print("\nSample Jobs to Update (Sector/Title):")
+    for item in to_update[:10]:
+        print(f"  - {item[2]}: {item[3]} -> {item[4]} (fields: {list(item[1].keys())})")
+
     if dry_run:
         print("\n[DRY RUN COMPLETE] No changes were written to Firestore.")
         print("To apply these changes, run with '--execute'.")
-        return len(to_delete), len(to_update_title)
+        return len(to_delete), len(to_update)
 
     # Perform deletion in batches
     print(f"\n[EXECUTING] Deleting {len(to_delete)} rejected/expired documents...")
@@ -66,15 +81,15 @@ def cleanup_jobs(dry_run=True):
         batch.commit()
     print(f"Successfully deleted {del_total} documents.")
 
-    # Perform title updates in batches
-    print(f"[EXECUTING] Updating {len(to_update_title)} titles...")
+    # Perform updates in batches
+    print(f"[EXECUTING] Updating {len(to_update)} documents (titles, sectors)...")
     batch = db.batch()
     b_count = 0
     upd_total = 0
 
-    for doc_id, old_t, new_t in to_update_title:
+    for doc_id, fields, title, _, _ in to_update:
         doc_ref = db.collection('jobs').document(doc_id)
-        batch.update(doc_ref, {'title': new_t})
+        batch.update(doc_ref, fields)
         b_count += 1
         upd_total += 1
         if b_count >= 400:
@@ -84,7 +99,7 @@ def cleanup_jobs(dry_run=True):
 
     if b_count > 0:
         batch.commit()
-    print(f"Successfully updated {upd_total} job titles.")
+    print(f"Successfully updated {upd_total} jobs in Firestore.")
     print("Database cleanup finished.")
     return del_total, upd_total
 
