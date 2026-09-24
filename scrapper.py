@@ -315,14 +315,17 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
     - Screenings (Drug screen, background check) - only if explicitly stated in text
     - Physical demands (lifting requirements) - only if explicitly stated in text
     """
-    combined_text = f"{text or ''} {existing_exp or ''}".lower()
     title = ""
     company = ""
     sector = ""
+    location = ""
     if job_dict:
-        title = str(job_dict.get('title') or job_dict.get('job_title') or '').lower()
-        company = str(job_dict.get('company', '')).lower()
-        sector = str(job_dict.get('sector') or job_dict.get('industry') or '').lower()
+        title = str(job_dict.get('title') or job_dict.get('job_title') or '').strip()
+        company = str(job_dict.get('company', '')).strip()
+        sector = str(job_dict.get('sector') or job_dict.get('industry') or '').strip()
+        location = str(job_dict.get('location', '')).strip()
+
+    combined_text = f"{title} {company} {sector} {location} {text or ''} {existing_exp or ''}".lower()
 
     items = []
 
@@ -346,7 +349,7 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
     has_21_plus = bool(
         re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
         or re.search(r'\b21\+\b', combined_text)
-        or any(k in title for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate"])
+        or any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate"])
     )
     has_16_plus = bool(
         re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
@@ -366,11 +369,11 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         items.append("Must be 18+ years old")
 
     # 3. Driver's License & Transportation
-    if any(k in combined_text for k in ["class a", "cdl-a", "cdl a"]):
+    if re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', combined_text):
         items.append("Commercial Driver's License (CDL-A) required")
-    elif any(k in combined_text for k in ["class b", "cdl-b", "cdl b"]):
+    elif re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text):
         items.append("Commercial Driver's License (CDL-B) required")
-    elif re.search(r'\b(?:driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker"]):
+    elif re.search(r'\b(?:class\s*c|driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker", "transport"]):
         items.append("Valid Driver's License (Class C) required")
 
     # 4. Role-Specific Licenses / Certifications (strictly checked)
@@ -470,8 +473,14 @@ def generate_key_description(title: str, company: str = "", location: str = "Red
     if any(k in t_lower for k in ["welder", "welding", "fabricat"]):
         return "Assists with structural or ornamental metal fabrication, measuring, cutting, and welding tasks. Sets up welding equipment, cleans finished welds, and maintains shop safety standards."
 
-    if any(k in t_lower for k in ["driver", "delivery", "courier", "hauling", "truck"]):
-        return "Operates transport or delivery vehicles safely to distribute goods or equipment to designated locations. Verifies delivery manifests, adheres to scheduled routes, and conducts basic vehicle safety checks."
+    if any(k in t_lower for k in ["class a", "cdl-a", "cdl a", "semi truck", "tractor trailer"]):
+        return "Operates commercial motor vehicles (Class A) safely to transport freight along regional or dedicated routes. Inspects vehicle equipment, secures cargo, maintains electronic logs (ELD), and adheres to all DOT and FMCSA safety regulations."
+
+    if any(k in t_lower for k in ["class b", "cdl-b", "cdl b"]):
+        return "Operates commercial vehicles (Class B) to transport cargo or passengers safely. Performs pre- and post-trip vehicle inspections, adheres to assigned schedules and routes, and follows all transportation safety regulations."
+
+    if any(k in t_lower for k in ["driver", "delivery", "courier", "hauling", "truck", "shuttle", "transport", "sanitation"]):
+        return "Operates transport, utility, or delivery vehicles safely to distribute goods or provide site services. Verifies work manifests, adheres to scheduled routes, and conducts basic vehicle safety checks."
 
     if any(k in t_lower for k in ["receptionist", "office", "clerk", "administrative", "front desk"]):
         return "Greets visitors, answers telephone inquiries, routes calls to appropriate staff, schedules appointments, processes incoming and outgoing mail, and performs general administrative filing and data entry tasks."

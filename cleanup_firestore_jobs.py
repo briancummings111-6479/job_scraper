@@ -66,18 +66,16 @@ def cleanup_jobs(dry_run=True):
                 fields_to_update['requirements'] = new_exp
 
             # Calculate accurate job description (Column J)
-            new_desc = true_desc
-            if not new_desc or is_boilerplate or len(new_desc.strip()) < 30:
-                new_desc = generate_key_description(
-                    title=cleaned_title,
-                    company=company,
-                    location=cleaned_loc,
-                    sector=new_sector,
-                    job_type=data.get('jobType', 'N/A'),
-                    schedule=data.get('schedule') or data.get('shift', 'N/A'),
-                    pay=pay or 'N/A',
-                    requirements=new_exp
-                )
+            new_desc = generate_key_description(
+                title=cleaned_title,
+                company=company,
+                location=cleaned_loc,
+                sector=new_sector,
+                job_type=data.get('jobType', 'N/A'),
+                schedule=data.get('schedule') or data.get('shift', 'N/A'),
+                pay=pay or 'N/A',
+                requirements=new_exp
+            )
 
             if not current_desc or current_desc != new_desc:
                 fields_to_update['description'] = new_desc

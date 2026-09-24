@@ -64,18 +64,16 @@ def cleanup_sheets(dry_run=True):
             job_dict={"title": cleaned_t, "company": company, "sector": sector, "location": cleaned_loc}
         )
         
-        final_desc = true_desc
-        if not final_desc or is_boilerplate or len(final_desc.strip()) < 30:
-            final_desc = generate_key_description(
-                title=cleaned_t,
-                company=company,
-                location=cleaned_loc,
-                sector=sector,
-                job_type=job_type,
-                schedule=schedule,
-                pay=pay,
-                requirements=exp_req
-            )
+        final_desc = generate_key_description(
+            title=cleaned_t,
+            company=company,
+            location=cleaned_loc,
+            sector=sector,
+            job_type=job_type,
+            schedule=schedule,
+            pay=pay,
+            requirements=exp_req
+        )
 
         fresh_auto_rows.append({
             "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
