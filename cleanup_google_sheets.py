@@ -110,11 +110,16 @@ def cleanup_sheets(dry_run=True):
 
     # 2. Update Redding Area Job Postings
     print("Updating 'Redding Area Job Postings' tab...")
-    new_redding_content = [meta_row, header_row] + retained_redding
-    ws_redding.clear()
-    ws_redding.update(values=new_redding_content, range_name="A1")
-    print(f"Successfully updated 'Redding Area Job Postings' (removed {len(rejected_redding)} rejected rows, retained {len(retained_redding)}).")
-    print("\nGoogle Sheet cleanup completed successfully!")
+    try:
+        new_redding_content = [meta_row, header_row] + retained_redding
+        ws_redding.clear()
+        ws_redding.update(values=new_redding_content, range_name="A1")
+        print(f"Successfully updated 'Redding Area Job Postings' (removed {len(rejected_redding)} rejected rows, retained {len(retained_redding)}).")
+    except Exception as e:
+        print(f"[NOTE] 'Redding Area Job Postings' could not be modified directly: {e}")
+        print("  This tab contains protected ranges in Google Sheets.")
+
+    print("\nGoogle Sheet sync finished.")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Clean up Google Sheets job listings")

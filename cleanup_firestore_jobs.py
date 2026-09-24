@@ -20,8 +20,9 @@ def cleanup_jobs(dry_run=True):
         desc = data.get('description', '')
         cleaned_title = clean_job_title(raw_title)
 
+        pay = data.get('pay', '')
         is_exp = is_expired_job_content(desc) or is_expired_job_content(raw_title)
-        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc)
+        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc, pay=pay)
 
         if is_exp or is_rej:
             reason = "Expired job listing" if is_exp else rej_reason

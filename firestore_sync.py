@@ -165,7 +165,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             print(f"[FIRESTORE] Skipping expired job: {clean_title}")
             continue
 
-        is_rej, rej_reason = is_rejected_job(clean_title, job.get("company", ""), raw_desc)
+        is_rej, rej_reason = is_rejected_job(clean_title, job.get("company", ""), raw_desc, pay=job.get("pay", ""))
         if is_rej:
             print(f"[FIRESTORE] Skipping non-entry-level / rejected job: {clean_title} ({rej_reason})")
             continue

@@ -92,6 +92,21 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\blcsw\b",
     r"\blmft\b",
     r"\blpcc\b",
+    r"\blpc\b",
+    r"\blicensed professional counselor\b",
+    r"\bprosthetist\b",
+    r"\borthotist\b",
+    r"\bdietitian\b",
+    r"\bdietician\b",
+    r"\bmedical assistant\b",
+    r"\bveterinarian\b",
+    r"\bdvm\b",
+    r"\blvn\b",
+    r"\blpn\b",
+    r"\blicensed vocational nurse\b",
+    r"\bsuperintendent\b",
+    r"\botr\b",
+    r"\bover[\s\-]the[\s\-]road\b",
     r"\bactive secret clearance\b",
     r"\btop secret clearance\b",
     r"\b(?:[5-9]|\d{2,})\+?\s*years?(?:\s+of)?\s+experience\b",
@@ -113,7 +128,45 @@ def clean_job_title(title: str) -> str:
     cleaned = re.sub(r'^[•▪\-]\s*|^[oO]\s+', '', cleaned)
     return cleaned.strip()
 
-def is_rejected_job(title: str, company: str = "", description: str = "", config: dict = None) -> tuple:
+def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual: float = 75000.0) -> tuple:
+    if not pay_text or pay_text == "N/A":
+        return False, ""
+    s = str(pay_text).lower().replace(",", "")
+
+    # Check 'k' notation: $80k, $100k - $120k
+    k_matches = re.findall(r'(\d+(?:\.\d+)?)\s*k\b', s)
+    if k_matches:
+        vals = [float(x) * 1000 for x in k_matches]
+        if min(vals) >= max_annual:
+            return True, f"Annual pay exceeds entry-level ceiling: ${min(vals):,.0f}"
+
+    is_annual = any(w in s for w in ["year", "yr", "annual", "annually"])
+    
+    # Extract numbers with optional decimals
+    raw_nums = re.findall(r'\$(\d+(?:\.\d+)?)', s)
+    if not raw_nums:
+        raw_nums = re.findall(r'\b(\d+(?:\.\d+)?)\b', s)
+
+    if raw_nums:
+        try:
+            nums = [float(x) for x in raw_nums]
+            min_val = min(nums)
+            max_val = max(nums)
+
+            if min_val >= 1000 or is_annual:
+                if min_val >= max_annual:
+                    return True, f"Annual compensation exceeds entry-level ceiling: ${min_val:,.0f}"
+                elif max_val >= max_annual + 15000:
+                    return True, f"Annual compensation range exceeds entry-level ceiling: up to ${max_val:,.0f}"
+            else:
+                if not is_annual and min_val >= max_hourly:
+                    return True, f"Hourly compensation exceeds entry-level ceiling: ${min_val:.2f}/hr"
+        except:
+            pass
+
+    return False, ""
+
+def is_rejected_job(title: str, company: str = "", description: str = "", config: dict = None, pay: str = "") -> tuple:
     if config is None:
         config = load_search_config()
     
@@ -122,21 +175,42 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     c_lower = str(company or "").lower().strip()
     d_lower = str(description or "").lower()
 
+    # Check pay ceiling
+    if pay and pay != "N/A":
+        exceeds, reason = is_pay_exceeding_ceiling(pay)
+        if exceeds:
+            return True, reason
+
+    # Check rejected employers
     rejected_employers = config.get("rejected_employers", [])
     for rej_emp in rejected_employers:
         if rej_emp.lower() in c_lower:
             return True, f"Rejected employer: {rej_emp}"
 
+    # Check rejected titles
     rejected_titles = config.get("rejected_titles", [])
     for rej_title in rejected_titles:
         r_t = rej_title.lower()
+        if r_t in ["senior", "sr."]:
+            # Disambiguate: protect senior citizen care/living positions
+            if any(elder in t_lower for elder in ["senior care", "senior living", "senior companion", "caregiver", "senior community", "senior services"]):
+                continue
         if re.search(r'\b' + re.escape(r_t) + r'\b', t_lower):
             return True, f"Rejected title keyword: {rej_title}"
 
+    # Check degree & qualification rejections
     comb_text = f"{t_lower}\n{d_lower}"
     for pat in DEGREE_QUALIFICATION_REJECTIONS:
         if re.search(pat, comb_text, re.IGNORECASE):
             return True, f"Non-entry-level requirement matched pattern: {pat}"
+
+    # Check pay ceiling from description if not passed explicitly
+    if not pay and d_lower:
+        desc_pay = extract_pay(description)
+        if desc_pay:
+            exceeds, reason = is_pay_exceeding_ceiling(desc_pay)
+            if exceeds:
+                return True, reason
 
     return False, ""
 
@@ -2388,7 +2462,7 @@ class JobScraper:
                             if age:
                                 job_data["experience"] = f"{age}+ years old"
 
-                        is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""))
+                        is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""), pay=job_data.get("pay", ""))
                         if is_rej:
                             print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                             continue
@@ -2866,7 +2940,7 @@ class JobScraper:
                                             break
 
                                 # Filter non-entry-level / rejected positions
-                                is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''))
+                                is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''))
                                 if is_rej:
                                     print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                                     continue
@@ -2944,8 +3018,8 @@ class JobScraper:
             if is_expired_job_content(job.get('description', '')) or is_expired_job_content(job.get('job_title', '')):
                 continue
 
-            # Check rejection criteria (titles, employers, degree/qualification requirements)
-            is_rej, _ = is_rejected_job(job.get('job_title', ''), job.get('company', ''), job.get('description', ''))
+            # Check rejection criteria (titles, employers, degree/qualification requirements, pay ceiling)
+            is_rej, _ = is_rejected_job(job.get('job_title', ''), job.get('company', ''), job.get('description', ''), pay=job.get('pay', ''))
             if is_rej:
                 continue
 

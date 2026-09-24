@@ -69,7 +69,7 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if is_expired_job_content(raw_desc) or is_expired_job_content(clean_title):
             continue
 
-        is_rej, _ = is_rejected_job(clean_title, j.get("company", ""), raw_desc)
+        is_rej, _ = is_rejected_job(clean_title, j.get("company", ""), raw_desc, pay=j.get("pay", ""))
         if is_rej:
             continue
 
