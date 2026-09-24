@@ -1,7 +1,7 @@
 import sys
 import argparse
 from firestore_sync import get_firestore_client
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
 
 def cleanup_jobs(dry_run=True):
     db = get_firestore_client()
@@ -37,6 +37,34 @@ def cleanup_jobs(dry_run=True):
             if current_sector != new_sector or not data.get('category'):
                 fields_to_update['sector'] = new_sector
                 fields_to_update['category'] = new_sector
+
+            current_exp = data.get('experience')
+            current_desc = data.get('description')
+
+            # Calculate rich key requirements (Column I)
+            new_exp = extract_key_requirements(
+                text=current_desc if current_desc and current_desc != 'N/A' else '',
+                existing_exp=current_exp,
+                job_dict=data
+            )
+
+            if not current_exp or current_exp == 'N/A' or any(bad in str(current_exp) for bad in ["00+", "40 years", "50+"]) or current_exp != new_exp:
+                fields_to_update['experience'] = new_exp
+                fields_to_update['requirements'] = new_exp
+
+            # Calculate key job description (Column J)
+            if not current_desc or current_desc == 'N/A':
+                new_desc = generate_key_description(
+                    title=cleaned_title,
+                    company=company,
+                    location=data.get('location', 'Redding, CA'),
+                    sector=new_sector,
+                    job_type=data.get('jobType', 'N/A'),
+                    schedule=data.get('schedule') or data.get('shift', 'N/A'),
+                    pay=pay or 'N/A',
+                    requirements=new_exp
+                )
+                fields_to_update['description'] = new_desc
 
             if fields_to_update:
                 to_update.append((d.id, fields_to_update, cleaned_title, current_sector, new_sector))

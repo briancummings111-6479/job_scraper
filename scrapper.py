@@ -241,7 +241,142 @@ def determine_industry(job_title, company, description=""):
                     
     return "Other"
 
+def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
+    """
+    Extracts, summarizes, and structures key entry-level qualification requirements:
+    - Experience level (No experience / On-the-job training vs 1-2 years preferred)
+    - Minimum age (18+, 21+, or 16+ youth)
+    - Driver's License & endorsements (Class C, CDL-A, CDL-B)
+    - Role-specific certifications (CPR, Food Handler, ServSafe, Forklift, Guard card, Cosmetology, etc.)
+    - Education (High School Diploma / GED / None required)
+    - Screenings (Drug screen, background check)
+    - Physical demands (lifting requirements, standing)
+    """
+    combined_text = f"{text or ''} {existing_exp or ''}".lower()
+    title = ""
+    company = ""
+    sector = ""
+    if job_dict:
+        title = str(job_dict.get('title', '')).lower()
+        company = str(job_dict.get('company', '')).lower()
+        sector = str(job_dict.get('sector', '')).lower()
+        combined_text += f" {title} {company} {sector}"
 
+    items = []
+
+    # 1. Experience & Training
+    if any(p in combined_text for p in ["no experience required", "no experience necessary", "no prior experience", "will train", "training provided", "entry level", "entry-level", "paid training"]):
+        items.append("Entry-level (no experience required; on-the-job training provided)")
+    else:
+        exp_m = re.search(r'\b([1-4])\+?\s*(?:to\s*[2-5])?\s*years?(?:\s+of)?\s+(?:relevant\s+|related\s+|prior\s+)?experience\b', combined_text)
+        if exp_m:
+            items.append(f"{exp_m.group(0).strip().capitalize()}")
+        elif existing_exp and str(existing_exp).strip() not in ["N/A", "None", ""]:
+            clean_existing = str(existing_exp).strip()
+            if not any(bad in clean_existing for bad in ["00+", "40 years", "50+"]):
+                items.append(clean_existing)
+            else:
+                items.append("Entry-level / Prior experience preferred")
+        else:
+            items.append("Entry-level / Prior experience preferred but not required")
+
+    # 2. Minimum Age & Youth
+    if re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*21(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or "21+" in combined_text:
+        items.append("Must be 21+ years old")
+    elif re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*16(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or any(w in combined_text for w in ["minor", "youth", "teen", "16+"]):
+        items.append("Youth-friendly (Age 16+)")
+    elif re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*18(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or "18+" in combined_text:
+        items.append("Must be 18+ years old")
+    elif job_dict and job_dict.get("minAge"):
+        items.append(f"Must be {job_dict['minAge']}+ years old")
+    else:
+        items.append("Must be 18+ years old")
+
+    # 3. Driver's License & Transportation
+    if any(k in combined_text for k in ["class a", "cdl-a", "cdl a"]):
+        items.append("Commercial Driver's License (CDL-A) required")
+    elif any(k in combined_text for k in ["class b", "cdl-b", "cdl b"]):
+        items.append("Commercial Driver's License (CDL-B) required")
+    elif any(k in combined_text for k in ["driver's license", "drivers license", "valid driver", "clean dmv", "clean driving record"]) or any(k in title for k in ["driver", "delivery", "courier", "shuttle", "hauling", "transit", "truck"]):
+        items.append("Valid Driver's License (Class C) required")
+    elif job_dict and job_dict.get("requiresDriverLicense"):
+        dl_type = job_dict.get("driverLicenseType", "Class C (Standard)")
+        items.append(f"Valid Driver's License required ({dl_type})")
+
+    # 4. Role-Specific Licenses / Certifications
+    if "forklift" in combined_text:
+        items.append("Forklift certification preferred / training provided")
+    if any(k in combined_text for k in ["hair stylist", "barber", "cosmetolog"]):
+        items.append("Cosmetology or Barbering License required")
+    if any(k in combined_text for k in ["flagger", "traffic control"]):
+        items.append("Flagger Certification required / provided")
+    if any(k in combined_text for k in ["cna", "nursing assistant"]):
+        items.append("Active CNA certification required")
+    if "dental assistant" in combined_text:
+        items.append("Dental Assistant training / RDA preferred")
+    if "welder" in combined_text or "welding" in combined_text:
+        items.append("Welding experience / certification preferred")
+    if any(k in combined_text for k in ["cpr", "first aid", "bls"]):
+        items.append("CPR / First Aid certification required/preferred")
+    if any(k in combined_text for k in ["food handler", "servsafe", "food safety"]):
+        items.append("Food Handler card / ServSafe required")
+    if "guard card" in combined_text:
+        items.append("Security Guard Card required")
+
+    # 5. Education
+    if any(p in combined_text for p in ["high school diploma", "ged", "high school equivalent", "hs diploma"]) or (job_dict and job_dict.get("requiresHsDiplomaOrGed")):
+        items.append("High School Diploma or GED required")
+    elif any(p in combined_text for p in ["no diploma required", "no degree required"]):
+        items.append("No High School Diploma or Degree required")
+    elif any(k in sector for k in ["office", "clerical", "clerk", "teller", "accounting"]):
+        items.append("High School Diploma or GED preferred")
+
+    # 6. Background Check & Drug Screening
+    if any(p in combined_text for p in ["drug test", "drug screen", "drug-free", "substance screen"]) or (job_dict and job_dict.get("requiresDrugTest")):
+        items.append("Drug screening required")
+    if any(p in combined_text for p in ["background check", "criminal background", "livescan", "fingerprint"]) or (job_dict and job_dict.get("requiresBackgroundCheck")):
+        items.append("Background check required")
+
+    # 7. Physical Demands & Lifting
+    lift_m = re.search(r'\b(?:lift|lifting)\s*(?:up\s*to)?\s*(\d{2,3})\s*(?:lbs|pounds)\b', combined_text)
+    if lift_m:
+        items.append(f"Ability to lift up to {lift_m.group(1)} lbs")
+    elif any(k in sector for k in ["warehouse", "logistics", "trades", "labor"]) or any(k in title for k in ["package handler", "loader", "unloader", "mover", "laborer", "material handler"]):
+        items.append("Ability to lift up to 50 lbs & physical stamina")
+    elif any(k in sector for k in ["food & restaurant", "retail", "hospitality"]) or any(k in title for k in ["server", "cashier", "cook", "dishwasher", "custodian", "cleaner"]):
+        items.append("Prolonged standing & walking")
+
+    return "; ".join(items) if items else "Entry-level; Training provided"
+
+def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
+    """
+    Generates an informative, professional description summary when a full raw description is unavailable.
+    Ensures Column J is never blank and highlights key job and employer context.
+    """
+    parts = []
+    comp_str = f" with {company}" if company and company != "N/A" else ""
+    loc_str = f" in {location}" if location and location != "N/A" else ""
+    parts.append(f"{title} position{comp_str}{loc_str}.")
+
+    details = []
+    if sector and sector != "Other":
+        details.append(f"Industry Sector: {sector}")
+    if job_type and job_type != "N/A":
+        details.append(f"Employment Type: {job_type}")
+    if schedule and schedule != "N/A":
+        details.append(f"Schedule: {schedule}")
+    if pay and pay != "N/A":
+        details.append(f"Compensation: {pay}")
+
+    if details:
+        parts.append(" | ".join(details) + ".")
+
+    if requirements and requirements != "N/A":
+        parts.append(f"Key Requirements: {requirements}.")
+    else:
+        parts.append("Key Requirements: Entry-level position, on-the-job training provided.")
+
+    return " ".join(parts)
 
 def extract_pay(text):
     if not text:
@@ -2261,6 +2396,7 @@ class JobScraper:
                                     
                                 category = determine_industry_from_section(section, title, company)
                                 
+                                exp_info = extract_key_requirements(text=block, existing_exp=reqs)
                                 page_jobs.append({
                                     "source": source,
                                     "job_title": title,
@@ -2269,7 +2405,9 @@ class JobScraper:
                                     "pay": pay,
                                     "job_type_extracted": job_type,
                                     "shift_schedule": shift,
-                                    "experience": reqs,
+                                    "experience": exp_info,
+                                    "requirements": exp_info,
+                                    "description": block,
                                     "date_posted": date_posted_str,
                                     "job_url": job_url,
                                     "industry": category,
@@ -2299,6 +2437,20 @@ class JobScraper:
             return cleaned_pdf_jobs
             
         for job in cleaned_pdf_jobs:
+            exp_val = extract_key_requirements(text=job.get("description", ""), existing_exp=job.get("experience", ""), job_dict=job)
+            desc_val = job.get("description")
+            if not desc_val or desc_val == "N/A":
+                desc_val = generate_key_description(
+                    title=job["job_title"],
+                    company=job["company"],
+                    location=job["location"],
+                    sector=job["industry"],
+                    job_type=job["job_type_extracted"],
+                    schedule=job["shift_schedule"],
+                    pay=job["pay"],
+                    requirements=exp_val
+                )
+
             job_data = {
                 "source": job["source"],
                 "job_title": job["job_title"],
@@ -2307,7 +2459,9 @@ class JobScraper:
                 "pay": job["pay"],
                 "job_type_extracted": job["job_type_extracted"],
                 "shift_schedule": job["shift_schedule"],
-                "experience": job["experience"],
+                "experience": exp_val,
+                "requirements": exp_val,
+                "description": desc_val,
                 "date_posted": job["date_posted"],
                 "job_url": job["job_url"],
                 "industry": job["industry"],
@@ -2447,13 +2601,17 @@ class JobScraper:
                             ".job-description",
                             "div[itemprop='description']",
                             "section.job-description",
-                            ".snag-job-description"
+                            ".snag-job-description",
+                            "div[class*='JobDescription']",
+                            "div[class*='job-description']",
+                            "div[class*='description']",
+                            "section[class*='description']"
                         ]
                         for d_sel in desc_selectors:
                             try:
                                 desc_elem = main_content.find_element(By.CSS_SELECTOR, d_sel)
                                 d_text = desc_elem.text.strip()
-                                if d_text:
+                                if d_text and len(d_text) > 30:
                                     full_desc = d_text
                                     break
                             except:
@@ -2473,9 +2631,29 @@ class JobScraper:
                                 print(f"    [SKIP] Description indicates expired: {url}")
                                 continue
                             job_data["description"] = full_desc
-                            age = self.extract_min_age(full_desc)
-                            if age:
-                                job_data["experience"] = f"{age}+ years old"
+
+                        job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
+
+                        # Extract structured key requirements for Column I
+                        job_data["experience"] = extract_key_requirements(
+                            text=full_desc,
+                            existing_exp=job_data.get("experience"),
+                            job_dict=job_data
+                        )
+                        job_data["requirements"] = job_data["experience"]
+
+                        # Ensure Column J has key job description information
+                        if not job_data.get("description") or job_data["description"] == "N/A":
+                            job_data["description"] = generate_key_description(
+                                title=job_data["job_title"],
+                                company=job_data["company"],
+                                location=job_data["location"],
+                                sector=job_data["industry"],
+                                job_type=job_data.get("job_type_extracted", "N/A"),
+                                schedule=job_data.get("shift_schedule", "N/A"),
+                                pay=job_data.get("pay", "N/A"),
+                                requirements=job_data["experience"]
+                            )
 
                         is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""), pay=job_data.get("pay", ""))
                         if is_rej:
@@ -2485,8 +2663,6 @@ class JobScraper:
                         if self.is_duplicate(job_data):
                             print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
                             continue
-                        
-                        job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
                         self.jobs_data.append(job_data)
                         self.seen_jobs.add(url)
                         print(f"    -> Extracted: {job_data['job_title']} at {job_data['company']}")
@@ -2935,6 +3111,15 @@ class JobScraper:
                                 except:
                                     pass
 
+                                qual_text = ""
+                                try:
+                                    qual_elems = self.driver.find_elements(By.CSS_SELECTOR, "div#qualificationsSection li, div[data-testid='qualifications'] li")
+                                    if qual_elems:
+                                        qual_text = "; ".join(q.text.strip() for q in qual_elems if q.text.strip())
+                                except:
+                                    pass
+
+                                full_context = f"{description} {qual_text}".strip()
                                 if description:
                                     job_data['description'] = description
                                     if not job_data['pay']:
@@ -2944,28 +3129,38 @@ class JobScraper:
                                     if not job_data['shift_schedule']:
                                         job_data['shift_schedule'] = self.extract_shift(description)
 
-                                    exp_patterns = [
-                                        r'(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)',
-                                        r'(\d+[\+]?\s*(?:to\s+\d+)?\s*years?)',
-                                        r'experience:\s*(\d+[\+]?\s*(?:-\s*\d+)?\s*years?)'
-                                    ]
-                                    for pattern in exp_patterns:
-                                        exp_match = re.search(pattern, description, re.IGNORECASE)
-                                        if exp_match:
-                                            job_data['experience'] = exp_match.group(1).strip()
-                                            break
+                                job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
 
+                                # Extract structured key requirements for Column I
+                                job_data['experience'] = extract_key_requirements(
+                                    text=full_context,
+                                    existing_exp=qual_text,
+                                    job_dict=job_data
+                                )
+                                job_data['requirements'] = job_data['experience']
+
+                                # Ensure Column J has key job description information
+                                if not job_data.get('description') or job_data['description'] == 'N/A':
+                                    job_data['description'] = generate_key_description(
+                                        title=job_data['job_title'],
+                                        company=job_data['company'],
+                                        location=job_data['location'],
+                                        sector=job_data['industry'],
+                                        job_type=job_data.get('job_type_extracted', 'N/A'),
+                                        schedule=job_data.get('shift_schedule', 'N/A'),
+                                        pay=job_data.get('pay', 'N/A'),
+                                        requirements=job_data['experience']
+                                    )
                                 # Filter non-entry-level / rejected positions
                                 is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''))
                                 if is_rej:
                                     print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                                     continue
-                                
+
                                 if self.is_duplicate(job_data):
                                     print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
                                     continue
 
-                                job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
                                 self.jobs_data.append(job_data)
                                 print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
                                 if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
@@ -3067,7 +3262,23 @@ class JobScraper:
                 except:
                     pass
             
-            job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'))
+            job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'), job.get('description', ''))
+            job['experience'] = extract_key_requirements(
+                text=job.get('description', ''),
+                existing_exp=job.get('experience', ''),
+                job_dict=job
+            )
+            if not job.get('description') or job['description'] == 'N/A':
+                job['description'] = generate_key_description(
+                    title=job.get('job_title', ''),
+                    company=job.get('company', ''),
+                    location=job.get('location', 'Redding, CA'),
+                    sector=job['industry'],
+                    job_type=job.get('job_type_extracted', 'N/A'),
+                    schedule=job.get('shift_schedule', 'N/A'),
+                    pay=job.get('pay', 'N/A'),
+                    requirements=job['experience']
+                )
             
             t = str(job.get('job_title', '')).lower().strip()
             c = str(job.get('company', '')).lower().strip()
@@ -3110,7 +3321,7 @@ class JobScraper:
             'pay': 'Pay Rate',
             'job_type_extracted': 'Job Type',
             'shift_schedule': 'Schedule / Shift',
-            'experience': 'Requirements / Notes',
+            'experience': 'Experience / Requirements',
             'description': 'Job Description',
             'source': 'Source',
             'job_url': 'Application Link'

@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title:
@@ -27,6 +27,12 @@ except ImportError:
 
     def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
         return "Other"
+
+    def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
+        return existing_exp if existing_exp and existing_exp != "N/A" else "Entry-level / No experience required"
+
+    def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
+        return f"{title} position at {company} in {location}."
 
 def get_firestore_client():
     if firebase_admin._apps:
@@ -191,6 +197,24 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         if not sector or sector == "Other":
             sector = determine_industry(clean_title, job.get("company", ""), final_desc)
 
+        exp_req = extract_key_requirements(
+            text=final_desc,
+            existing_exp=job.get("experience") or job.get("requirements"),
+            job_dict=parsed_attrs
+        )
+
+        if not final_desc or final_desc == "N/A":
+            final_desc = generate_key_description(
+                title=clean_title,
+                company=job.get("company", ""),
+                location=job.get("location", "Redding, CA"),
+                sector=sector,
+                job_type=job.get("job_type_extracted") or "N/A",
+                schedule=job.get("shift_schedule") or "N/A",
+                pay=job.get("pay") or "N/A",
+                requirements=exp_req
+            )
+
         payload = {
             "title": clean_title,
             "company": job.get("company", "").strip(),
@@ -201,8 +225,8 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             "jobType": job.get("job_type_extracted") or "N/A",
             "schedule": job.get("shift_schedule") or "N/A",
             "shift": job.get("shift_schedule") or "N/A",
-            "experience": job.get("experience") or "N/A",
-            "requirements": job.get("experience") or "N/A",
+            "experience": exp_req,
+            "requirements": exp_req,
             "description": final_desc,
             "jobUrl": job.get("job_url") or "",
             "url": job.get("job_url") or "",

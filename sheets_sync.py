@@ -6,7 +6,7 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title: return ""
@@ -17,6 +17,10 @@ except ImportError:
         return False, ""
     def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
         return "Other"
+    def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
+        return existing_exp if existing_exp and existing_exp != "N/A" else "Entry-level / No experience required"
+    def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
+        return f"{title} position at {company} in {location}."
 
 try:
     from dotenv import load_dotenv
@@ -85,6 +89,25 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if not sector or sector == "Other":
             sector = determine_industry(clean_title, j.get("company", ""), raw_desc)
 
+        exp_req = extract_key_requirements(
+            text=raw_desc,
+            existing_exp=j.get("experience") or j.get("requirements"),
+            job_dict=j
+        )
+
+        final_desc = raw_desc
+        if not final_desc or str(final_desc).strip() in ["N/A", "None", ""]:
+            final_desc = generate_key_description(
+                title=clean_title,
+                company=j.get("company", ""),
+                location=j.get("location", "Redding, CA"),
+                sector=sector,
+                job_type=j.get("job_type_extracted") or "N/A",
+                schedule=j.get("shift_schedule") or "N/A",
+                pay=j.get("pay") or "N/A",
+                requirements=exp_req
+            )
+
         rows.append({
             "Date Posted": posted_date,
             "Job Title": clean_title,
@@ -94,8 +117,8 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "Pay Rate": j.get("pay") or "N/A",
             "Job Type": j.get("job_type_extracted") or "N/A",
             "Schedule / Shift": j.get("shift_schedule") or "N/A",
-            "Experience / Requirements": j.get("experience") or "N/A",
-            "Job Description": raw_desc if raw_desc else "N/A",
+            "Experience / Requirements": exp_req,
+            "Job Description": final_desc,
             "Application Link": j.get("job_url") or "",
             "Source": j.get("source") or "Direct"
         })

@@ -5,7 +5,7 @@ import pandas as pd
 import gspread
 import sheets_sync
 import firestore_sync
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description
 
 SHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
 
@@ -34,17 +34,42 @@ def cleanup_sheets(dry_run=True):
     fresh_auto_rows = []
     for d in fs_docs:
         j = d.to_dict()
+        title = j.get("title", "")
+        company = j.get("company", "")
+        sector = j.get("sector") or j.get("category") or "Other"
+        location = j.get("location", "Redding, CA")
+        pay = j.get("pay") or "N/A"
+        job_type = j.get("jobType") or "N/A"
+        schedule = j.get("schedule") or j.get("shift") or "N/A"
+        raw_desc = str(j.get("description") or "").strip()
+        raw_exp = str(j.get("requirements") or j.get("experience") or "").strip()
+
+        exp_req = extract_key_requirements(text=raw_desc if raw_desc != "N/A" else "", existing_exp=raw_exp, job_dict=j)
+        
+        final_desc = raw_desc
+        if not final_desc or final_desc in ["N/A", "None", ""]:
+            final_desc = generate_key_description(
+                title=title,
+                company=company,
+                location=location,
+                sector=sector,
+                job_type=job_type,
+                schedule=schedule,
+                pay=pay,
+                requirements=exp_req
+            )
+
         fresh_auto_rows.append({
             "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
-            "Job Title": j.get("title", ""),
-            "Company": j.get("company", ""),
-            "Sector": j.get("sector") or j.get("category") or "Other",
-            "Location": j.get("location", "Redding, CA"),
-            "Pay Rate": j.get("pay") or "N/A",
-            "Job Type": j.get("jobType") or "N/A",
-            "Schedule / Shift": j.get("schedule") or j.get("shift") or "N/A",
-            "Experience / Requirements": j.get("requirements") or j.get("experience") or "N/A",
-            "Job Description": j.get("description") or "N/A",
+            "Job Title": title,
+            "Company": company,
+            "Sector": sector,
+            "Location": location,
+            "Pay Rate": pay,
+            "Job Type": job_type,
+            "Schedule / Shift": schedule,
+            "Experience / Requirements": exp_req,
+            "Job Description": final_desc,
             "Application Link": j.get("jobUrl") or j.get("url") or "",
             "Source": j.get("source") or "Direct"
         })
