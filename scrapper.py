@@ -2716,27 +2716,41 @@ class JobScraper:
                             except: pass
 
                         full_desc = ""
-                        desc_selectors = [
-                            "[data-snagtag='job-description']",
-                            "#job-description",
-                            ".job-description",
-                            "div[itemprop='description']",
-                            "section.job-description",
-                            ".snag-job-description",
-                            "div[class*='JobDescription']",
-                            "div[class*='job-description']",
-                            "div[class*='description']",
-                            "section[class*='description']"
-                        ]
-                        for d_sel in desc_selectors:
-                            try:
-                                desc_elem = main_content.find_element(By.CSS_SELECTOR, d_sel)
-                                d_text = desc_elem.text.strip()
+                        # Try heading-based container extraction first (Snagajob Angular template)
+                        try:
+                            desc_headings = main_content.find_elements(By.XPATH, ".//h2[contains(text(), 'Job Description')] | .//h3[contains(text(), 'Job Description')] | .//div[contains(text(), 'About this job')]")
+                            for dh in desc_headings:
+                                parent_box = dh.find_element(By.XPATH, "..")
+                                d_text = parent_box.text.strip()
+                                d_text = re.sub(r'^(?:About this job\s*|Job Description\s*)+', '', d_text, flags=re.IGNORECASE).strip()
                                 if d_text and len(d_text) > 30:
                                     full_desc = d_text
                                     break
-                            except:
-                                continue
+                        except:
+                            pass
+
+                        if not full_desc:
+                            desc_selectors = [
+                                "[data-snagtag='job-description']",
+                                "#job-description",
+                                ".job-description",
+                                "div[itemprop='description']",
+                                "section.job-description",
+                                ".snag-job-description",
+                                "div[class*='JobDescription']",
+                                "div[class*='job-description']",
+                                "div[class*='description']",
+                                "section[class*='description']"
+                            ]
+                            for d_sel in desc_selectors:
+                                try:
+                                    desc_elem = main_content.find_element(By.CSS_SELECTOR, d_sel)
+                                    d_text = desc_elem.text.strip()
+                                    if d_text and len(d_text) > 30:
+                                        full_desc = d_text
+                                        break
+                                except:
+                                    continue
 
                         if not full_desc:
                             try:
