@@ -180,7 +180,7 @@ def clean_job_title(title: str) -> str:
     # Fix unicode replacement and special characters
     cleaned = cleaned.replace('\ufffd', ' - ').replace('\u2013', '-').replace('\u2014', '-').replace('\u2019', "'").replace('\u2018', "'").replace('\u201c', '"').replace('\u201d', '"')
     cleaned = re.sub(r'[\r\n\s]*-?\s*job post.*$', '', cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r'^[•▪\-\*oO]\s*', '', cleaned)
+    cleaned = re.sub(r'^[•▪\-\*]\s*|^[oO]\s+', '', cleaned)
     cleaned = re.sub(r'\s*-\s*-+\s*', ' - ', cleaned)
     cleaned = re.sub(r'\s+', ' ', cleaned)
     return cleaned.strip(' -')
@@ -2789,15 +2789,41 @@ class JobScraper:
                         else:
                             job_data["pay"] = "N/A"
 
-                        job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
+                        gemini_res = None
+                        if full_desc and len(full_desc.strip()) > 30:
+                            try:
+                                from gemini_parser import analyze_job_with_gemini
+                                gemini_res = analyze_job_with_gemini(
+                                    title=job_data["job_title"],
+                                    company=job_data["company"],
+                                    location=job_data["location"],
+                                    description_text=full_desc,
+                                    raw_pay=job_data.get("pay", "N/A"),
+                                    raw_type=job_data.get("job_type_extracted", "N/A"),
+                                    raw_schedule=job_data.get("shift_schedule", "N/A")
+                                )
+                            except Exception:
+                                gemini_res = None
 
-                        # Extract structured key requirements for Column I
-                        job_data["experience"] = extract_key_requirements(
-                            text=full_desc,
-                            existing_exp=job_data.get("experience"),
-                            job_dict=job_data
-                        )
-                        job_data["requirements"] = job_data["experience"]
+                        if gemini_res:
+                            if not gemini_res.is_entry_level:
+                                print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
+                                continue
+                            job_data["industry"] = gemini_res.sector
+                            if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and job_data.get("pay") == "N/A":
+                                job_data["pay"] = gemini_res.pay_rate
+                            job_data["experience"] = gemini_res.experience_requirements
+                            job_data["requirements"] = gemini_res.experience_requirements
+                        else:
+                            job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
+
+                            # Extract structured key requirements for Column I
+                            job_data["experience"] = extract_key_requirements(
+                                text=full_desc,
+                                existing_exp=job_data.get("experience"),
+                                job_dict=job_data
+                            )
+                            job_data["requirements"] = job_data["experience"]
 
                         # Ensure Column J has key job description information
                         if not job_data.get("description") or job_data["description"] == "N/A":
@@ -3286,15 +3312,41 @@ class JobScraper:
                                     if not job_data['shift_schedule']:
                                         job_data['shift_schedule'] = self.extract_shift(description)
 
-                                job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
+                                gemini_res = None
+                                if description and len(description.strip()) > 30:
+                                    try:
+                                        from gemini_parser import analyze_job_with_gemini
+                                        gemini_res = analyze_job_with_gemini(
+                                            title=job_data["job_title"],
+                                            company=job_data["company"],
+                                            location=job_data["location"],
+                                            description_text=description,
+                                            raw_pay=job_data.get("pay") or "N/A",
+                                            raw_type=job_data.get("job_type_extracted") or "N/A",
+                                            raw_schedule=job_data.get("shift_schedule") or "N/A"
+                                        )
+                                    except Exception:
+                                        gemini_res = None
 
-                                # Extract structured key requirements for Column I
-                                job_data['experience'] = extract_key_requirements(
-                                    text=full_context,
-                                    existing_exp=qual_text,
-                                    job_dict=job_data
-                                )
-                                job_data['requirements'] = job_data['experience']
+                                if gemini_res:
+                                    if not gemini_res.is_entry_level:
+                                        print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
+                                        continue
+                                    job_data['industry'] = gemini_res.sector
+                                    if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and not job_data.get('pay'):
+                                        job_data['pay'] = gemini_res.pay_rate
+                                    job_data['experience'] = gemini_res.experience_requirements
+                                    job_data['requirements'] = gemini_res.experience_requirements
+                                else:
+                                    job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
+
+                                    # Extract structured key requirements for Column I
+                                    job_data['experience'] = extract_key_requirements(
+                                        text=full_context,
+                                        existing_exp=qual_text,
+                                        job_dict=job_data
+                                    )
+                                    job_data['requirements'] = job_data['experience']
 
                                 # Ensure Column J has key job description information
                                 if not job_data.get('description') or job_data['description'] == 'N/A':

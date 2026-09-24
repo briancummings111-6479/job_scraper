@@ -199,28 +199,61 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower())
         true_desc = "" if is_boilerplate else raw_desc
 
-        sector = job.get("industry")
-        if not sector or sector == "Other":
-            sector = determine_industry(clean_title, job.get("company", ""), true_desc)
+        gemini_res = None
+        if true_desc and len(true_desc) > 30:
+            try:
+                from gemini_parser import analyze_job_with_gemini
+                gemini_res = analyze_job_with_gemini(
+                    title=clean_title,
+                    company=job.get("company", ""),
+                    location=cleaned_loc,
+                    description_text=true_desc,
+                    raw_pay=job.get("pay") or "N/A",
+                    raw_type=job.get("job_type_extracted") or "N/A",
+                    raw_schedule=job.get("shift_schedule") or "N/A"
+                )
+            except Exception:
+                gemini_res = None
 
-        exp_req = extract_key_requirements(
-            text=true_desc,
-            existing_exp=job.get("experience") or job.get("requirements"),
-            job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
-        )
+        if gemini_res:
+            if not gemini_res.is_entry_level:
+                print(f"[FIRESTORE] Skipping rejected job via Gemini: {clean_title} ({gemini_res.rejection_reason})")
+                continue
+            sector = gemini_res.sector
+            if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and (not job.get("pay") or job.get("pay") == "N/A"):
+                job["pay"] = gemini_res.pay_rate
+            exp_req = gemini_res.experience_requirements
+            final_desc = gemini_res.job_description_summary if (not true_desc or len(true_desc) < 30) else true_desc
+            parsed_attrs["requiresDrugTest"] = gemini_res.requires_drug_test
+            parsed_attrs["requiresBackgroundCheck"] = gemini_res.requires_background_check
+            parsed_attrs["requiresDriverLicense"] = gemini_res.requires_driver_license
+            parsed_attrs["driverLicenseType"] = gemini_res.driver_license_type
+            parsed_attrs["requiresHsDiplomaOrGed"] = gemini_res.requires_hs_ged
+            parsed_attrs["minAge"] = gemini_res.min_age
+            parsed_attrs["isYouthFriendly"] = gemini_res.is_youth_friendly
+        else:
+            sector = job.get("industry")
+            if not sector or sector == "Other":
+                sector = determine_industry(clean_title, job.get("company", ""), true_desc)
 
-        final_desc = true_desc
-        if not final_desc or final_desc == "N/A" or len(final_desc.strip()) < 30:
-            final_desc = generate_key_description(
-                title=clean_title,
-                company=job.get("company", ""),
-                location=cleaned_loc,
-                sector=sector,
-                job_type=job.get("job_type_extracted") or "N/A",
-                schedule=job.get("shift_schedule") or "N/A",
-                pay=job.get("pay") or "N/A",
-                requirements=exp_req
+            exp_req = extract_key_requirements(
+                text=true_desc,
+                existing_exp=job.get("experience") or job.get("requirements"),
+                job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
             )
+
+            final_desc = true_desc
+            if not final_desc or final_desc == "N/A" or len(final_desc.strip()) < 30:
+                final_desc = generate_key_description(
+                    title=clean_title,
+                    company=job.get("company", ""),
+                    location=cleaned_loc,
+                    sector=sector,
+                    job_type=job.get("job_type_extracted") or "N/A",
+                    schedule=job.get("shift_schedule") or "N/A",
+                    pay=job.get("pay") or "N/A",
+                    requirements=exp_req
+                )
 
         payload = {
             "title": clean_title,

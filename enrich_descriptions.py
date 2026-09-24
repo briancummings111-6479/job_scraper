@@ -99,13 +99,38 @@ def main():
             to_delete.append((doc_id, title, company, rej_reason))
             continue
 
-        # If retained, update with on-page description and clean requirements
-        sector = determine_industry(title, company, active_desc)
-        exp_req = extract_key_requirements(
-            text=active_desc,
-            existing_exp="",
-            job_dict={"title": title, "company": company, "sector": sector, "location": loc}
-        )
+        # Attempt Gemini semantic analysis if description is present
+        gemini_res = None
+        if active_desc and len(active_desc) > 30:
+            try:
+                from gemini_parser import analyze_job_with_gemini
+                gemini_res = analyze_job_with_gemini(
+                    title=title,
+                    company=company,
+                    location=loc,
+                    description_text=active_desc,
+                    raw_pay=pay or "N/A"
+                )
+            except Exception:
+                gemini_res = None
+
+        if gemini_res:
+            if not gemini_res.is_entry_level:
+                print(f"  -> [DELETE] Rejected via Gemini: {title} ({gemini_res.rejection_reason})")
+                to_delete.append((doc_id, title, company, gemini_res.rejection_reason or "Non-entry level"))
+                continue
+            sector = gemini_res.sector
+            exp_req = gemini_res.experience_requirements
+            gemini_pay = gemini_res.pay_rate
+        else:
+            # If retained, update with on-page description and clean requirements
+            sector = determine_industry(title, company, active_desc)
+            exp_req = extract_key_requirements(
+                text=active_desc,
+                existing_exp="",
+                job_dict={"title": title, "company": company, "sector": sector, "location": loc}
+            )
+            gemini_pay = None
 
         updates = {}
         if on_page_desc and on_page_desc != stored_desc:
@@ -116,6 +141,8 @@ def main():
         if data.get('sector') != sector:
             updates['sector'] = sector
             updates['category'] = sector
+        if gemini_pay and gemini_pay != "N/A" and (not pay or pay == "N/A"):
+            updates['pay'] = gemini_pay
 
         if updates:
             to_update.append((doc_id, updates, title))
