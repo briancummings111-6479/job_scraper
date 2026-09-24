@@ -6,7 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title:
@@ -22,8 +22,14 @@ except ImportError:
                 return True
         return False
 
-    def is_rejected_job(title: str, company: str = "", description: str = "") -> tuple:
+    def is_rejected_job(title: str, company: str = "", description: str = "", pay: str = "", location: str = "") -> tuple:
         return False, ""
+
+    def clean_location_str(loc: str) -> str:
+        return str(loc or "Redding, CA").strip()
+
+    def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
+        return True, str(loc_str or "Redding, CA").strip()
 
     def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
         return "Other"
@@ -76,27 +82,18 @@ def parse_job_requirements(job: dict) -> dict:
 
     # 1. Drug Testing
     requires_drug_test = bool(
-        "drug test" in full_text or 
-        "drug screen" in full_text or 
-        "drug-free" in full_text or
-        "substance screen" in full_text
+        re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', full_text)
     )
 
     # 2. Background Check
     requires_background_check = bool(
-        "background check" in full_text or 
-        "criminal background" in full_text or 
-        "livescan" in full_text or 
-        "fingerprint" in full_text
+        re.search(r'\b(?:background\s*check|criminal\s*background|livescan|fingerprint)\b', full_text)
     )
 
     # 3. Driver's License & CDL
     requires_driver_license = bool(
-        "driver's license" in full_text or 
-        "drivers license" in full_text or 
-        "valid driver" in full_text or 
-        "clean driving record" in full_text or 
-        "cdl" in full_text
+        re.search(r'\b(?:driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record|cdl)\b', full_text)
+        or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker"])
     )
 
     driver_license_type = "None"
@@ -108,21 +105,21 @@ def parse_job_requirements(job: dict) -> dict:
         else:
             driver_license_type = "Class C (Standard)"
 
-    # 4. High School Diploma / GED
+    # 4. High School Diploma / GED (Strict word boundaries)
     requires_hs_ged = bool(
-        "high school diploma" in full_text or 
-        "ged" in full_text or 
-        "high school equivalent" in full_text
+        re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', full_text)
     )
 
-    # 5. Age & Youth Friendly
+    # 5. Age & Youth Friendly (Strict word boundary patterns)
     min_age = 18
-    if "21 years" in full_text or "21 or older" in full_text or "at least 21" in full_text or "21+" in full_text:
+    is_youth_friendly = False
+    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b21\+\b', full_text) or any(k in title.lower() for k in ["bartender", "gaming"]):
         min_age = 21
-    elif "16 years" in full_text or "16 or older" in full_text or "at least 16" in full_text or "16+" in full_text or "minor" in full_text or "youth" in full_text or "teen" in full_text:
+    elif re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b16\+\b', full_text) or any(w in full_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"]):
         min_age = 16
-
-    is_youth_friendly = bool(min_age < 18 or "youth" in full_text or "teen" in full_text or "16+" in full_text or "student" in full_text)
+        is_youth_friendly = True
+    elif re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b18\+\b', full_text):
+        min_age = 18
 
     # 6. Shasta County Neighborhoods / Zones
     neighborhood = None
@@ -169,12 +166,19 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         if not clean_title or clean_title == "N/A":
             continue
 
+        raw_loc = job.get("location", "Redding, CA")
+        cleaned_loc = clean_location_str(raw_loc)
+        is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
+        if not is_shasta:
+            print(f"[FIRESTORE] Skipping out-of-county job: {clean_title} ({loc_reason})")
+            continue
+
         raw_desc = str(job.get("description") or "")
         if is_expired_job_content(raw_desc) or is_expired_job_content(clean_title):
             print(f"[FIRESTORE] Skipping expired job: {clean_title}")
             continue
 
-        is_rej, rej_reason = is_rejected_job(clean_title, job.get("company", ""), raw_desc, pay=job.get("pay", ""))
+        is_rej, rej_reason = is_rejected_job(clean_title, job.get("company", ""), raw_desc, pay=job.get("pay", ""), location=cleaned_loc)
         if is_rej:
             print(f"[FIRESTORE] Skipping non-entry-level / rejected job: {clean_title} ({rej_reason})")
             continue
@@ -183,31 +187,34 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             source=job.get("source", "Web"),
             company=job.get("company", "N/A"),
             title=clean_title,
-            location=job.get("location", "Redding, CA")
+            location=cleaned_loc
         )
 
         doc_ref = db.collection(collection_name).document(doc_id)
         job_copy = dict(job)
         job_copy["job_title"] = clean_title
+        job_copy["location"] = cleaned_loc
         parsed_attrs = parse_job_requirements(job_copy)
 
-        final_desc = raw_desc if raw_desc and raw_desc != "N/A" else (parsed_attrs.get("description") or "N/A")
+        is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower())
+        true_desc = "" if is_boilerplate else raw_desc
 
         sector = job.get("industry")
         if not sector or sector == "Other":
-            sector = determine_industry(clean_title, job.get("company", ""), final_desc)
+            sector = determine_industry(clean_title, job.get("company", ""), true_desc)
 
         exp_req = extract_key_requirements(
-            text=final_desc,
+            text=true_desc,
             existing_exp=job.get("experience") or job.get("requirements"),
-            job_dict=parsed_attrs
+            job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
         )
 
-        if not final_desc or final_desc == "N/A":
+        final_desc = true_desc
+        if not final_desc or final_desc == "N/A" or len(final_desc.strip()) < 30:
             final_desc = generate_key_description(
                 title=clean_title,
                 company=job.get("company", ""),
-                location=job.get("location", "Redding, CA"),
+                location=cleaned_loc,
                 sector=sector,
                 job_type=job.get("job_type_extracted") or "N/A",
                 schedule=job.get("shift_schedule") or "N/A",
@@ -218,7 +225,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         payload = {
             "title": clean_title,
             "company": job.get("company", "").strip(),
-            "location": job.get("location", "Redding, CA").strip(),
+            "location": cleaned_loc,
             "sector": sector,
             "category": sector,
             "pay": job.get("pay") or "N/A",

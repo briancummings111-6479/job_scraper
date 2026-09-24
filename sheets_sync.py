@@ -6,15 +6,19 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
 except ImportError:
     def clean_job_title(title: str) -> str:
         if not title: return ""
         return re.sub(r'[\r\n\s]*-?\s*job post.*$', '', str(title), flags=re.IGNORECASE).strip()
     def is_expired_job_content(text: str) -> bool:
         return False
-    def is_rejected_job(title: str, company: str = "", description: str = "") -> tuple:
+    def is_rejected_job(title: str, company: str = "", description: str = "", pay: str = "", location: str = "") -> tuple:
         return False, ""
+    def clean_location_str(loc: str) -> str:
+        return str(loc or "Redding, CA").strip()
+    def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
+        return True, str(loc_str or "Redding, CA").strip()
     def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
         return "Other"
     def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
@@ -71,11 +75,17 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if not clean_title or clean_title == "N/A":
             continue
 
+        raw_loc = j.get("location", "Redding, CA")
+        cleaned_loc = clean_location_str(raw_loc)
+        is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
+        if not is_shasta:
+            continue
+
         raw_desc = str(j.get("description") or "")
         if is_expired_job_content(raw_desc) or is_expired_job_content(clean_title):
             continue
 
-        is_rej, _ = is_rejected_job(clean_title, j.get("company", ""), raw_desc, pay=j.get("pay", ""))
+        is_rej, _ = is_rejected_job(clean_title, j.get("company", ""), raw_desc, pay=j.get("pay", ""), location=cleaned_loc)
         if is_rej:
             continue
 
@@ -100,7 +110,7 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             final_desc = generate_key_description(
                 title=clean_title,
                 company=j.get("company", ""),
-                location=j.get("location", "Redding, CA"),
+                location=cleaned_loc,
                 sector=sector,
                 job_type=j.get("job_type_extracted") or "N/A",
                 schedule=j.get("shift_schedule") or "N/A",
@@ -113,7 +123,7 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "Job Title": clean_title,
             "Company": j.get("company", ""),
             "Sector": sector,
-            "Location": j.get("location", "Redding, CA"),
+            "Location": cleaned_loc,
             "Pay Rate": j.get("pay") or "N/A",
             "Job Type": j.get("job_type_extracted") or "N/A",
             "Schedule / Shift": j.get("shift_schedule") or "N/A",

@@ -121,12 +121,69 @@ def is_expired_job_content(text: str) -> bool:
             return True
     return False
 
+SHASTA_CITIES = [
+    "redding", "anderson", "shasta lake", "burney", "cottonwood",
+    "palo cedro", "bella vista", "millville", "fall river mills",
+    "mcarthur", "shingletown", "castella", "french gulch", "igo",
+    "ono", "oak run", "round mountain", "montgomery creek", "cassel",
+    "old station", "whitmore", "platina", "hat creek", "lakehead",
+    "keswick", "shasta"
+]
+
+SHASTA_ZIPS = [
+    "96001", "96002", "96003", "96007", "96008", "96011", "96013",
+    "96016", "96019", "96022", "96028", "96033", "96040", "96047",
+    "96049", "96051", "96056", "96062", "96065", "96069", "96070",
+    "96071", "96073", "96084", "96087", "96088", "96089", "96096", "96099"
+]
+
+def clean_location_str(loc: str) -> str:
+    if not loc:
+        return "Redding, CA"
+    # Remove UI artifacts from web scrapers like 'open_in_new'
+    cleaned = re.sub(r'open_in_new|open in new', '', str(loc), flags=re.IGNORECASE)
+    # Replace newlines with comma-space
+    cleaned = re.sub(r'[\r\n]+', ', ', cleaned)
+    cleaned = re.sub(r'\s*,\s*', ', ', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip(' ,')
+    # Standardize 'California' to 'CA'
+    cleaned = re.sub(r'\bCalifornia\b', 'CA', cleaned, flags=re.IGNORECASE)
+    return cleaned if cleaned else "Redding, CA"
+
+def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
+    if not loc_str or str(loc_str).strip() in ["N/A", "None", ""]:
+        return False, "Empty location"
+
+    cleaned_loc = clean_location_str(loc_str)
+    loc_lower = cleaned_loc.lower()
+
+    # 1. Check for Shasta County zip codes
+    for z in SHASTA_ZIPS:
+        if re.search(r'\b' + z + r'\b', loc_lower):
+            return True, cleaned_loc
+
+    # 2. Check for Shasta County city/community names
+    for city in SHASTA_CITIES:
+        if re.search(r'\b' + re.escape(city) + r'\b', loc_lower):
+            return True, cleaned_loc
+
+    # 3. Explicit Shasta County mention
+    if "shasta county" in loc_lower or "shasta county, ca" in loc_lower:
+        return True, cleaned_loc
+
+    return False, f"Out of Shasta County: {cleaned_loc}"
+
 def clean_job_title(title: str) -> str:
     if not title:
         return ""
-    cleaned = re.sub(r'[\r\n\s]*-?\s*job post.*$', '', str(title), flags=re.IGNORECASE)
-    cleaned = re.sub(r'^[•▪\-]\s*|^[oO]\s+', '', cleaned)
-    return cleaned.strip()
+    cleaned = str(title)
+    # Fix unicode replacement and special characters
+    cleaned = cleaned.replace('\ufffd', ' - ').replace('\u2013', '-').replace('\u2014', '-').replace('\u2019', "'").replace('\u2018', "'").replace('\u201c', '"').replace('\u201d', '"')
+    cleaned = re.sub(r'[\r\n\s]*-?\s*job post.*$', '', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'^[•▪\-\*oO]\s*', '', cleaned)
+    cleaned = re.sub(r'\s*-\s*-+\s*', ' - ', cleaned)
+    cleaned = re.sub(r'\s+', ' ', cleaned)
+    return cleaned.strip(' -')
 
 def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual: float = 75000.0) -> tuple:
     if not pay_text or pay_text == "N/A":
@@ -166,10 +223,16 @@ def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual
 
     return False, ""
 
-def is_rejected_job(title: str, company: str = "", description: str = "", config: dict = None, pay: str = "") -> tuple:
+def is_rejected_job(title: str, company: str = "", description: str = "", config: dict = None, pay: str = "", location: str = "") -> tuple:
     if config is None:
         config = load_search_config()
     
+    # Location Check: Must reside in Shasta County, CA
+    if location and str(location).strip() not in ["N/A", "None", ""]:
+        is_shasta, loc_reason = is_shasta_county_location(location)
+        if not is_shasta:
+            return True, loc_reason
+
     t_clean = clean_job_title(title)
     t_lower = t_clean.lower()
     c_lower = str(company or "").lower().strip()
@@ -245,51 +308,61 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
     """
     Extracts, summarizes, and structures key entry-level qualification requirements:
     - Experience level (No experience / On-the-job training vs 1-2 years preferred)
-    - Minimum age (18+, 21+, or 16+ youth)
+    - Minimum age (18+, 21+, or 16+ youth) - only if explicitly stated in text
     - Driver's License & endorsements (Class C, CDL-A, CDL-B)
     - Role-specific certifications (CPR, Food Handler, ServSafe, Forklift, Guard card, Cosmetology, etc.)
-    - Education (High School Diploma / GED / None required)
-    - Screenings (Drug screen, background check)
-    - Physical demands (lifting requirements, standing)
+    - Education (High School Diploma / GED / None required) - only if explicitly stated in text
+    - Screenings (Drug screen, background check) - only if explicitly stated in text
+    - Physical demands (lifting requirements) - only if explicitly stated in text
     """
     combined_text = f"{text or ''} {existing_exp or ''}".lower()
     title = ""
     company = ""
     sector = ""
     if job_dict:
-        title = str(job_dict.get('title', '')).lower()
+        title = str(job_dict.get('title') or job_dict.get('job_title') or '').lower()
         company = str(job_dict.get('company', '')).lower()
-        sector = str(job_dict.get('sector', '')).lower()
-        combined_text += f" {title} {company} {sector}"
+        sector = str(job_dict.get('sector') or job_dict.get('industry') or '').lower()
 
     items = []
 
-    # 1. Experience & Training
-    if any(p in combined_text for p in ["no experience required", "no experience necessary", "no prior experience", "will train", "training provided", "entry level", "entry-level", "paid training"]):
+    # 1. Experience & Training Level
+    if any(p in combined_text for p in ["no experience required", "no experience necessary", "no prior experience", "will train", "training provided", "paid training", "entry level", "entry-level"]):
         items.append("Entry-level (no experience required; on-the-job training provided)")
     else:
         exp_m = re.search(r'\b([1-4])\+?\s*(?:to\s*[2-5])?\s*years?(?:\s+of)?\s+(?:relevant\s+|related\s+|prior\s+)?experience\b', combined_text)
         if exp_m:
-            items.append(f"{exp_m.group(0).strip().capitalize()}")
+            items.append(f"{exp_m.group(0).strip().capitalize()} preferred")
         elif existing_exp and str(existing_exp).strip() not in ["N/A", "None", ""]:
             clean_existing = str(existing_exp).strip()
             if not any(bad in clean_existing for bad in ["00+", "40 years", "50+"]):
                 items.append(clean_existing)
             else:
-                items.append("Entry-level / Prior experience preferred")
+                items.append("Entry-level / No prior experience required")
         else:
-            items.append("Entry-level / Prior experience preferred but not required")
+            items.append("Entry-level / No prior experience required")
 
-    # 2. Minimum Age & Youth
-    if re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*21(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or "21+" in combined_text:
+    # 2. Minimum Age & Youth (Strict regex to avoid matching numbers in pay rates like $16.70 or $21.00)
+    has_21_plus = bool(
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
+        or re.search(r'\b21\+\b', combined_text)
+        or any(k in title for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate"])
+    )
+    has_16_plus = bool(
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
+        or re.search(r'\b16\+\b', combined_text)
+        or any(w in combined_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"])
+    )
+    has_18_plus = bool(
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
+        or re.search(r'\b18\+\b', combined_text)
+    )
+
+    if has_21_plus:
         items.append("Must be 21+ years old")
-    elif re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*16(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or any(w in combined_text for w in ["minor", "youth", "teen", "16+"]):
+    elif has_16_plus:
         items.append("Youth-friendly (Age 16+)")
-    elif re.search(r'\b(?:ages?|at least|minimum age|must be)?\s*18(?:\+| years?| or older|\s*-\s*\d+)?\b', combined_text) or "18+" in combined_text:
-        items.append("Must be 18+ years old")
-    elif job_dict and job_dict.get("minAge"):
-        items.append(f"Must be {job_dict['minAge']}+ years old")
-    else:
+    elif has_18_plus:
         items.append("Must be 18+ years old")
 
     # 3. Driver's License & Transportation
@@ -297,20 +370,17 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         items.append("Commercial Driver's License (CDL-A) required")
     elif any(k in combined_text for k in ["class b", "cdl-b", "cdl b"]):
         items.append("Commercial Driver's License (CDL-B) required")
-    elif any(k in combined_text for k in ["driver's license", "drivers license", "valid driver", "clean dmv", "clean driving record"]) or any(k in title for k in ["driver", "delivery", "courier", "shuttle", "hauling", "transit", "truck"]):
+    elif re.search(r'\b(?:driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker"]):
         items.append("Valid Driver's License (Class C) required")
-    elif job_dict and job_dict.get("requiresDriverLicense"):
-        dl_type = job_dict.get("driverLicenseType", "Class C (Standard)")
-        items.append(f"Valid Driver's License required ({dl_type})")
 
-    # 4. Role-Specific Licenses / Certifications
+    # 4. Role-Specific Licenses / Certifications (strictly checked)
     if "forklift" in combined_text:
         items.append("Forklift certification preferred / training provided")
     if any(k in combined_text for k in ["hair stylist", "barber", "cosmetolog"]):
         items.append("Cosmetology or Barbering License required")
     if any(k in combined_text for k in ["flagger", "traffic control"]):
-        items.append("Flagger Certification required / provided")
-    if any(k in combined_text for k in ["cna", "nursing assistant"]):
+        items.append("Flagger certification required / provided")
+    if any(k in combined_text for k in ["cna", "certified nursing assistant"]):
         items.append("Active CNA certification required")
     if "dental assistant" in combined_text:
         items.append("Dental Assistant training / RDA preferred")
@@ -318,65 +388,106 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         items.append("Welding experience / certification preferred")
     if any(k in combined_text for k in ["cpr", "first aid", "bls"]):
         items.append("CPR / First Aid certification required/preferred")
-    if any(k in combined_text for k in ["food handler", "servsafe", "food safety"]):
-        items.append("Food Handler card / ServSafe required")
+    if any(k in combined_text for k in ["food handler", "servsafe", "food safety cert"]):
+        items.append("Food Handler Card / ServSafe required")
     if "guard card" in combined_text:
         items.append("Security Guard Card required")
 
-    # 5. Education
-    if any(p in combined_text for p in ["high school diploma", "ged", "high school equivalent", "hs diploma"]) or (job_dict and job_dict.get("requiresHsDiplomaOrGed")):
-        items.append("High School Diploma or GED required")
-    elif any(p in combined_text for p in ["no diploma required", "no degree required"]):
-        items.append("No High School Diploma or Degree required")
-    elif any(k in sector for k in ["office", "clerical", "clerk", "teller", "accounting"]):
-        items.append("High School Diploma or GED preferred")
+    # 5. Education (Strict word boundaries to avoid matching substrings like 'packaged' or 'arranged')
+    if re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', combined_text):
+        if re.search(r'\b(?:no\s*diploma|no\s*degree)\b', combined_text):
+            items.append("No High School Diploma or Degree required")
+        elif "preferred" in combined_text and ("diploma" in combined_text or "ged" in combined_text):
+            items.append("High School Diploma or GED preferred")
+        else:
+            items.append("High School Diploma or GED required")
 
-    # 6. Background Check & Drug Screening
-    if any(p in combined_text for p in ["drug test", "drug screen", "drug-free", "substance screen"]) or (job_dict and job_dict.get("requiresDrugTest")):
+    # 6. Background Check & Drug Screening (Explicitly stated only)
+    if re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', combined_text):
         items.append("Drug screening required")
-    if any(p in combined_text for p in ["background check", "criminal background", "livescan", "fingerprint"]) or (job_dict and job_dict.get("requiresBackgroundCheck")):
+    if re.search(r'\b(?:background\s*check|criminal\s*background|livescan|fingerprint)\b', combined_text):
         items.append("Background check required")
 
-    # 7. Physical Demands & Lifting
+    # 7. Physical Demands & Lifting (Explicitly stated only)
     lift_m = re.search(r'\b(?:lift|lifting)\s*(?:up\s*to)?\s*(\d{2,3})\s*(?:lbs|pounds)\b', combined_text)
     if lift_m:
         items.append(f"Ability to lift up to {lift_m.group(1)} lbs")
-    elif any(k in sector for k in ["warehouse", "logistics", "trades", "labor"]) or any(k in title for k in ["package handler", "loader", "unloader", "mover", "laborer", "material handler"]):
-        items.append("Ability to lift up to 50 lbs & physical stamina")
-    elif any(k in sector for k in ["food & restaurant", "retail", "hospitality"]) or any(k in title for k in ["server", "cashier", "cook", "dishwasher", "custodian", "cleaner"]):
-        items.append("Prolonged standing & walking")
 
-    return "; ".join(items) if items else "Entry-level; Training provided"
+    # Deduplicate and return
+    deduped = []
+    for it in items:
+        if it not in deduped:
+            deduped.append(it)
+
+    return "; ".join(deduped) if deduped else "Entry-level / Training provided"
 
 def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
     """
-    Generates an informative, professional description summary when a full raw description is unavailable.
-    Ensures Column J is never blank and highlights key job and employer context.
+    Generates an authentic, informative job duties summary for Column J based on role and sector.
+    Focuses 100% on job responsibilities and daily tasks without duplicating metadata from other columns.
     """
-    parts = []
-    comp_str = f" with {company}" if company and company != "N/A" else ""
-    loc_str = f" in {location}" if location and location != "N/A" else ""
-    parts.append(f"{title} position{comp_str}{loc_str}.")
+    t_lower = str(title or "").lower()
+    c_lower = str(company or "").lower()
+    s_lower = str(sector or "").lower()
 
-    details = []
-    if sector and sector != "Other":
-        details.append(f"Industry Sector: {sector}")
-    if job_type and job_type != "N/A":
-        details.append(f"Employment Type: {job_type}")
-    if schedule and schedule != "N/A":
-        details.append(f"Schedule: {schedule}")
-    if pay and pay != "N/A":
-        details.append(f"Compensation: {pay}")
+    # Role-specific job duties mappings
+    if any(k in t_lower for k in ["cake decorator", "baker", "bakery"]):
+        return "Decorates cakes, pastries, and specialty desserts according to customer requests and display standards. Prepares icings, operates bakery equipment, packages finished goods, and maintains clean, sanitary work areas in compliance with food safety regulations."
+    
+    if any(k in t_lower for k in ["dishwasher", "dish machine", "steward"]):
+        return "Operates commercial dishwashing machinery, cleans and sanitizes pots, pans, glassware, and kitchen utensils. Maintains organized dish pit areas, assists with kitchen trash removal, and ensures sanitation standards are met."
 
-    if details:
-        parts.append(" | ".join(details) + ".")
+    if any(k in t_lower for k in ["cashier", "courtesy clerk", "front end clerk", "grocery clerk"]):
+        return "Operates point-of-sale cash registers, scans items accurately, processes cash and electronic payments, bags merchandise, assists customers with checkout inquiries, and keeps the front-end checkout area clean and stocked."
 
-    if requirements and requirements != "N/A":
-        parts.append(f"Key Requirements: {requirements}.")
-    else:
-        parts.append("Key Requirements: Entry-level position, on-the-job training provided.")
+    if any(k in t_lower for k in ["sales associate", "merchandiser", "retail associate", "store associate", "framer"]):
+        return "Assists retail customers with product selections, provides attentive service, stocks and faces merchandise on sales floor shelves, creates attractive displays, and supports inventory organization and store cleanliness."
 
-    return " ".join(parts)
+    if any(k in t_lower for k in ["waitstaff", "server", "dietary aide", "food server", "dining"]):
+        return "Greets dining guests, takes food and beverage orders, delivers prepared meals promptly, cleans and resets tables, restocks service stations, and maintains a welcoming, sanitary dining environment."
+
+    if any(k in t_lower for k in ["bartender", "bar tender"]):
+        return "Prepares and serves alcoholic and non-alcoholic beverages in accordance with recipes and state liquor laws. Checks patron identification, maintains bar cleanliness, manages beverage inventory, and delivers friendly customer service."
+
+    if any(k in t_lower for k in ["cook", "prep cook", "line cook", "crew member", "team member"]) and ("food" in s_lower or "restaurant" in s_lower or any(r in c_lower for r in ["chicken", "pizza", "burger", "taco", "deli"])):
+        return "Prepares and cooks menu items following established food safety guidelines and recipe recipes. Operates kitchen prep equipment, maintains proper food storage temperatures, and keeps work stations clean and sanitized."
+
+    if any(k in t_lower for k in ["custodian", "janitor", "cleaner", "housekeeper", "housekeeping"]):
+        return "Performs regular cleaning, sanitizing, and maintenance duties throughout facilities. Sweeps, mops, vacuums floors, cleans and restocks restrooms, empties trash receptacles, and ensures a clean, safe environment for visitors and staff."
+
+    if any(k in t_lower for k in ["warehouse", "package handler", "loader", "unloader", "material handler", "stocker"]):
+        return "Handles inbound and outbound inventory, sorts and scans packages, picks and packs customer orders, loads and unloads delivery trailers, and operates hand trucks or material handling equipment safely."
+
+    if any(k in t_lower for k in ["caregiver", "home health aide", "personal care", "resident assistant", "senior care"]):
+        return "Provides compassionate personal care assistance and companionship to clients or residents. Supports daily living routines, monitors safety and comfort, assists with light household tasks, and fosters a positive care environment."
+
+    if any(k in t_lower for k in ["direct support", "job coach", "community engagement", "dsp"]):
+        return "Supports individuals with developmental and intellectual disabilities in building life skills, engaging in vocational activities, participating in community outings, and achieving personal growth goals."
+
+    if any(k in t_lower for k in ["auto body", "mechanic", "lube tech", "technician", "service technician", "installer"]):
+        return "Assists senior technicians with equipment maintenance, vehicle prep, parts assembly, repairs, and installations. Organizes tools, follows safety protocols, and maintains clean, orderly shop and job site conditions."
+
+    if any(k in t_lower for k in ["welder", "welding", "fabricat"]):
+        return "Assists with structural or ornamental metal fabrication, measuring, cutting, and welding tasks. Sets up welding equipment, cleans finished welds, and maintains shop safety standards."
+
+    if any(k in t_lower for k in ["driver", "delivery", "courier", "hauling", "truck"]):
+        return "Operates transport or delivery vehicles safely to distribute goods or equipment to designated locations. Verifies delivery manifests, adheres to scheduled routes, and conducts basic vehicle safety checks."
+
+    if any(k in t_lower for k in ["receptionist", "office", "clerk", "administrative", "front desk"]):
+        return "Greets visitors, answers telephone inquiries, routes calls to appropriate staff, schedules appointments, processes incoming and outgoing mail, and performs general administrative filing and data entry tasks."
+
+    if any(k in t_lower for k in ["customer service", "gaming associate", "intake"]):
+        return "Assists clients and patrons with service requests, answers questions accurately, resolves customer issues, handles transaction records, and promotes a positive customer experience."
+
+    if any(k in t_lower for k in ["hair stylist", "stylist", "barber"]):
+        return "Provides hair cutting, washing, and styling services tailored to client preferences. Consults with clients, cleans and sanitizes styling tools, and maintains an orderly salon work area."
+
+    if any(k in t_lower for k in ["childcare", "teacher aide", "youth", "instructional"]):
+        return "Assists in supervising children during classroom activities, structured play, and meal times. Supports teachers with activity preparation and helps maintain a safe, nurturing learning environment."
+
+    # General fallback tailored by company and title
+    comp_phrase = f" at {company}" if company and company != "N/A" else ""
+    return f"Performs routine duties and operational support for the {title} role{comp_phrase}. Works collaboratively with team members, follows workplace safety procedures, and ensures reliable, quality service."
 
 def extract_pay(text):
     if not text:
@@ -2569,7 +2680,8 @@ class JobScraper:
                         except: pass
                         
                         try:
-                            job_data["location"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='location']").text.strip()
+                            raw_loc = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='location']").text.strip()
+                            job_data["location"] = clean_location_str(raw_loc)
                         except: pass
                         
                         try:
@@ -2655,7 +2767,7 @@ class JobScraper:
                                 requirements=job_data["experience"]
                             )
 
-                        is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""), pay=job_data.get("pay", ""))
+                        is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""), pay=job_data.get("pay", ""), location=job_data.get("location", ""))
                         if is_rej:
                             print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                             continue
@@ -3049,7 +3161,7 @@ class JobScraper:
                                         loc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
                                         specific_location = loc_elem.text.strip()
                                         if specific_location:
-                                            job_data['location'] = specific_location
+                                            job_data['location'] = clean_location_str(specific_location)
                                             break
                                     except:
                                         continue
@@ -3152,7 +3264,7 @@ class JobScraper:
                                         requirements=job_data['experience']
                                     )
                                 # Filter non-entry-level / rejected positions
-                                is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''))
+                                is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''), location=job_data.get('location', ''))
                                 if is_rej:
                                     print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                                     continue
@@ -3230,8 +3342,8 @@ class JobScraper:
             if is_expired_job_content(job.get('description', '')) or is_expired_job_content(job.get('job_title', '')):
                 continue
 
-            # Check rejection criteria (titles, employers, degree/qualification requirements, pay ceiling)
-            is_rej, _ = is_rejected_job(job.get('job_title', ''), job.get('company', ''), job.get('description', ''), pay=job.get('pay', ''))
+            # Check rejection criteria (titles, employers, degree/qualification requirements, pay ceiling, Shasta County location)
+            is_rej, _ = is_rejected_job(job.get('job_title', ''), job.get('company', ''), job.get('description', ''), pay=job.get('pay', ''), location=job.get('location', ''))
             if is_rej:
                 continue
 
@@ -3262,6 +3374,7 @@ class JobScraper:
                 except:
                     pass
             
+            job['location'] = clean_location_str(job.get('location', 'Redding, CA'))
             job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'), job.get('description', ''))
             job['experience'] = extract_key_requirements(
                 text=job.get('description', ''),

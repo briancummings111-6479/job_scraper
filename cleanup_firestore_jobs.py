@@ -1,7 +1,7 @@
 import sys
 import argparse
 from firestore_sync import get_firestore_client
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
 
 def cleanup_jobs(dry_run=True):
     db = get_firestore_client()
@@ -18,11 +18,18 @@ def cleanup_jobs(dry_run=True):
         raw_title = data.get('title', '')
         company = data.get('company', '')
         desc = data.get('description', '')
+        raw_loc = data.get('location', 'Redding, CA')
+        cleaned_loc = clean_location_str(raw_loc)
         cleaned_title = clean_job_title(raw_title)
+
+        is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
+        if not is_shasta:
+            to_delete.append((d.id, raw_title, company, loc_reason))
+            continue
 
         pay = data.get('pay', '')
         is_exp = is_expired_job_content(desc) or is_expired_job_content(raw_title)
-        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc, pay=pay)
+        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc, pay=pay, location=cleaned_loc)
 
         if is_exp or is_rej:
             reason = "Expired job listing" if is_exp else rej_reason
@@ -32,6 +39,9 @@ def cleanup_jobs(dry_run=True):
             if raw_title != cleaned_title:
                 fields_to_update['title'] = cleaned_title
 
+            if raw_loc != cleaned_loc:
+                fields_to_update['location'] = cleaned_loc
+
             current_sector = data.get('sector')
             new_sector = determine_industry(cleaned_title, company, desc)
             if current_sector != new_sector or not data.get('category'):
@@ -39,31 +49,37 @@ def cleanup_jobs(dry_run=True):
                 fields_to_update['category'] = new_sector
 
             current_exp = data.get('experience')
-            current_desc = data.get('description')
+            current_desc = str(data.get('description') or '')
 
-            # Calculate rich key requirements (Column I)
+            is_boilerplate = bool("industry sector:" in current_desc.lower() or "key requirements:" in current_desc.lower() or "position with" in current_desc.lower())
+            true_desc = "" if is_boilerplate else current_desc
+
+            # Calculate rich, non-contradictory key requirements (Column I)
             new_exp = extract_key_requirements(
-                text=current_desc if current_desc and current_desc != 'N/A' else '',
-                existing_exp=current_exp,
-                job_dict=data
+                text=true_desc,
+                existing_exp="",
+                job_dict={"title": cleaned_title, "company": company, "sector": new_sector, "location": cleaned_loc}
             )
 
-            if not current_exp or current_exp == 'N/A' or any(bad in str(current_exp) for bad in ["00+", "40 years", "50+"]) or current_exp != new_exp:
+            if not current_exp or current_exp != new_exp:
                 fields_to_update['experience'] = new_exp
                 fields_to_update['requirements'] = new_exp
 
-            # Calculate key job description (Column J)
-            if not current_desc or current_desc == 'N/A':
+            # Calculate accurate job description (Column J)
+            new_desc = true_desc
+            if not new_desc or is_boilerplate or len(new_desc.strip()) < 30:
                 new_desc = generate_key_description(
                     title=cleaned_title,
                     company=company,
-                    location=data.get('location', 'Redding, CA'),
+                    location=cleaned_loc,
                     sector=new_sector,
                     job_type=data.get('jobType', 'N/A'),
                     schedule=data.get('schedule') or data.get('shift', 'N/A'),
                     pay=pay or 'N/A',
                     requirements=new_exp
                 )
+
+            if not current_desc or current_desc != new_desc:
                 fields_to_update['description'] = new_desc
 
             if fields_to_update:

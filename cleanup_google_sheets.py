@@ -5,7 +5,7 @@ import pandas as pd
 import gspread
 import sheets_sync
 import firestore_sync
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
 
 SHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
 
@@ -20,7 +20,7 @@ def cleanup_sheets(dry_run=True):
     
     db = firestore_sync.get_firestore_client()
     fs_docs = list(db.collection('jobs').stream())
-    print(f"Active valid jobs in Firestore available to sync: {len(fs_docs)}")
+    print(f"Total jobs in Firestore: {len(fs_docs)}")
 
     ws_auto = None
     try:
@@ -34,24 +34,42 @@ def cleanup_sheets(dry_run=True):
     fresh_auto_rows = []
     for d in fs_docs:
         j = d.to_dict()
+        raw_loc = j.get("location", "Redding, CA")
+        cleaned_loc = clean_location_str(raw_loc)
+        is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
+        if not is_shasta:
+            continue
+
         title = j.get("title", "")
         company = j.get("company", "")
+        cleaned_t = clean_job_title(title)
         sector = j.get("sector") or j.get("category") or "Other"
-        location = j.get("location", "Redding, CA")
         pay = j.get("pay") or "N/A"
         job_type = j.get("jobType") or "N/A"
         schedule = j.get("schedule") or j.get("shift") or "N/A"
         raw_desc = str(j.get("description") or "").strip()
         raw_exp = str(j.get("requirements") or j.get("experience") or "").strip()
 
-        exp_req = extract_key_requirements(text=raw_desc if raw_desc != "N/A" else "", existing_exp=raw_exp, job_dict=j)
+        is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower() or "position with" in raw_desc.lower())
+        true_desc = "" if is_boilerplate else raw_desc
+
+        is_exp = is_expired_job_content(true_desc) or is_expired_job_content(cleaned_t)
+        is_rej, _ = is_rejected_job(cleaned_t, company, true_desc, pay=pay, location=cleaned_loc)
+        if is_exp or is_rej:
+            continue
+
+        exp_req = extract_key_requirements(
+            text=true_desc,
+            existing_exp="",
+            job_dict={"title": cleaned_t, "company": company, "sector": sector, "location": cleaned_loc}
+        )
         
-        final_desc = raw_desc
-        if not final_desc or final_desc in ["N/A", "None", ""]:
+        final_desc = true_desc
+        if not final_desc or is_boilerplate or len(final_desc.strip()) < 30:
             final_desc = generate_key_description(
-                title=title,
+                title=cleaned_t,
                 company=company,
-                location=location,
+                location=cleaned_loc,
                 sector=sector,
                 job_type=job_type,
                 schedule=schedule,
@@ -61,10 +79,10 @@ def cleanup_sheets(dry_run=True):
 
         fresh_auto_rows.append({
             "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
-            "Job Title": title,
+            "Job Title": cleaned_t,
             "Company": company,
             "Sector": sector,
-            "Location": location,
+            "Location": cleaned_loc,
             "Pay Rate": pay,
             "Job Type": job_type,
             "Schedule / Shift": schedule,
@@ -76,7 +94,7 @@ def cleanup_sheets(dry_run=True):
 
     df_auto = pd.DataFrame(fresh_auto_rows)
     df_auto.sort_values(by="Date Posted", ascending=False, inplace=True)
-    print(f"Prepared {len(df_auto)} verified, entry-level listings for Automated_Posts.")
+    print(f"Prepared {len(df_auto)} verified, Shasta County entry-level listings for Automated_Posts.")
 
     # 2. Inspect & Clean Redding Area Job Postings
     print("\n" + "=" * 50)
@@ -91,23 +109,40 @@ def cleanup_sheets(dry_run=True):
     meta_row = redding_rows[0] if len(redding_rows) > 0 else []
     header_row = redding_rows[1] if len(redding_rows) > 1 else []
     
+    # Map header names to column index
+    header_map = {str(col).strip().lower(): i for i, col in enumerate(header_row)}
+    title_idx = header_map.get("job title", 1)
+    comp_idx = header_map.get("company", 2)
+    loc_idx = header_map.get("location", 3)
+    pay_idx = header_map.get("pay", 4)
+
     retained_redding = []
     rejected_redding = []
 
     for idx, r in enumerate(redding_rows[2:], start=3):
         if not any(r):
             continue
-        title = r[1] if len(r) > 1 else ""
-        company = r[2] if len(r) > 2 else ""
+        title = r[title_idx] if len(r) > title_idx else ""
+        company = r[comp_idx] if len(r) > comp_idx else ""
+        raw_loc = r[loc_idx] if len(r) > loc_idx else ""
+        raw_pay = r[pay_idx] if len(r) > pay_idx else ""
+        cleaned_loc = clean_location_str(raw_loc) if raw_loc else ""
         cleaned_t = clean_job_title(title)
         
-        is_rej, reason = is_rejected_job(cleaned_t, company)
-        if is_rej:
+        is_shasta, loc_reason = is_shasta_county_location(cleaned_loc) if cleaned_loc else (True, "")
+        is_rej, reason = is_rejected_job(cleaned_t, company, pay=raw_pay, location=cleaned_loc if cleaned_loc else "")
+
+        if not is_shasta:
+            rejected_redding.append((idx, title, company, loc_reason))
+        elif is_rej:
             rejected_redding.append((idx, title, company, reason))
         else:
-            # Clean title in the row
+            # Clean title and location in the row
             r_copy = list(r)
-            r_copy[1] = cleaned_t
+            if len(r_copy) > title_idx:
+                r_copy[title_idx] = cleaned_t
+            if len(r_copy) > loc_idx and cleaned_loc:
+                r_copy[loc_idx] = cleaned_loc
             retained_redding.append(r_copy)
 
     print(f"Redding Area Job Postings: {len(rejected_redding)} non-entry-level rows identified for removal.")
