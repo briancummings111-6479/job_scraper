@@ -501,15 +501,27 @@ def generate_key_description(title: str, company: str = "", location: str = "Red
 def extract_pay(text):
     if not text:
         return None
+    text_clean = str(text).replace('\ufffd', ' ').replace('\u2013', '-').replace('\u2014', '-')
+    
     pay_patterns = [
-        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|yr|hr|annually)?',
-        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|yr|hr|annually)',
-        r'\d+k\s*(?:-|to)\s*\d+k'
+        # Range with units: $16.50 - $19.00 per hour / /hr / hr / yr / annually
+        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?(?:\s*(?:per\s+hour|per\s+year|per\s+week|\/hr|\/yr|\/week|yr|hr|annually|hourly))?',
+        # Single value with units: $20.00 per hour / $23.53 / hr
+        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|per\s+week|\/hr|\/yr|\/week|yr|hr|annually|hourly)',
+        # Range with k: $50k - $70k
+        r'\$\d+k\s*(?:-|to)\s*\$\d+k',
+        r'\b\d+k\s*(?:-|to)\s*\d+k\b',
+        # Standalone pay range: $18.00 - $22.00
+        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?',
+        # Explicit wage label: Pay: $20.00
+        r'(?:pay|rate|compensation|wage|starting\s*at)\s*:\s*\$\d+(?:,\d+)?(?:\.\d+)?',
     ]
     for pattern in pay_patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(pattern, text_clean, re.IGNORECASE)
         if match:
-            return match.group(0)
+            val = match.group(0).strip()
+            val = re.sub(r'^(?:pay|rate|compensation|wage|starting\s*at)\s*:\s*', '', val, flags=re.IGNORECASE).strip()
+            return val
     return None
 
 def extract_job_type(text):
@@ -2693,12 +2705,13 @@ class JobScraper:
                             job_data["location"] = clean_location_str(raw_loc)
                         except: pass
                         
+                        verified_pay = None
                         try:
-                            job_data["pay"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-est-wage']").text.strip()
-                        except:
-                            try:
-                                job_data["pay"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-verified-wage']").text.strip()
-                            except: pass
+                            v_elem = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-verified-wage']")
+                            v_text = v_elem.text.strip()
+                            if v_text:
+                                verified_pay = v_text
+                        except: pass
                             
                         try:
                             job_data["job_type_extracted"] = main_content.find_element(By.CSS_SELECTOR, "[data-snagtag='job-categories']").text.strip()
@@ -2766,6 +2779,15 @@ class JobScraper:
                                 print(f"    [SKIP] Description indicates expired: {url}")
                                 continue
                             job_data["description"] = full_desc
+
+                        # Prioritize pay from Job Description, then verified employer wage, else N/A
+                        desc_pay = extract_pay(full_desc) if full_desc else None
+                        if desc_pay:
+                            job_data["pay"] = desc_pay
+                        elif verified_pay:
+                            job_data["pay"] = verified_pay
+                        else:
+                            job_data["pay"] = "N/A"
 
                         job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
 

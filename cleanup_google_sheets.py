@@ -5,7 +5,7 @@ import pandas as pd
 import gspread
 import sheets_sync
 import firestore_sync
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay
 
 SHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
 
@@ -44,7 +44,7 @@ def cleanup_sheets(dry_run=True):
         company = j.get("company", "")
         cleaned_t = clean_job_title(title)
         sector = j.get("sector") or j.get("category") or "Other"
-        pay = j.get("pay") or "N/A"
+        raw_pay = j.get("pay") or "N/A"
         job_type = j.get("jobType") or "N/A"
         schedule = j.get("schedule") or j.get("shift") or "N/A"
         raw_desc = str(j.get("description") or "").strip()
@@ -53,8 +53,16 @@ def cleanup_sheets(dry_run=True):
         is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower() or "position with" in raw_desc.lower())
         true_desc = "" if is_boilerplate else raw_desc
 
+        desc_pay = extract_pay(true_desc)
+        if desc_pay:
+            final_pay = desc_pay
+        elif j.get('source') == 'Snagajob' and raw_pay in ['$15 per hour', '$17.90', '$20.25', '$14 per hour', '$15', '$14', '$18 per hour', '$26 per hour']:
+            final_pay = 'N/A'
+        else:
+            final_pay = raw_pay or 'N/A'
+
         is_exp = is_expired_job_content(true_desc) or is_expired_job_content(cleaned_t)
-        is_rej, _ = is_rejected_job(cleaned_t, company, true_desc, pay=pay, location=cleaned_loc)
+        is_rej, _ = is_rejected_job(cleaned_t, company, true_desc, pay=final_pay, location=cleaned_loc)
         if is_exp or is_rej:
             continue
 
@@ -71,7 +79,7 @@ def cleanup_sheets(dry_run=True):
             sector=sector,
             job_type=job_type,
             schedule=schedule,
-            pay=pay,
+            pay=final_pay,
             requirements=exp_req
         )
 
@@ -81,7 +89,7 @@ def cleanup_sheets(dry_run=True):
             "Company": company,
             "Sector": sector,
             "Location": cleaned_loc,
-            "Pay Rate": pay,
+            "Pay Rate": final_pay,
             "Job Type": job_type,
             "Schedule / Shift": schedule,
             "Experience / Requirements": exp_req,

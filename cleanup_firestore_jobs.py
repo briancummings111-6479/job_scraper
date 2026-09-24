@@ -1,7 +1,7 @@
 import sys
 import argparse
 from firestore_sync import get_firestore_client
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay
 
 def cleanup_jobs(dry_run=True):
     db = get_firestore_client()
@@ -27,9 +27,19 @@ def cleanup_jobs(dry_run=True):
             to_delete.append((d.id, raw_title, company, loc_reason))
             continue
 
-        pay = data.get('pay', '')
+        raw_pay = data.get('pay', '')
+        desc_pay = extract_pay(desc)
+        
+        # Prioritize description pay; purge estimated algorithmic guesses
+        if desc_pay:
+            final_pay = desc_pay
+        elif data.get('source') == 'Snagajob' and raw_pay in ['$15 per hour', '$17.90', '$20.25', '$14 per hour', '$15', '$14', '$18 per hour', '$26 per hour']:
+            final_pay = 'N/A'
+        else:
+            final_pay = raw_pay or 'N/A'
+
         is_exp = is_expired_job_content(desc) or is_expired_job_content(raw_title)
-        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc, pay=pay, location=cleaned_loc)
+        is_rej, rej_reason = is_rejected_job(cleaned_title, company, desc, pay=final_pay, location=cleaned_loc)
 
         if is_exp or is_rej:
             reason = "Expired job listing" if is_exp else rej_reason
@@ -41,6 +51,9 @@ def cleanup_jobs(dry_run=True):
 
             if raw_loc != cleaned_loc:
                 fields_to_update['location'] = cleaned_loc
+
+            if raw_pay != final_pay:
+                fields_to_update['pay'] = final_pay
 
             current_sector = data.get('sector')
             new_sector = determine_industry(cleaned_title, company, desc)
@@ -73,7 +86,7 @@ def cleanup_jobs(dry_run=True):
                 sector=new_sector,
                 job_type=data.get('jobType', 'N/A'),
                 schedule=data.get('schedule') or data.get('shift', 'N/A'),
-                pay=pay or 'N/A',
+                pay=final_pay,
                 requirements=new_exp
             )
 
