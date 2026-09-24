@@ -109,6 +109,18 @@ def generate_pdf_report(excel_file, output_pdf):
     except Exception as e:
         print(f"Error generating PDF: {e}")
 
+def generate_csv_report(excel_file, output_csv):
+    """Generate a CSV report from the Excel file"""
+    print(f"Reading data from: {excel_file}")
+    try:
+        df = pd.read_excel(excel_file)
+        df.to_csv(output_csv, index=False)
+        print(f"CSV Report generated successfully: {output_csv}")
+        return True
+    except Exception as e:
+        print(f"Error generating CSV: {e}")
+        return False
+
 def run_report_generation(base_dir=None):
     if base_dir is None:
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -122,9 +134,9 @@ def run_report_generation(base_dir=None):
         
     if target_file:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_pdf = os.path.join(output_dir, f"job_report_{timestamp}.pdf")
-        generate_pdf_report(target_file, output_pdf)
-        return output_pdf
+        output_csv = os.path.join(output_dir, f"job_report_{timestamp}.csv")
+        generate_csv_report(target_file, output_csv)
+        return output_csv
     else:
         print("No Excel files found in output directory.")
         return None

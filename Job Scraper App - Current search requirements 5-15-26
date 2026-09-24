@@ -1,0 +1,48 @@
+Listed directory job_scraper
+Viewed README.md:1-316
+Viewed app.py:1-79
+Viewed scrapper.py:1-800
+Searched for "scrape_glassdoor"
+Viewed scrapper.py:801-1064
+Viewed generate_report.py:1-134
+
+Based on my analysis of the `job_scraper` codebase (specifically `scrapper.py`, `app.py`, and `README.md`), here is the comprehensive list of search requirements and filtering criteria currently implemented in the application:
+
+### 1. Primary Search Parameters
+These are the core inputs used to query job boards:
+*   **Keywords / Job Titles**: A list of search terms (e.g., `warehouse`, `delivery`, `retail`). The app defaults to high-volume, entry-level roles if none are provided.
+*   **Location**: A string representing the search area (e.g., `Redding, CA 96002` or `Lahore`).
+*   **Search Radius**: Distance in miles from the target location (default is **15 miles**; specifically applied to Indeed).
+*   **Job Types**: Employment categories such as `fulltime` or `parttime`.
+*   **Max Pages**: The number of results pages to scrape per platform (default is **5 pages**).
+
+### 2. Filtering & Post-Processing Requirements
+The app performs several layers of filtering to ensure data quality:
+*   **Recency (Days Ago)**: Only retrieves jobs posted within a specific window (default is **3 days**).
+*   **Negative Title Filters**: Automatically rejects listings containing specific "blacklisted" terms (e.g., `surrogate`, `travel nurse`).
+*   **Rejected Employers**: Skips specific companies known for "gig" work or irrelevant postings (e.g., `doordash`, `navy`, `Vector Marketing`).
+*   **Strict Deduplication**: Filters out duplicate listings based on a combination of **Job Title + Company + Location**.
+*   **Industry Classification**: Automatically categorizes jobs into industries (Restaurant, Retail, Health Care, etc.) based on keywords in the title and description.
+
+### 3. Platform-Specific Requirements
+*   **Indeed**: Supports the full suite of filters including radius, specific job types, and "fromage" (days old) parameters.
+*   **Snagajob**: Supports basic keyword and location searches.
+*   **Cloudflare Bypass**: Requirement to use an **Undetected Chrome Driver** and a persistent **Chrome Profile** to handle bot detection and auto-login.
+
+### 4. Data Extraction Requirements
+For every successful search result, the system is required to extract and store:
+*   **Core Info**: Job Title, Company Name, and Specific Location.
+*   **Compensation**: Pay/Salary information (extracted via regex from descriptions).
+*   **Schedule**: Job Type (Full-time/Part-time) and Shift/Schedule details.
+*   **Metadata**: Experience requirements, Date Posted, and the canonical Job URL.
+
+### 5. Output Requirements
+*   **Excel Export**: All refined search results must be saved into a timestamped Excel file in the `output/` directory.
+*   **PDF Report**: The app includes a secondary requirement to convert the latest Excel search results into a formatted PDF report for easier viewing.
+
+### Summary of Defaults (App Mode)
+If the app is run without custom parameters, it defaults to:
+*   **Location**: Redding, CA 96002
+*   **Radius**: 15 Miles
+*   **Days Ago**: 3 Days
+*   **Job Types**: Part-time and Full-time

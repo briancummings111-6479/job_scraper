@@ -1,0 +1,16 @@
+.venv
+.git
+.gitignore
+.idea
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+debug_*.html
+indeed_*.html
+*.bat
+chrome_profile/*
+output/*
+uploads/*
+drivers/*.exe

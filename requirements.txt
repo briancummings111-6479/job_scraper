@@ -6,3 +6,5 @@ undetected-chromedriver
 reportlab
 setuptools
 openpyxl
+pdfplumber
+gunicorn
