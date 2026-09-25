@@ -172,6 +172,33 @@ def main():
             db.collection('jobs').document(doc_id).update(fields)
             print(f"  Updated: {title}")
 
+    print("\nSyncing updated jobs to Google Sheets (Automated_Posts)...")
+    try:
+        final_docs = list(db.collection('jobs').stream())
+        sheet_payload = []
+        for d in final_docs:
+            d_dict = d.to_dict()
+            if d_dict.get('status', 'active') == 'active':
+                sheet_payload.append({
+                    "job_title": d_dict.get("title", ""),
+                    "company": d_dict.get("company", ""),
+                    "location": d_dict.get("location", "Redding, CA"),
+                    "industry": d_dict.get("sector") or d_dict.get("category", "Other"),
+                    "pay": d_dict.get("pay", "N/A"),
+                    "job_type_extracted": d_dict.get("jobType", "N/A"),
+                    "shift_schedule": d_dict.get("schedule") or d_dict.get("shift", "N/A"),
+                    "experience": d_dict.get("experience", "N/A"),
+                    "requirements": d_dict.get("requirements", "N/A"),
+                    "description": d_dict.get("description", "N/A"),
+                    "job_url": d_dict.get("jobUrl") or d_dict.get("url", ""),
+                    "source": d_dict.get("source", "Direct"),
+                    "date_posted": d_dict.get("datePosted", "")
+                })
+        sheets_sync.update_google_sheet(sheet_payload)
+        print("[SHEETS] Google Sheets (Automated_Posts) updated successfully!")
+    except Exception as e:
+        print(f"[SHEETS] Sync warning: {e}")
+
     print("\nEnrichment complete.")
 
 if __name__ == "__main__":
