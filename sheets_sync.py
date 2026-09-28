@@ -119,18 +119,19 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             )
 
         rows.append({
-            "Date Posted": posted_date,
+            "Source": j.get("source") or "Direct",
             "Job Title": clean_title,
             "Company": j.get("company", ""),
-            "Sector": sector,
             "Location": cleaned_loc,
             "Pay Rate": j.get("pay") or "N/A",
-            "Job Type": j.get("job_type_extracted") or "N/A",
+            "Full / Part Time": j.get("job_type_extracted") or "N/A",
             "Schedule / Shift": j.get("shift_schedule") or "N/A",
             "Experience / Requirements": exp_req,
-            "Job Description": final_desc,
-            "Application Link": j.get("job_url") or "",
-            "Source": j.get("source") or "Direct"
+            "Job Description Summary": final_desc,
+            "Date Posted": posted_date,
+            "Job Posting": j.get("job_url") or "",
+            "Industry Sector": sector,
+            "Last Updated": today_str
         })
 
     if not rows:

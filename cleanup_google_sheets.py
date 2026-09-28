@@ -84,18 +84,19 @@ def cleanup_sheets(dry_run=True):
         )
 
         fresh_auto_rows.append({
-            "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
+            "Source": j.get("source") or "Direct",
             "Job Title": cleaned_t,
             "Company": company,
-            "Sector": sector,
             "Location": cleaned_loc,
             "Pay Rate": final_pay,
-            "Job Type": job_type,
+            "Full / Part Time": job_type,
             "Schedule / Shift": schedule,
             "Experience / Requirements": exp_req,
-            "Job Description": final_desc,
-            "Application Link": j.get("jobUrl") or j.get("url") or "",
-            "Source": j.get("source") or "Direct"
+            "Job Description Summary": final_desc,
+            "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
+            "Job Posting": j.get("jobUrl") or j.get("url") or "",
+            "Industry Sector": sector,
+            "Last Updated": datetime.now().strftime("%Y-%m-%d")
         })
 
     df_auto = pd.DataFrame(fresh_auto_rows)

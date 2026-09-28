@@ -3510,10 +3510,14 @@ class JobScraper:
 
         df = pd.DataFrame(processed_data)
         
+        # Report date for "Last Updated"
+        report_date = datetime.now().strftime("%Y-%m-%d")
+        df['last_updated'] = report_date
+
         column_order = [
-            'date_posted', 'job_title', 'company', 'industry', 'location', 
-            'pay', 'job_type_extracted', 'shift_schedule', 'experience', 
-            'description', 'source', 'job_url'
+            'source', 'job_title', 'company', 'location', 'pay', 
+            'job_type_extracted', 'shift_schedule', 'experience', 
+            'description', 'date_posted', 'job_url', 'industry', 'last_updated'
         ]
         for col in column_order:
             if col not in df.columns:
@@ -3523,18 +3527,19 @@ class JobScraper:
         df.sort_values(by="date_posted", ascending=False, inplace=True)
         
         display_headers = {
-            'date_posted': 'Date Posted',
+            'source': 'Source',
             'job_title': 'Job Title',
             'company': 'Company',
-            'industry': 'Sector',
             'location': 'Location',
             'pay': 'Pay Rate',
-            'job_type_extracted': 'Job Type',
+            'job_type_extracted': 'Full / Part Time',
             'shift_schedule': 'Schedule / Shift',
             'experience': 'Experience / Requirements',
-            'description': 'Job Description',
-            'source': 'Source',
-            'job_url': 'Application Link'
+            'description': 'Job Description Summary',
+            'date_posted': 'Date Posted',
+            'job_url': 'Job Posting',
+            'industry': 'Industry Sector',
+            'last_updated': 'Last Updated'
         }
         df.rename(columns=display_headers, inplace=True)
 
@@ -3573,7 +3578,7 @@ class JobScraper:
                         cell = ws.cell(row=row_idx, column=col_idx)
                         val_str = str(cell.value or '')
                         
-                        if col == 'Application Link' and val_str.startswith(('http://', 'https://')):
+                        if col == 'Job Posting' and val_str.startswith(('http://', 'https://')):
                             cell.hyperlink = val_str
                             cell.font = Font(name='Calibri', size=10, color='2563EB', underline='single')
                         else:
@@ -3587,14 +3592,21 @@ class JobScraper:
 
                     ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
 
+            # Export CSV alongside Excel with matching columns
+            csv_path = os.path.splitext(filename)[0] + ".csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
             print(f"\n{'='*60}")
-            print(f"  [OK] Data saved and formatted: {filename}")
+            print(f"  [OK] Excel saved: {filename}")
+            print(f"  [OK] CSV exported: {csv_path}")
             print(f"  Total jobs saved: {len(df)}")
             print(f"{'='*60}\n")
 
         except Exception as e:
             print(f"[ERROR] Could not save styled Excel: {e}")
             df.to_excel(filename, index=False)
+            csv_path = os.path.splitext(filename)[0] + ".csv"
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            print(f"  [OK] CSV fallback exported: {csv_path}")
 
     def close(self):
         self.driver.quit()
