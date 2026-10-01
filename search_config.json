@@ -635,8 +635,91 @@
       "salon",
       "great clips",
       "supercuts",
+      "esthetician",
+      "nail tech",
+      "massage therapist",
+      "spa attendant"
+    ],
+    "Animal Care & Veterinary Services": [
+      "kennel",
+      "veterinary",
+      "vet aide",
+      "vet assistant",
       "pet bather",
-      "groomer"
+      "groomer",
+      "pet groomer",
+      "animal care",
+      "shelter caretaker",
+      "pet boarding",
+      "animal shelter"
+    ],
+    "Agriculture & Groundskeeping": [
+      "farm hand",
+      "nursery worker",
+      "landscaper",
+      "grounds maintenance",
+      "groundskeeper",
+      "farming",
+      "agriculture",
+      "irrigation",
+      "greenhouse",
+      "horticulture"
+    ],
+    "Construction & Contracting": [
+      "construction laborer",
+      "carpenter helper",
+      "drywall apprentice",
+      "site cleanup",
+      "construction",
+      "contractor",
+      "framing",
+      "roofing",
+      "job site",
+      "concrete laborer"
+    ],
+    "Manufacturing & Production": [
+      "assembly line",
+      "packaging operator",
+      "production helper",
+      "qa sorter",
+      "fabrication",
+      "factory",
+      "plant worker",
+      "machine operator",
+      "assembler"
+    ],
+    "Security & Public Safety": [
+      "security guard",
+      "unarmed security",
+      "gate attendant",
+      "loss prevention",
+      "security officer",
+      "event security",
+      "facility protection"
+    ],
+    "Social & Human Services": [
+      "community outreach",
+      "food bank sorter",
+      "shelter support",
+      "case aide",
+      "social service aide",
+      "transitional shelter",
+      "outreach worker"
+    ],
+    "Technology & IT Support": [
+      "helpdesk technician",
+      "pc repair",
+      "cable installer",
+      "telecom helper",
+      "it support",
+      "hardware diagnostics",
+      "desktop support",
+      "cable technician"
+    ],
+    "Other": [
+      "general service",
+      "event staff",
+      "laborer"
     ]
   },
   "keyword_groups": {
@@ -727,6 +810,69 @@
       "shipping",
       "forklift",
       "handler"
+    ],
+    "Animal Care & Veterinary Services": [
+      "kennel",
+      "veterinary",
+      "vet aide",
+      "pet bather",
+      "groomer",
+      "animal care",
+      "shelter caretaker"
+    ],
+    "Agriculture & Groundskeeping": [
+      "farm hand",
+      "nursery worker",
+      "landscaper",
+      "grounds maintenance",
+      "groundskeeper",
+      "farming"
+    ],
+    "Construction & Contracting": [
+      "construction laborer",
+      "carpenter helper",
+      "drywall apprentice",
+      "site cleanup",
+      "construction",
+      "contractor",
+      "framing",
+      "roofing"
+    ],
+    "Manufacturing & Production": [
+      "assembly line",
+      "packaging operator",
+      "production helper",
+      "qa sorter",
+      "fabrication",
+      "factory",
+      "assembler"
+    ],
+    "Security & Public Safety": [
+      "security guard",
+      "unarmed security",
+      "gate attendant",
+      "loss prevention",
+      "security officer"
+    ],
+    "Social & Human Services": [
+      "community outreach",
+      "food bank sorter",
+      "shelter support",
+      "case aide",
+      "social service aide"
+    ],
+    "Technology & IT Support": [
+      "helpdesk technician",
+      "pc repair",
+      "cable installer",
+      "telecom helper",
+      "it support",
+      "desktop support"
+    ],
+    "Other": [
+      "general service",
+      "event staff",
+      "laborer"
     ]
   }
 }

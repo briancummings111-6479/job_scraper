@@ -11,17 +11,24 @@ except ImportError:
     pass
 
 VALID_SECTORS = [
-    "Retail & Merchandising",
-    "Food & Restaurant",
-    "Trades & Labor Helpers",
-    "Healthcare & Caregiving",
-    "Customer Service & Hospitality",
-    "Janitorial & Facilities",
-    "Office & Clerical",
-    "Warehouse & Logistics",
-    "Transportation & Delivery",
-    "Personal Care & Services",
+    "Animal Care & Veterinary Services",
+    "Agriculture & Groundskeeping",
     "Childcare & Education Support",
+    "Construction & Contracting",
+    "Customer Service & Hospitality",
+    "Food & Restaurant",
+    "Healthcare & Caregiving",
+    "Janitorial & Facilities",
+    "Manufacturing & Production",
+    "Office & Clerical",
+    "Personal Care & Services",
+    "Retail & Merchandising",
+    "Security & Public Safety",
+    "Social & Human Services",
+    "Technology & IT Support",
+    "Trades & Labor Helpers",
+    "Transportation & Delivery",
+    "Warehouse & Logistics",
     "Other"
 ]
 
