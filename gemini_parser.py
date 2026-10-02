@@ -14,7 +14,7 @@ VALID_SECTORS = [
     "Animal Care & Veterinary Services",
     "Agriculture & Groundskeeping",
     "Childcare & Education Support",
-    "Construction & Contracting",
+    "Construction & Laborers",
     "Customer Service & Hospitality",
     "Food & Restaurant",
     "Healthcare & Caregiving",
