@@ -44,6 +44,9 @@
     "account executive",
     "admin",
     "animal care",
+    "appliance repair",
+    "appliance tech",
+    "appointment setter",
     "apprentice",
     "assembler",
     "assembly line",
@@ -62,6 +65,7 @@
     "butcher",
     "cable installer",
     "cafe",
+    "canvasser",
     "care",
     "caregiver",
     "carpenter",
@@ -430,16 +434,22 @@
       "bistro",
       "nutrition service"
     ],
-    "Retail & Merchandising": [
+    "Retail & Sales": [
       "cashier",
       "retail",
+      "sales associate",
+      "sales rep",
+      "canvasser",
+      "canvassing",
+      "door to door",
+      "appointment setter",
+      "lead generator",
+      "direct sales",
       "stocker",
       "stocking",
       "stock associate",
       "merchandis",
       "store clerk",
-      "sales associate",
-      "sales rep",
       "store associate",
       "grocery clerk",
       "produce clerk",
@@ -542,7 +552,7 @@
       "environmental services",
       "disinfect"
     ],
-    "Trades": [
+    "Trades & Mechanics": [
       "laborer",
       "general labor",
       "helper",
@@ -563,6 +573,9 @@
       "oil tech",
       "tire tech",
       "tire technician",
+      "appliance repair",
+      "appliance tech",
+      "appliance technician",
       "welder",
       "welding",
       "installer",
@@ -866,13 +879,15 @@
       "barber",
       "salon"
     ],
-    "Retail & Merchandising": [
+    "Retail & Sales": [
       "cashier",
       "retail",
+      "sales associate",
+      "canvasser",
+      "appointment setter",
       "stocker",
       "merchandiser",
-      "store clerk",
-      "sales associate"
+      "store clerk"
     ],
     "Security & Public Safety": [
       "security guard",
@@ -896,7 +911,7 @@
       "it support",
       "desktop support"
     ],
-    "Trades": [
+    "Trades & Mechanics": [
       "laborer",
       "helper",
       "apprentice",
@@ -908,6 +923,7 @@
       "auto tech",
       "tire tech",
       "lube tech",
+      "appliance tech",
       "landscaper"
     ],
     "Transportation & Delivery": [

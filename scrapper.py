@@ -44,11 +44,11 @@ def load_search_config(config_file="search_config.json"):
         "rejected_employers": ["navy", "marines", "u.s. customs", "maersk", "vector marketing", "doordash", "uber", "lyft"],
         "industry_keywords": {
             "Food & Restaurant": ["cook", "prep cook", "line cook", "dishwasher", "server", "busser", "host", "barista", "kitchen"],
-            "Retail & Merchandising": ["cashier", "retail", "stocker", "merchandiser", "store clerk", "associate"],
+            "Retail & Sales": ["cashier", "retail", "stocker", "merchandiser", "store clerk", "associate", "sales", "canvasser", "appointment setter"],
             "Warehouse & Logistics": ["warehouse", "material handler", "package handler", "loader", "unloader", "shipping"],
             "Transportation & Delivery": ["delivery", "courier", "van driver", "route driver"],
             "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician"],
-            "Trades": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter", "mechanic", "auto tech", "tire tech", "lube tech"],
+            "Trades & Mechanics": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter", "mechanic", "auto tech", "tire tech", "lube tech", "appliance"],
             "Healthcare & Caregiving": ["caregiver", "home health aide", "cna", "nursing assistant"],
             "Office & Clerical": ["clerk", "receptionist", "assistant", "data entry", "office assistant"]
         }
@@ -1671,23 +1671,23 @@ class JobScraper:
                 return "Warehouse & Logistics"
             if "security" in title_comp or "guard" in title_comp or "patrol" in title_comp:
                 return "Security"
-            if "cashier" in title_comp or "retail" in title_comp or "sales associate" in title_comp or "clerk" in title_comp or "shop" in title_comp or "store" in title_comp:
-                return "Retail & Merchandising"
-            if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp or "tire" in title_comp or "lube" in title_comp or "auto tech" in title_comp:
-                return "Trades"
+            if "cashier" in title_comp or "retail" in title_comp or "sales" in title_comp or "clerk" in title_comp or "shop" in title_comp or "store" in title_comp or "canvass" in title_comp or "door to door" in title_comp or "appointment setter" in title_comp:
+                return "Retail & Sales"
+            if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp or "tire" in title_comp or "lube" in title_comp or "auto tech" in title_comp or "appliance" in title_comp:
+                return "Trades & Mechanics"
             
             if "food" in section_name:
                 return "Food & Restaurant"
             if "clerical" in section_name or "office" in section_name:
                 return "Office & Clerical"
             if "customer" in section_name:
-                return "Retail & Merchandising"
+                return "Retail & Sales"
             if "government" in section_name:
                 return "Government"
             if "health" in section_name:
                 return "Healthcare & Caregiving"
             if "labor" in section_name:
-                return "Trades"
+                return "Trades & Mechanics"
             if "schools" in section_name:
                 return "Education"
             if "social" in section_name:
@@ -2505,7 +2505,7 @@ class JobScraper:
                                     job_url = find_link_for_text(title, words, links) or active_url
                                     if job_url:
                                         job_url = re.sub(r'/(?:Please|note|Apply|person|your|application).*$', '', job_url, flags=re.IGNORECASE)
-                                    category = "Trades"
+                                    category = "Trades & Mechanics"
                                     
                                     page_jobs.append({
                                         "source": "Company Website",

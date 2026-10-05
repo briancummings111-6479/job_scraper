@@ -22,11 +22,11 @@ VALID_SECTORS = [
     "Manufacturing & Production",
     "Office & Clerical",
     "Personal Care & Services",
-    "Retail & Merchandising",
+    "Retail & Sales",
     "Security & Public Safety",
     "Social & Human Services",
     "Technology & IT Support",
-    "Trades",
+    "Trades & Mechanics",
     "Transportation & Delivery",
     "Warehouse & Logistics",
     "Other"
