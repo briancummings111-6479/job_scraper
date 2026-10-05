@@ -26,7 +26,7 @@ VALID_SECTORS = [
     "Security & Public Safety",
     "Social & Human Services",
     "Technology & IT Support",
-    "Trades & Labor Helpers",
+    "Trades",
     "Transportation & Delivery",
     "Warehouse & Logistics",
     "Other"

@@ -11,7 +11,14 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+    ElementNotInteractableException,
+    ElementClickInterceptedException,
+    WebDriverException
+)
 import re
 import json
 from datetime import datetime, timedelta
@@ -40,7 +47,7 @@ def load_search_config(config_file="search_config.json"):
             "Warehouse & Logistics": ["warehouse", "material handler", "package handler", "loader", "unloader", "shipping"],
             "Transportation & Delivery": ["delivery", "courier", "van driver", "route driver"],
             "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician"],
-            "Trades & Labor Helpers": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter"],
+            "Trades": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter"],
             "Healthcare & Caregiving": ["caregiver", "home health aide", "cna", "nursing assistant"],
             "Office & Clerical": ["clerk", "receptionist", "assistant", "data entry", "office assistant"]
         }
@@ -1621,7 +1628,7 @@ class JobScraper:
             if "cashier" in title_comp or "retail" in title_comp or "sales associate" in title_comp or "clerk" in title_comp or "shop" in title_comp or "store" in title_comp:
                 return "Retail & Merchandising"
             if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp:
-                return "Trades & Labor Helpers"
+                return "Trades"
             
             if "food" in section_name:
                 return "Food & Restaurant"
@@ -1634,7 +1641,7 @@ class JobScraper:
             if "health" in section_name:
                 return "Healthcare & Caregiving"
             if "labor" in section_name:
-                return "Trades & Labor Helpers"
+                return "Trades"
             if "schools" in section_name:
                 return "Education"
             if "social" in section_name:
@@ -2452,7 +2459,7 @@ class JobScraper:
                                     job_url = find_link_for_text(title, words, links) or active_url
                                     if job_url:
                                         job_url = re.sub(r'/(?:Please|note|Apply|person|your|application).*$', '', job_url, flags=re.IGNORECASE)
-                                    category = "Trades & Labor Helpers"
+                                    category = "Trades"
                                     
                                     page_jobs.append({
                                         "source": "Company Website",
@@ -3033,15 +3040,54 @@ class JobScraper:
         
         for selector in popup_selectors:
             try:
-                close_btn = self.short_wait.until(
-                    EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
-                )
-                close_btn.click()
-                self.random_delay(0.5, 1)
-                print("    [OK] Closed popup")
-            except:
+                btns = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                for btn in btns:
+                    if btn.is_displayed():
+                        try:
+                            btn.click()
+                        except Exception:
+                            self.driver.execute_script("arguments[0].click();", btn)
+                        self.random_delay(0.3, 0.6)
+                        print("    [OK] Closed popup")
+                        break
+            except Exception:
                 continue
-    
+
+    def _get_indeed_cards(self):
+        """Resiliently discover job card containers on Indeed results page."""
+        # 1. Modern Indeed standard card container
+        cards = self.driver.find_elements(By.CSS_SELECTOR, "div.cardOutline")
+        if cards:
+            return cards
+            
+        # 2. Beacon wrapper container
+        cards = self.driver.find_elements(By.CSS_SELECTOR, "div.job_seen_beacon")
+        if cards:
+            return cards
+            
+        # 3. List items inside results list that contain job titles or links
+        potential_cards = self.driver.find_elements(By.CSS_SELECTOR, "#mosaic-provider-jobcards ul > li, .jobsearch-ResultsList > li")
+        valid_cards = []
+        for card in potential_cards:
+            try:
+                if card.find_elements(By.CSS_SELECTOR, "a.jcs-JobTitle, span[id^='jobTitle'], h2.jobTitle, h3.jobTitle, a[data-jk], h2 a, h3 a"):
+                    valid_cards.append(card)
+            except Exception:
+                pass
+        if valid_cards:
+            return valid_cards
+            
+        # 4. Fallback selectors
+        for sel in ["div[data-testid='job-card']", "article.job_card", "li.job_card", "div.slider_item"]:
+            try:
+                found = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                if found:
+                    return found
+            except Exception:
+                continue
+                
+        return []
+
     def scrape_indeed(self, job_title="Warehouse", location="Redding, CA 96002", radius=15, job_types=["fulltime"], days_ago=4, max_pages=3):
         print(f"\n{'='*60}")
         print(f"Starting Indeed scraping for: {job_title} in {location}")
@@ -3080,163 +3126,254 @@ class JobScraper:
                     self.check_cloudflare()
                     
                     try:
+                        # 1. Wait for the main results container
                         try:
-                            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "#mosaic-provider-jobcards ul, .jobsearch-ResultsList")))
+                            self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.cardOutline, div.job_seen_beacon, #mosaic-provider-jobcards ul, .jobsearch-ResultsList")))
                             print("  [OK] Main results container loaded")
                         except:
                             print("  [WARN] Main results container not found, falling back to card detection")
 
-                        potential_cards = self.driver.find_elements(By.CSS_SELECTOR, "#mosaic-provider-jobcards ul > li, .jobsearch-ResultsList > li")
+                        self.random_delay(1, 2)
+                        cards = self._get_indeed_cards()
                         
-                        job_cards = []
-                        if potential_cards:
-                            print(f"  Found {len(potential_cards)} list items. Filtering for validity...")
-                            for card in potential_cards:
-                                try:
-                                    if card.find_elements(By.CSS_SELECTOR, "h2.jobsearch-JobInfoHeader-title, h2 a, span[id^='jobTitle']"):
-                                        job_cards.append(card)
-                                except:
-                                    pass
-                        
-                        if not job_cards:
-                            print("  [INFO] No cards found via list items. Trying strict selectors...")
-                            job_cards_selectors = [
-                                "div.job_seen_beacon",
-                                "div.cardOutline",
-                                "article.job_card",
-                                "div[data-testid='job-card']",
-                                "li.job_card",
-                                "div.slider_item"
-                            ]
-                            
-                            for selector in job_cards_selectors:
-                                try:
-                                    found = self.driver.find_elements(By.CSS_SELECTOR, selector)
-                                    if found:
-                                        print(f"  [OK] Using selector: {selector} (Found {len(found)})")
-                                        job_cards = found
-                                        break
-                                except:
-                                    continue
-                        
-                        if not job_cards:
+                        if not cards:
                             print("  [X] Could not find job cards with any method")
                             with open("debug_failed_scrape.html", "w", encoding="utf-8") as f:
                                 f.write(self.driver.page_source)
                             print("    [!] Dumped HTML to debug_failed_scrape.html")
                             break
                         
-                        print(f"  Found {len(job_cards)} job listings on this page")
+                        total_cards = len(cards)
+                        print(f"  Found {total_cards} job listings on this page")
                         
-                        for idx, card in enumerate(job_cards, 1):
+                        for idx in range(total_cards):
                             try:
-                                print(f"  Processing job {idx}/{len(job_cards)}...")
+                                print(f"  Processing job {idx + 1}/{total_cards}...")
                                 
-                                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card)
-                                self.random_delay(0.5, 1)
+                                # REPAIR FAILURE MODE 2 (Stale Element Reference):
+                                # Re-fetch fresh live DOM cards on every iteration to prevent stale element reference
+                                live_cards = self._get_indeed_cards()
+                                if idx >= len(live_cards):
+                                    print(f"    [INFO] Card {idx + 1} no longer in DOM after update")
+                                    break
+                                card = live_cards[idx]
                                 
-                                card.click()
-                                self.random_delay(2, 3)
-                                
+                                # REPAIR FAILURE MODE 1 (None at None):
+                                # Extract baseline title, company, location, pay, and jk directly from the card element
+                                card_title = None
+                                for t_sel in ["a.jcs-JobTitle", "span[id^='jobTitle']", "h2.jobTitle", "h3.jobTitle", "h2 a", "h3 a", "[data-testid='jobsearch-JobInfoHeader-title']"]:
+                                    try:
+                                        t_elems = card.find_elements(By.CSS_SELECTOR, t_sel)
+                                        if t_elems and t_elems[0].text.strip():
+                                            cleaned = clean_job_title(t_elems[0].text.strip())
+                                            if cleaned:
+                                                card_title = cleaned
+                                                break
+                                    except Exception:
+                                        continue
+
+                                card_company = None
+                                for c_sel in ["[data-testid='company-name']", "span.companyName", "[data-company-name='true']", "span.css-63koeb", "span.css-1h7uxdj"]:
+                                    try:
+                                        c_elems = card.find_elements(By.CSS_SELECTOR, c_sel)
+                                        if c_elems and c_elems[0].text.strip():
+                                            card_company = c_elems[0].text.strip()
+                                            break
+                                    except Exception:
+                                        continue
+
+                                card_location = None
+                                for l_sel in ["[data-testid='text-location']", "div.companyLocation", "span.companyLocation", "div.company_location"]:
+                                    try:
+                                        l_elems = card.find_elements(By.CSS_SELECTOR, l_sel)
+                                        if l_elems and l_elems[0].text.strip():
+                                            card_location = clean_location_str(l_elems[0].text.strip())
+                                            break
+                                    except Exception:
+                                        continue
+
+                                card_pay = None
+                                for p_sel in ["div.metadata.salary-snippet-container", "div.salary-snippet-container", "div.estimated-salary", "[data-testid='attribute_snippet_testid']"]:
+                                    try:
+                                        p_elems = card.find_elements(By.CSS_SELECTOR, p_sel)
+                                        if p_elems and p_elems[0].text.strip():
+                                            card_pay = self.extract_pay(p_elems[0].text.strip())
+                                            if card_pay:
+                                                break
+                                    except Exception:
+                                        continue
+
+                                # Extract unique job key (jk) directly from card element or child link
                                 jk = card.get_attribute("data-jk")
-                                
+                                if not jk:
+                                    jk_elems = card.find_elements(By.CSS_SELECTOR, "[data-jk]")
+                                    for je in jk_elems:
+                                        val = je.get_attribute("data-jk")
+                                        if val:
+                                            jk = val
+                                            break
+                                if not jk:
+                                    href_elems = card.find_elements(By.CSS_SELECTOR, "a[href*='jk='], a[id^='job_']")
+                                    for he in href_elems:
+                                        h_val = he.get_attribute("href")
+                                        if h_val:
+                                            m = re.search(r'jk=([a-zA-Z0-9]+)', h_val)
+                                            if m:
+                                                jk = m.group(1)
+                                                break
+
+                                # REPAIR FAILURE MODE 3 (Element Not Interactable):
+                                # Locate interactive anchor, center-scroll, close popups, and use JavaScript click fallback
+                                click_target = None
+                                for sel in ["a.jcs-JobTitle", "a[data-jk]", "h2 a", "h3 a", "a[id^='job_']", "div.cardOutline"]:
+                                    found = card.find_elements(By.CSS_SELECTOR, sel)
+                                    if found:
+                                        click_target = found[0]
+                                        break
+                                if not click_target:
+                                    click_target = card
+
+                                try:
+                                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", click_target)
+                                    self.random_delay(0.4, 0.8)
+                                except Exception:
+                                    pass
+
+                                self.close_popups()
+
+                                try:
+                                    click_target.click()
+                                except (ElementNotInteractableException, ElementClickInterceptedException, StaleElementReferenceException, WebDriverException):
+                                    try:
+                                        self.driver.execute_script("arguments[0].click();", click_target)
+                                    except StaleElementReferenceException:
+                                        live_cards = self._get_indeed_cards()
+                                        if idx < len(live_cards):
+                                            card = live_cards[idx]
+                                            self.driver.execute_script("arguments[0].click();", card)
+
+                                self.random_delay(1.5, 2.5)
+
+                                # Wait briefly for detail pane to update
+                                try:
+                                    self.short_wait.until(
+                                        lambda d: d.find_elements(By.CSS_SELECTOR, "#jobDescriptionText, [data-testid='jobsearch-JobInfoHeader-title'], div.jobsearch-jobDescriptionText")
+                                    )
+                                except Exception:
+                                    pass
+
+                                if not jk:
+                                    vjk_match = re.search(r'[v]jk=([a-zA-Z0-9]+)', self.driver.current_url)
+                                    if vjk_match:
+                                        jk = vjk_match.group(1)
+
+                                job_url = f"https://www.indeed.com/viewjob?jk={jk}" if jk else self.driver.current_url
+                                if jk:
+                                    try:
+                                        comp_link_selectors = [
+                                            "a[data-testid='company-name']",
+                                            "div.jobsearch-CompanyReview--heading a",
+                                            "div.icl-u-lg-mr--sm a"
+                                        ]
+                                        for c_sel in comp_link_selectors:
+                                            c_links = self.driver.find_elements(By.CSS_SELECTOR, c_sel)
+                                            if c_links:
+                                                c_href = c_links[0].get_attribute("href")
+                                                if c_href and "/cmp/" in c_href:
+                                                    base_c_url = c_href.split('?')[0].rstrip('/')
+                                                    job_url = f"{base_c_url}/jobs?jk={jk}"
+                                                    break
+                                    except Exception:
+                                        pass
+
                                 job_data = {
                                     'source': 'Indeed',
                                     'job_title': None,
                                     'company': None,
-                                    'location': location,
-                                    'pay': None,
+                                    'location': card_location or location,
+                                    'pay': card_pay,
                                     'job_type_extracted': None,
                                     'shift_schedule': None,
                                     'experience': None,
                                     'description': None,
                                     'date_posted': None,
-                                    'job_url': self.driver.current_url,
+                                    'job_url': job_url,
                                     'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 }
 
-                                try:
-                                    if not jk:
-                                        vjk_match = re.search(r'[v]jk=([a-zA-Z0-9]+)', self.driver.current_url)
-                                        if vjk_match:
-                                            jk = vjk_match.group(1)
-                                    
-                                    if jk:
-                                        job_data['job_url'] = f"https://www.indeed.com/viewjob?jk={jk}"
-                                        
-                                        try:
-                                            comp_link_selectors = [
-                                                "a[data-testid='company-name']",
-                                                "div.jobsearch-CompanyReview--heading a",
-                                                "div.icl-u-lg-mr--sm a"
-                                            ]
-                                            for c_sel in comp_link_selectors:
-                                                try:
-                                                    c_link_elem = self.driver.find_element(By.CSS_SELECTOR, c_sel)
-                                                    c_href = c_link_elem.get_attribute("href")
-                                                    if c_href and "/cmp/" in c_href:
-                                                        base_c_url = c_href.split('?')[0].rstrip('/')
-                                                        job_data['job_url'] = f"{base_c_url}/jobs?jk={jk}"
-                                                        break
-                                                except:
-                                                    continue
-                                        except:
-                                            pass
-                                            
-                                except Exception as url_e:
-                                    print(f"    [WARN] URL construction error: {url_e}")
-                                
+                                # Extract title from pane with fallback to card_title
+                                pane_title = None
                                 title_selectors = [
+                                    "h2[data-testid='jobsearch-JobInfoHeader-title']",
                                     "h2.jobsearch-JobInfoHeader-title",
                                     "h1.jobsearch-JobInfoHeader-title",
-                                    "h2[data-testid='jobsearch-JobInfoHeader-title']",
+                                    "h1[data-testid='jobsearch-JobInfoHeader-title']",
                                     "span.jobsearch-JobInfoHeader-title-container",
-                                    "h1.icl-u-xs-mb--xs"
+                                    "h1.icl-u-xs-mb--xs",
+                                    "h1"
                                 ]
                                 for selector in title_selectors:
                                     try:
-                                        title_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                        raw_title = title_elem.text.strip()
-                                        if raw_title:
-                                            job_data['job_title'] = clean_job_title(raw_title)
-                                            break
-                                    except:
+                                        t_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        if t_elems and t_elems[0].text.strip():
+                                            raw_title = t_elems[0].text.strip()
+                                            if len(raw_title) > 2 and "job post details" not in raw_title.lower():
+                                                pane_title = clean_job_title(raw_title)
+                                                if pane_title:
+                                                    break
+                                    except Exception:
                                         continue
-                                
+
+                                job_data['job_title'] = pane_title or card_title
+
+                                # VALIDATION GUARD (Failure Mode 1): Do not allow 'None' job titles to be recorded
+                                if not job_data['job_title'] or str(job_data['job_title']).strip().lower() in ('none', ''):
+                                    print(f"    [SKIP] Could not extract valid job title for job {idx + 1}")
+                                    continue
+
+                                # Extract company from pane with fallback to card_company
+                                pane_company = None
                                 company_selectors = [
                                     "[data-testid='inlineHeader-companyName']",
                                     "[data-company-name='true']",
                                     "div[data-testid='company-name']",
                                     "a[data-testid='company-name']",
                                     "span.companyName",
-                                    "div.icl-u-lg-mr--sm"
+                                    "div.icl-u-lg-mr--sm",
+                                    "div.jobsearch-CompanyReview--heading"
                                 ]
                                 for selector in company_selectors:
                                     try:
-                                        company_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                        job_data['company'] = company_elem.text.strip()
-                                        break
-                                    except:
+                                        c_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        if c_elems and c_elems[0].text.strip():
+                                            pane_company = c_elems[0].text.strip()
+                                            break
+                                    except Exception:
                                         continue
-                                
+
+                                job_data['company'] = pane_company or card_company or "Unknown Company"
+
+                                # Extract location from pane with fallback to card_location
                                 location_selectors = [
+                                    "[data-testid='inlineHeader-companyLocation']",
                                     "[data-testid='text-location']",
                                     ".companyLocation",
                                     "div[data-testid='text-location']",
                                     "div.companyLocation",
-                                    "span.companyLocation",
-                                    "div[data-testid='inlineHeader-companyLocation']"
+                                    "span.companyLocation"
                                 ]
                                 for selector in location_selectors:
                                     try:
-                                        loc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                        specific_location = loc_elem.text.strip()
-                                        if specific_location:
-                                            job_data['location'] = clean_location_str(specific_location)
-                                            break
-                                    except:
+                                        l_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        if l_elems and l_elems[0].text.strip():
+                                            spec_loc = clean_location_str(l_elems[0].text.strip())
+                                            if spec_loc:
+                                                job_data['location'] = spec_loc
+                                                break
+                                    except Exception:
                                         continue
 
+                                # Extract date posted
                                 date_selectors = [
                                     "span.date",
                                     "span.myJobsStateDate",
@@ -3247,13 +3384,15 @@ class JobScraper:
                                 ]
                                 for selector in date_selectors:
                                     try:
-                                        date_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                        raw_date = date_elem.text.replace('Posted', '').strip()
-                                        job_data['date_posted'] = self.extract_date_posted(raw_date)
-                                        break
-                                    except:
+                                        d_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        if d_elems and d_elems[0].text.strip():
+                                            raw_date = d_elems[0].text.replace('Posted', '').strip()
+                                            job_data['date_posted'] = self.extract_date_posted(raw_date)
+                                            break
+                                    except Exception:
                                         continue
 
+                                # Extract description
                                 desc_selectors = [
                                     "#jobDescriptionText",
                                     "div.jobsearch-jobDescriptionText",
@@ -3263,35 +3402,37 @@ class JobScraper:
                                 description = ""
                                 for selector in desc_selectors:
                                     try:
-                                        desc_elem = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                        description = desc_elem.text.strip()
-                                        if description:
+                                        desc_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        if desc_elems and desc_elems[0].text.strip():
+                                            description = desc_elems[0].text.strip()
                                             break
-                                    except:
+                                    except Exception:
                                         continue
-                                
+
                                 # Check for expired job banner in pane wrapper or description
                                 pane_text = ""
                                 for pane_sel in ["#jobsearch-ViewjobPaneWrapper", "div.jobsearch-JobComponent", "#viewJobSSRRoot"]:
                                     try:
-                                        p_elem = self.driver.find_element(By.CSS_SELECTOR, pane_sel)
-                                        pane_text = p_elem.text
-                                        if pane_text:
+                                        p_elems = self.driver.find_elements(By.CSS_SELECTOR, pane_sel)
+                                        if p_elems and p_elems[0].text.strip():
+                                            pane_text = p_elems[0].text.strip()
                                             break
-                                    except:
+                                    except Exception:
                                         pass
-                                
+
                                 if is_expired_job_content(pane_text) or is_expired_job_content(description):
                                     print(f"    [SKIP] Expired job on Indeed: {job_data['job_title']} ({job_data['job_url']})")
                                     continue
 
                                 try:
-                                    metadata_elem = self.driver.find_element(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
-                                    metadata_text = metadata_elem.text
-                                    job_data['pay'] = self.extract_pay(metadata_text)
-                                    job_data['job_type_extracted'] = self.extract_job_type(metadata_text)
-                                    job_data['shift_schedule'] = self.extract_shift(metadata_text)
-                                except:
+                                    metadata_elems = self.driver.find_elements(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
+                                    if metadata_elems and metadata_elems[0].text.strip():
+                                        metadata_text = metadata_elems[0].text.strip()
+                                        if not job_data['pay']:
+                                            job_data['pay'] = self.extract_pay(metadata_text)
+                                        job_data['job_type_extracted'] = self.extract_job_type(metadata_text)
+                                        job_data['shift_schedule'] = self.extract_shift(metadata_text)
+                                except Exception:
                                     pass
 
                                 qual_text = ""
@@ -3299,7 +3440,7 @@ class JobScraper:
                                     qual_elems = self.driver.find_elements(By.CSS_SELECTOR, "div#qualificationsSection li, div[data-testid='qualifications'] li")
                                     if qual_elems:
                                         qual_text = "; ".join(q.text.strip() for q in qual_elems if q.text.strip())
-                                except:
+                                except Exception:
                                     pass
 
                                 full_context = f"{description} {qual_text}".strip()
@@ -3339,8 +3480,6 @@ class JobScraper:
                                     job_data['requirements'] = gemini_res.experience_requirements
                                 else:
                                     job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
-
-                                    # Extract structured key requirements for Column I
                                     job_data['experience'] = extract_key_requirements(
                                         text=full_context,
                                         existing_exp=qual_text,
@@ -3348,7 +3487,6 @@ class JobScraper:
                                     )
                                     job_data['requirements'] = job_data['experience']
 
-                                # Ensure Column J has key job description information
                                 if not job_data.get('description') or job_data['description'] == 'N/A':
                                     job_data['description'] = generate_key_description(
                                         title=job_data['job_title'],
@@ -3360,7 +3498,7 @@ class JobScraper:
                                         pay=job_data.get('pay', 'N/A'),
                                         requirements=job_data['experience']
                                     )
-                                # Filter non-entry-level / rejected positions
+
                                 is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''), location=job_data.get('location', ''))
                                 if is_rej:
                                     print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
@@ -3374,11 +3512,11 @@ class JobScraper:
                                 print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
                                 if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
                                 if job_data['job_type_extracted']: print(f"      (Type) Type: {job_data['job_type_extracted']}")
-                                
+
                             except Exception as e:
                                 print(f"    [X] Error processing job: {str(e)}")
                                 continue
-                        
+
                         try:
                             next_selectors = [
                                 "[data-testid='pagination-page-next']",
@@ -3388,15 +3526,20 @@ class JobScraper:
                             ]
                             for selector in next_selectors:
                                 try:
-                                    next_button = self.driver.find_element(By.CSS_SELECTOR, selector)
-                                    self.driver.execute_script("arguments[0].scrollIntoView();", next_button)
-                                    self.random_delay(1, 2)
-                                    next_button.click()
-                                    self.random_delay(5, 10)
-                                    self.check_cloudflare()
-                                    page_count += 1
-                                    break
-                                except:
+                                    next_buttons = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                    if next_buttons:
+                                        next_button = next_buttons[0]
+                                        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
+                                        self.random_delay(1, 2)
+                                        try:
+                                            next_button.click()
+                                        except Exception:
+                                            self.driver.execute_script("arguments[0].click();", next_button)
+                                        self.random_delay(5, 10)
+                                        self.check_cloudflare()
+                                        page_count += 1
+                                        break
+                                except Exception:
                                     continue
                             else:
                                 print("  No more pages available")
@@ -3404,11 +3547,11 @@ class JobScraper:
                         except Exception as e:
                             print(f"  Pagination error: {str(e)}")
                             break
-                            
+
                     except TimeoutException:
                         print("  Timeout waiting for job listings")
                         break
-                    
+
         except Exception as e:
             print(f"[ERROR] Error during Indeed scraping: {str(e)}")
 
