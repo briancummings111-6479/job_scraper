@@ -10,27 +10,86 @@ try:
 except ImportError:
     pass
 
-VALID_SECTORS = [
-    "Animal Care & Veterinary Services",
-    "Agriculture & Groundskeeping",
-    "Childcare & Education Support",
-    "Construction & Laborers",
-    "Customer Service & Hospitality",
-    "Food & Restaurant",
-    "Healthcare & Caregiving",
-    "Janitorial & Facilities",
-    "Manufacturing & Production",
-    "Office & Clerical",
-    "Personal Care & Services",
-    "Retail & Sales",
-    "Security & Public Safety",
-    "Social & Human Services",
-    "Technology & IT Support",
-    "Trades & Mechanics",
-    "Transportation & Delivery",
-    "Warehouse & Logistics",
-    "Other"
-]
+WORKFORCE_TAXONOMY = {
+    "Animal Care & Veterinary Services": {
+        "scope": "Domestic/livestock care, grooming, boarding, veterinary support",
+        "common_titles": "Kennel Assistant, Pet Bather, Veterinary Aide, Shelter Caretaker"
+    },
+    "Agriculture & Groundskeeping": {
+        "scope": "Farming, nurseries, landscaping, commercial grounds maintenance",
+        "common_titles": "Farm Hand, Nursery Worker, Landscaper, Grounds Maintenance Aide"
+    },
+    "Childcare & Education Support": {
+        "scope": "Early childhood facilities, schools, youth development",
+        "common_titles": "Daycare Aide, Preschool Assistant, After-School Tutor, Instructional Aide"
+    },
+    "Construction & Laborers": {
+        "scope": "Job site building, structural renovation, general utility labor",
+        "common_titles": "Construction Laborer, Carpenter Helper, Drywall Apprentice, Site Cleanup, Other Laborers"
+    },
+    "Customer Service & Hospitality": {
+        "scope": "Front-of-house service, lodging, ticketing, contact centers",
+        "common_titles": "Front Desk Clerk, Guest Services Agent, Call Center Rep, Concierge"
+    },
+    "Food & Restaurant": {
+        "scope": "Food prep, commercial kitchen operations, dining service",
+        "common_titles": "Dishwasher, Line Cook, Prep Cook, Host/Hostess, Barista, Server"
+    },
+    "Healthcare & Caregiving": {
+        "scope": "Non-acute patient assistance, in-home care, facility support",
+        "common_titles": "Caregiver, Home Health Aide, Direct Support Professional (DSP), CNA"
+    },
+    "Janitorial & Facilities": {
+        "scope": "Building sanitation, custodial upkeep, commercial cleaning",
+        "common_titles": "Custodian, Janitor, Housekeeper, Floor Tech, EVS Specialist"
+    },
+    "Manufacturing & Production": {
+        "scope": "Assembly plants, factory fabrication, industrial processing",
+        "common_titles": "Assembly Line Worker, Packaging Operator, Production Helper, QA Sorter"
+    },
+    "Office & Clerical": {
+        "scope": "Administrative support, record keeping, front office reception",
+        "common_titles": "Receptionist, File Clerk, Data Entry Operator, Office Assistant, Bank Teller"
+    },
+    "Personal Care & Services": {
+        "scope": "Salons, barbershops, personal styling, wellness support",
+        "common_titles": "Salon Assistant, Barber Apprentice, Spa Attendant"
+    },
+    "Retail & Sales": {
+        "scope": "Storefront retail, field canvassing & direct sales, phone appointment setting, cashiering, merchandising",
+        "common_titles": "Sales Associate, Canvasser, Appointment Setter, Cashier, Stock Associate, Merchandiser"
+    },
+    "Security & Public Safety": {
+        "scope": "Facility protection, access control, event monitoring",
+        "common_titles": "Unarmed Security Guard, Gate Attendant, Loss Prevention Associate"
+    },
+    "Social & Human Services": {
+        "scope": "Community support, non-profits, transitional shelter aid",
+        "common_titles": "Community Outreach Aide, Food Bank Sorter, Shelter Support Worker"
+    },
+    "Technology & IT Support": {
+        "scope": "Hardware diagnostics, cable pulling, helpdesk support",
+        "common_titles": "Helpdesk Technician, PC Repair Assistant, Cable/Telecom Installer Helper"
+    },
+    "Trades & Mechanics": {
+        "scope": "Mechanical & automotive, appliance repair, electrical, HVAC, plumbing, trades apprenticeship",
+        "common_titles": "Mechanic Helper, Lube & Oil Tech, Tire Technician, Appliance Repair Assistant, HVAC Helper, Plumber Assistant, Electrician Helper, Trade Apprentice"
+    },
+    "Transportation & Delivery": {
+        "scope": "Local delivery, route driving, courier dispatch",
+        "common_titles": "Route Driver, Van Delivery Courier, Non-CDL Delivery Helper"
+    },
+    "Warehouse & Logistics": {
+        "scope": "Material handling, shipping & receiving, inventory staging",
+        "common_titles": "Package Handler, Order Picker, Forklift Operator, Staging Associate"
+    },
+    "Other": {
+        "scope": "Specialized roles outside standard workforce sectors",
+        "common_titles": "General Service Worker, Event Staff"
+    }
+}
+
+VALID_SECTORS = list(WORKFORCE_TAXONOMY.keys())
 
 class JobAnalysisResult(BaseModel):
     is_entry_level: bool = Field(description="True if the position is entry-level suitable for job seekers with 0-2 years experience. False if it requires advanced degrees, senior management, OTR over-the-road trucking, or 5+ years experience.")
@@ -78,6 +137,11 @@ def analyze_job_with_gemini(
     if not client:
         return None
 
+    taxonomy_guide = "\n".join([
+        f"     * {sec}: Scope: {info['scope']} | Common Entry-Level Titles: {info['common_titles']}"
+        for sec, info in WORKFORCE_TAXONOMY.items()
+    ])
+
     prompt = f"""
 You are an expert workforce development analyst for Shasta County, California (Redding, Anderson, Shasta Lake area).
 Analyze the following job posting and extract structured, verified data.
@@ -106,7 +170,8 @@ CRITICAL EVALUATION RULES:
    - Accept (is_entry_level=True) entry-level, apprentice, helper, or 0-2 year experience positions.
 
 2. ACCURATE COLUMN DATA:
-   - Sector: Must be one of: {', '.join(VALID_SECTORS)}.
+   - Sector: Must be selected strictly from the standard 19-sector workforce taxonomy based on occupational scope and titles:
+{taxonomy_guide}
    - Pay Rate (Column F): Extract the true employer-provided pay rate from text. If no wage is given by the employer, use "N/A". Never use algorithmic estimates.
    - Experience / Requirements (Column I): Semicolon-separated list: Experience level; Age if stated; Driver license / CDL class; Education if stated; Certifications (e.g. Food Handler, CNA, CPR). Never include conflicting statements.
    - Job Description (Column J): Crisp 2-3 sentence summary describing daily duties and responsibilities. Do NOT repeat metadata like sector, pay, or requirements list.

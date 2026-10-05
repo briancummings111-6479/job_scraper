@@ -43,14 +43,25 @@ def load_search_config(config_file="search_config.json"):
         "rejected_titles": ["surrogate", "surrogacy", "Owner Operator", "CDL A", "CDL B", "physician", "doctor", "registered nurse", "travel nurse", "rn", "director", "executive", "vice president", "vp", "chief", "manager", "supervisor", "attorney", "radiology", "therapist", "engineer", "software"],
         "rejected_employers": ["navy", "marines", "u.s. customs", "maersk", "vector marketing", "doordash", "uber", "lyft"],
         "industry_keywords": {
+            "Animal Care & Veterinary Services": ["kennel", "veterinary", "vet aide", "pet bather", "groomer", "animal care", "shelter caretaker"],
+            "Agriculture & Groundskeeping": ["farm hand", "nursery worker", "landscaper", "grounds maintenance", "groundskeeper", "farming"],
+            "Childcare & Education Support": ["daycare aide", "preschool assistant", "tutor", "instructional aide", "childcare", "babysitter", "nanny"],
+            "Construction & Laborers": ["construction laborer", "carpenter helper", "drywall apprentice", "site cleanup", "concrete laborer", "construction"],
+            "Customer Service & Hospitality": ["front desk clerk", "guest services agent", "call center rep", "concierge", "customer service", "csr"],
             "Food & Restaurant": ["cook", "prep cook", "line cook", "dishwasher", "server", "busser", "host", "barista", "kitchen"],
-            "Retail & Sales": ["cashier", "retail", "stocker", "merchandiser", "store clerk", "associate", "sales", "canvasser", "appointment setter"],
-            "Warehouse & Logistics": ["warehouse", "material handler", "package handler", "loader", "unloader", "shipping"],
-            "Transportation & Delivery": ["delivery", "courier", "van driver", "route driver"],
-            "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician"],
-            "Trades & Mechanics": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter", "mechanic", "auto tech", "tire tech", "lube tech", "appliance"],
-            "Healthcare & Caregiving": ["caregiver", "home health aide", "cna", "nursing assistant"],
-            "Office & Clerical": ["clerk", "receptionist", "assistant", "data entry", "office assistant"]
+            "Healthcare & Caregiving": ["caregiver", "home health aide", "direct support professional", "dsp", "cna", "nursing assistant"],
+            "Janitorial & Facilities": ["custodian", "janitor", "housekeeper", "floor tech", "evs specialist", "cleaner"],
+            "Manufacturing & Production": ["assembly line worker", "packaging operator", "production helper", "qa sorter", "machine operator", "assembler"],
+            "Office & Clerical": ["receptionist", "file clerk", "data entry operator", "office assistant", "bank teller", "clerk"],
+            "Personal Care & Services": ["salon assistant", "barber apprentice", "spa attendant", "hair stylist", "barber"],
+            "Retail & Sales": ["sales associate", "canvasser", "appointment setter", "cashier", "stock associate", "merchandiser", "retail"],
+            "Security & Public Safety": ["unarmed security guard", "gate attendant", "loss prevention associate", "security guard", "security officer"],
+            "Social & Human Services": ["community outreach aide", "food bank sorter", "shelter support worker", "case aide"],
+            "Technology & IT Support": ["helpdesk technician", "pc repair assistant", "cable installer helper", "it support"],
+            "Trades & Mechanics": ["mechanic helper", "lube tech", "tire technician", "appliance repair assistant", "hvac helper", "plumber assistant", "electrician helper", "trade apprentice", "mechanic"],
+            "Transportation & Delivery": ["route driver", "van delivery courier", "non-cdl delivery helper", "delivery driver", "courier"],
+            "Warehouse & Logistics": ["package handler", "order picker", "forklift operator", "staging associate", "warehouse", "material handler"],
+            "Other": ["general service worker", "event staff"]
         }
     }
     
@@ -340,20 +351,25 @@ def determine_industry(job_title, company, description=""):
     config = load_search_config()
     keywords = config.get('industry_keywords', {})
     
-    # Pass 1: Title + Company
+    # Flatten and sort pairs by tag length descending so specific multi-word phrases match before generic single words
+    sorted_pairs = []
     for industry, tags in keywords.items():
         for tag in tags:
-            pattern = r'\b' + re.escape(tag.lower())
-            if re.search(pattern, t_c):
-                return industry
+            sorted_pairs.append((industry, str(tag).strip().lower()))
+    sorted_pairs.sort(key=lambda x: len(x[1]), reverse=True)
+    
+    # Pass 1: Title + Company
+    for industry, tag in sorted_pairs:
+        pattern = r'\b' + re.escape(tag) + r'\b'
+        if re.search(pattern, t_c):
+            return industry
 
     # Pass 2: Description (duties and context)
     if desc:
-        for industry, tags in keywords.items():
-            for tag in tags:
-                pattern = r'\b' + re.escape(tag.lower())
-                if re.search(pattern, desc):
-                    return industry
+        for industry, tag in sorted_pairs:
+            pattern = r'\b' + re.escape(tag) + r'\b'
+            if re.search(pattern, desc):
+                return industry
                     
     return "Other"
 
@@ -544,8 +560,29 @@ def generate_key_description(title: str, company: str = "", location: str = "Red
     if any(k in t_lower for k in ["hair stylist", "stylist", "barber"]):
         return "Provides hair cutting, washing, and styling services tailored to client preferences. Consults with clients, cleans and sanitizes styling tools, and maintains an orderly salon work area."
 
-    if any(k in t_lower for k in ["childcare", "teacher aide", "youth", "instructional"]):
+    if any(k in t_lower for k in ["childcare", "teacher aide", "youth", "instructional", "daycare aide", "preschool assistant", "tutor"]):
         return "Assists in supervising children during classroom activities, structured play, and meal times. Supports teachers with activity preparation and helps maintain a safe, nurturing learning environment."
+
+    if any(k in t_lower for k in ["kennel", "pet bather", "veterinary aide", "vet assistant", "shelter caretaker", "animal care", "pet groomer"]) or "animal care" in s_lower:
+        return "Provides attentive care, feeding, bathing, grooming, and kennel maintenance for domestic animals and shelter pets. Assists veterinary or facility staff, sanitizes animal enclosures, and ensures animal health, comfort, and safety."
+
+    if any(k in t_lower for k in ["farm hand", "nursery worker", "landscaper", "grounds maintenance", "groundskeeper", "lawn care", "horticulture"]) or "agriculture" in s_lower:
+        return "Maintains outdoor grounds, landscapes, nurseries, or agricultural operations. Operates basic groundskeeping equipment, plants, trims, weeds, waters greenery, and ensures clean, well-kept property grounds."
+
+    if any(k in t_lower for k in ["construction laborer", "carpenter helper", "drywall apprentice", "site cleanup", "general laborer", "demolition"]) or ("construction" in s_lower and "labor" in t_lower):
+        return "Assists tradespeople and contractors on construction and renovation job sites. Performs site cleanup, material handling, demolition, operates hand and power tools safely, and prepares work areas for building projects."
+
+    if any(k in t_lower for k in ["assembly line", "packaging operator", "production helper", "qa sorter", "machine operator", "plant worker", "mill worker", "sawmill"]) or "manufacturing" in s_lower:
+        return "Operates production line machinery, packages finished goods, inspects product quality for defects, and prepares materials for shipment. Follows manufacturing plant safety standards and maintains clean assembly workstations."
+
+    if any(k in t_lower for k in ["security guard", "unarmed security", "gate attendant", "loss prevention", "security officer", "patrol"]) or "security" in s_lower:
+        return "Monitors premises, controls access points, conducts routine security patrols, and deters property loss or unauthorized entry. Greets visitors, reports safety hazards or incidents, and ensures a secure environment."
+
+    if any(k in t_lower for k in ["community outreach", "food bank sorter", "shelter support", "case aide", "social service aide", "outreach worker"]) or "social & human" in s_lower:
+        return "Supports non-profit, community, or transitional shelter operations. Assists clients with essential resources, sorts and distributes donations or food bank supplies, and provides compassionate service to vulnerable community members."
+
+    if any(k in t_lower for k in ["helpdesk", "pc repair", "cable installer", "telecom helper", "it support", "desktop support"]) or "technology" in s_lower:
+        return "Assists users with basic hardware, software, and peripheral troubleshooting. Pulls and terminates cables, assists with PC and device setup, logs technical support requests, and maintains IT equipment inventory."
 
     # General fallback tailored by company and title
     comp_phrase = f" at {company}" if company and company != "N/A" else ""
@@ -1663,35 +1700,59 @@ class JobScraper:
             section_name = section_name.lower()
             title_comp = f"{str(title).lower()} {str(company).lower()}"
             
+            if "veterinar" in title_comp or "animal" in title_comp or "kennel" in title_comp or "pet bather" in title_comp:
+                return "Animal Care & Veterinary Services"
+            if "landscap" in title_comp or "groundskeeper" in title_comp or "farm" in title_comp or "nursery" in title_comp:
+                return "Agriculture & Groundskeeping"
+            if "child" in title_comp or "daycare" in title_comp or "preschool" in title_comp or "tutor" in title_comp or "instructional aide" in title_comp:
+                return "Childcare & Education Support"
+            if "construction" in title_comp or "drywall" in title_comp or "roofing" in title_comp or "carpenter" in title_comp:
+                return "Construction & Laborers"
+            if "hotel" in title_comp or "motel" in title_comp or "front desk" in title_comp or "guest service" in title_comp or "concierge" in title_comp:
+                return "Customer Service & Hospitality"
             if "restaurant" in title_comp or "cook" in title_comp or "food" in title_comp or "server" in title_comp or "dining" in title_comp or "dish" in title_comp or "bartender" in title_comp:
                 return "Food & Restaurant"
-            if "driver" in title_comp or "truck" in title_comp or "delivery" in title_comp or "route" in title_comp or "transport" in title_comp:
-                return "Transportation & Delivery"
-            if "warehouse" in title_comp or "stocker" in title_comp or "loader" in title_comp or "forklift" in title_comp or "puller" in title_comp:
-                return "Warehouse & Logistics"
-            if "security" in title_comp or "guard" in title_comp or "patrol" in title_comp:
-                return "Security"
-            if "cashier" in title_comp or "retail" in title_comp or "sales" in title_comp or "clerk" in title_comp or "shop" in title_comp or "store" in title_comp or "canvass" in title_comp or "door to door" in title_comp or "appointment setter" in title_comp:
+            if "caregiver" in title_comp or "home health" in title_comp or "cna" in title_comp or "dsp" in title_comp or "patient" in title_comp:
+                return "Healthcare & Caregiving"
+            if "custodian" in title_comp or "janitor" in title_comp or "housekeep" in title_comp or "cleaner" in title_comp:
+                return "Janitorial & Facilities"
+            if "assembly" in title_comp or "packaging operator" in title_comp or "production helper" in title_comp or "qa sorter" in title_comp or "factory" in title_comp or "plant worker" in title_comp:
+                return "Manufacturing & Production"
+            if "receptionist" in title_comp or "file clerk" in title_comp or "data entry" in title_comp or "teller" in title_comp:
+                return "Office & Clerical"
+            if "salon" in title_comp or "barber" in title_comp or "stylist" in title_comp or "spa" in title_comp:
+                return "Personal Care & Services"
+            if "cashier" in title_comp or "retail" in title_comp or "sales" in title_comp or "canvass" in title_comp or "door to door" in title_comp or "appointment setter" in title_comp or "merchandis" in title_comp:
                 return "Retail & Sales"
-            if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp or "tire" in title_comp or "lube" in title_comp or "auto tech" in title_comp or "appliance" in title_comp:
+            if "security" in title_comp or "guard" in title_comp or "patrol" in title_comp or "loss prevention" in title_comp:
+                return "Security & Public Safety"
+            if "outreach" in title_comp or "food bank" in title_comp or "shelter support" in title_comp:
+                return "Social & Human Services"
+            if "helpdesk" in title_comp or "pc repair" in title_comp or "cable installer" in title_comp or "it support" in title_comp:
+                return "Technology & IT Support"
+            if "driver" in title_comp or "truck" in title_comp or "delivery" in title_comp or "route" in title_comp or "transport" in title_comp or "courier" in title_comp:
+                return "Transportation & Delivery"
+            if "warehouse" in title_comp or "stocker" in title_comp or "loader" in title_comp or "forklift" in title_comp or "puller" in title_comp or "order picker" in title_comp:
+                return "Warehouse & Logistics"
+            if "mechanic" in title_comp or "lube" in title_comp or "tire" in title_comp or "appliance" in title_comp or "hvac" in title_comp or "plumber" in title_comp or "electrician" in title_comp or "maintenance" in title_comp:
                 return "Trades & Mechanics"
+            if "laborer" in title_comp:
+                return "Construction & Laborers"
             
             if "food" in section_name:
                 return "Food & Restaurant"
             if "clerical" in section_name or "office" in section_name:
                 return "Office & Clerical"
             if "customer" in section_name:
-                return "Retail & Sales"
-            if "government" in section_name:
-                return "Government"
+                return "Customer Service & Hospitality"
             if "health" in section_name:
                 return "Healthcare & Caregiving"
             if "labor" in section_name:
-                return "Trades & Mechanics"
-            if "schools" in section_name:
-                return "Education"
+                return "Construction & Laborers"
+            if "schools" in section_name or "education" in section_name:
+                return "Childcare & Education Support"
             if "social" in section_name:
-                return "Social Services"
+                return "Social & Human Services"
                 
             return "Other"
 

@@ -77,6 +77,122 @@ def generate_job_id(source: str, company: str, title: str, location: str) -> str
     raw_key = f"{source.lower()}_{company.lower()}_{title.lower()}_{location.lower()}"
     return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()[:20]
 
+_RABA_TRANSIT = None
+
+def get_raba_transit_data():
+    global _RABA_TRANSIT
+    if _RABA_TRANSIT is not None:
+        return _RABA_TRANSIT
+    json_path = os.path.join(os.path.dirname(__file__), "raba_transit.json")
+    if os.path.exists(json_path):
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                _RABA_TRANSIT = json.load(f)
+        except Exception:
+            _RABA_TRANSIT = {}
+    else:
+        _RABA_TRANSIT = {}
+    return _RABA_TRANSIT
+
+LOCALITY_COORDS = {
+    'downtown': (40.5841, -122.3926),
+    'market st': (40.5835, -122.3926),
+    'pine st': (40.5860, -122.3915),
+    'hilltop': (40.5890, -122.3610),
+    'dana dr': (40.5845, -122.3530),
+    'churn creek': (40.5670, -122.3535),
+    'cypress': (40.5700, -122.3650),
+    'bechelli': (40.5630, -122.3700),
+    'hartnell': (40.5610, -122.3600),
+    'eureka way': (40.5835, -122.4265),
+    'buenaventura': (40.5835, -122.4265),
+    'lake blvd': (40.6120, -122.3850),
+    'oasis rd': (40.6305, -122.3995),
+    'shasta college': (40.6185, -122.3310),
+    'south market': (40.5510, -122.3790),
+    'bonnyview': (40.5360, -122.3710),
+    'anderson': (40.4505, -122.2970),
+    'shasta lake': (40.6810, -122.3720),
+    'palo cedro': (40.5510, -122.2350),
+    'bella vista': (40.6400, -122.2500),
+    'burney': (40.8805, -121.6600)
+}
+
+def evaluate_raba_transit(location_str: str, full_text: str = ""):
+    import math
+    text = f"{location_str} {full_text}".lower()
+    
+    if any(u in text for u in ["palo cedro", "bella vista", "cottonwood", "fall river"]):
+        return {
+            "transitAccessible": False,
+            "transitStopName": None,
+            "transitRoutes": [],
+            "transitDistanceMiles": 99.0
+        }
+        
+    transit_data = get_raba_transit_data()
+    stops = transit_data.get("stops", [])
+    if not stops:
+        is_acc = any(k in text for k in ["downtown", "hilltop", "dana", "cypress", "market", "eureka way", "churn creek"])
+        return {
+            "transitAccessible": is_acc,
+            "transitStopName": "Downtown Terminal" if is_acc else None,
+            "transitRoutes": ["Route 1", "Route 3"] if is_acc else [],
+            "transitDistanceMiles": 0.3 if is_acc else 99.0
+        }
+
+    resolved_coords = None
+    for loc_key, coords in LOCALITY_COORDS.items():
+        if loc_key in text:
+            resolved_coords = coords
+            break
+            
+    if not resolved_coords:
+        if "96001" in text or "redding" in text:
+            resolved_coords = LOCALITY_COORDS['downtown']
+        elif "96002" in text:
+            resolved_coords = LOCALITY_COORDS['hilltop']
+        elif "96003" in text:
+            resolved_coords = LOCALITY_COORDS['lake blvd']
+        elif "anderson" in text or "96007" in text:
+            resolved_coords = LOCALITY_COORDS['anderson']
+        elif "shasta lake" in text or "96019" in text:
+            resolved_coords = LOCALITY_COORDS['shasta lake']
+
+    if not resolved_coords:
+        return {
+            "transitAccessible": False,
+            "transitStopName": None,
+            "transitRoutes": [],
+            "transitDistanceMiles": 99.0
+        }
+
+    target_lat, target_lon = resolved_coords
+    best_stop = None
+    min_dist = 999.0
+
+    for s in stops:
+        slat = s.get("lat")
+        slon = s.get("lon")
+        if not slat or not slon:
+            continue
+        dlat = math.radians(slat - target_lat)
+        dlon = math.radians(slon - target_lon)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(target_lat)) * math.cos(math.radians(slat)) * math.sin(dlon/2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        dist = 3958.8 * c
+        if dist < min_dist:
+            min_dist = dist
+            best_stop = s
+
+    is_accessible = min_dist <= 0.6
+    return {
+        "transitAccessible": is_accessible,
+        "transitStopName": best_stop.get("name") if best_stop else None,
+        "transitRoutes": best_stop.get("routes", []) if best_stop else [],
+        "transitDistanceMiles": round(min_dist, 2)
+    }
+
 def parse_job_requirements(job: dict) -> dict:
     title = str(job.get("job_title", "")).strip()
     company = str(job.get("company", "")).strip()
@@ -144,6 +260,8 @@ def parse_job_requirements(job: dict) -> dict:
     elif "hilltop" in full_text or "dana" in full_text:
         neighborhood = "East Redding / Hilltop"
 
+    transit_info = evaluate_raba_transit(location, full_text)
+
     return {
         "requiresDrugTest": requires_drug_test,
         "requiresBackgroundCheck": requires_background_check,
@@ -153,6 +271,10 @@ def parse_job_requirements(job: dict) -> dict:
         "minAge": min_age,
         "isYouthFriendly": is_youth_friendly,
         "neighborhood": neighborhood,
+        "transitAccessible": transit_info["transitAccessible"],
+        "transitStopName": transit_info["transitStopName"],
+        "transitRoutes": transit_info["transitRoutes"],
+        "transitDistanceMiles": transit_info["transitDistanceMiles"],
         "description": description if description else experience
     }
 
@@ -290,6 +412,10 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             "minAge": parsed_attrs.get("minAge"),
             "isYouthFriendly": parsed_attrs.get("isYouthFriendly"),
             "neighborhood": parsed_attrs.get("neighborhood"),
+            "transitAccessible": parsed_attrs.get("transitAccessible", False),
+            "transitStopName": parsed_attrs.get("transitStopName"),
+            "transitRoutes": parsed_attrs.get("transitRoutes", []),
+            "transitDistanceMiles": parsed_attrs.get("transitDistanceMiles"),
             "updatedAt": firestore.SERVER_TIMESTAMP,
             "expiresAt": expiration_date,
             "status": "active"

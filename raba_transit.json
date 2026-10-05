@@ -1,0 +1,3132 @@
+{
+  "agency": "Redding Area Bus Authority (RABA)",
+  "feed_url": "https://gtfs.remix.com/redding_area_bus_authority.zip",
+  "last_synced": "2026-10-05T20:12:06Z",
+  "total_stops": 269,
+  "total_routes": 11,
+  "service_hours": {
+    "weekday": {
+      "name": "Monday - Friday",
+      "active": true,
+      "earliest_departure": "05:40",
+      "latest_arrival": "23:40",
+      "description": "Standard fixed routes operate ~6:15 AM to 7:35 PM"
+    },
+    "saturday": {
+      "name": "Saturday",
+      "active": true,
+      "earliest_departure": "08:20",
+      "latest_arrival": "23:40",
+      "description": "Reduced Saturday routes operate ~8:30 AM to 6:40 PM"
+    },
+    "sunday": {
+      "name": "Sunday",
+      "active": false,
+      "earliest_departure": "N/A",
+      "latest_arrival": "N/A",
+      "description": "No fixed-route transit service (Sunday Runabout demand-response only)"
+    }
+  },
+  "routes": [
+    {
+      "route_id": "151",
+      "short_name": "1",
+      "long_name": "Route 1",
+      "display_name": "Route 1",
+      "color": "#2eab8a",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route1%204-25.pdf",
+      "stops_count": 37
+    },
+    {
+      "route_id": "159",
+      "short_name": "11",
+      "long_name": "Route 11",
+      "display_name": "Route 11",
+      "color": "#51b217",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route11-14%204-25.pdf",
+      "stops_count": 29
+    },
+    {
+      "route_id": "160",
+      "short_name": "14",
+      "long_name": "Route 14",
+      "display_name": "Route 14",
+      "color": "#8c08b1",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route11-14%204-25.pdf",
+      "stops_count": 30
+    },
+    {
+      "route_id": "3779",
+      "short_name": "19",
+      "long_name": "Route 19",
+      "display_name": "Route 19",
+      "color": "#2738ec",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/BeachBus_2025_8.5x11.pdf",
+      "stops_count": 12
+    },
+    {
+      "route_id": "161",
+      "short_name": "299X",
+      "long_name": "Route 299X",
+      "display_name": "Route 299X",
+      "color": "#00b2c8",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/BE%205-25.pdf",
+      "stops_count": 10
+    },
+    {
+      "route_id": "153",
+      "short_name": "3",
+      "long_name": "Route 3",
+      "display_name": "Route 3",
+      "color": "#007AB8",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route3%204-25.pdf",
+      "stops_count": 19
+    },
+    {
+      "route_id": "154",
+      "short_name": "4",
+      "long_name": "Route 4",
+      "display_name": "Route 4",
+      "color": "#967cb6",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route4%204-25.pdf",
+      "stops_count": 54
+    },
+    {
+      "route_id": "44X",
+      "short_name": "44X",
+      "long_name": "Route 44x",
+      "display_name": "Route 44X",
+      "color": "#f734f6",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/44X%204-25.pdf",
+      "stops_count": 2
+    },
+    {
+      "route_id": "6447",
+      "short_name": "5x",
+      "long_name": "5x Sacramento / Amtrak Thruway",
+      "display_name": "Route 5x",
+      "color": "#A72051",
+      "text_color": "#FFFFFF",
+      "url": "",
+      "stops_count": 7
+    },
+    {
+      "route_id": "157",
+      "short_name": "7",
+      "long_name": "Route 7",
+      "display_name": "Route 7",
+      "color": "#1886c7",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route7%206-24.pdf",
+      "stops_count": 26
+    },
+    {
+      "route_id": "6446",
+      "short_name": "9",
+      "long_name": "Route 9",
+      "display_name": "Route 9",
+      "color": "#ec191c",
+      "text_color": "#FFFFFF",
+      "url": "https://rabaride.com/Document%20Center/Services/Bus/Route9%2012-24.pdf",
+      "stops_count": 73
+    }
+  ],
+  "stops": [
+    {
+      "stop_id": "1404",
+      "stop_code": "1404",
+      "name": "100 Hilltop Dr",
+      "description": "@ Hilltop Garden Apts",
+      "lat": 40.60599,
+      "lon": -122.376245,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1044",
+      "stop_code": "1044",
+      "name": "3711 Oasis Rd",
+      "description": "@ school",
+      "lat": 40.630586,
+      "lon": -122.399418,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1105",
+      "stop_code": "1105",
+      "name": "95 Hilltop Dr",
+      "description": "@ Redding Hilltop Apts",
+      "lat": 40.605997,
+      "lon": -122.375965,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "9030",
+      "stop_code": "9030",
+      "name": "Balls Ferry Blvd at Anderson Square (MB)",
+      "description": "",
+      "lat": 40.454037,
+      "lon": -122.288604,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9028",
+      "stop_code": "9028",
+      "name": "Balls Ferry Blvd at Freeman St (FS)",
+      "description": "",
+      "lat": 40.448634,
+      "lon": -122.296399,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9031",
+      "stop_code": "9031",
+      "name": "Balls Ferry Blvd at Toyon St (FS)",
+      "description": "",
+      "lat": 40.456401,
+      "lon": -122.285816,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9029",
+      "stop_code": "9029",
+      "name": "Balls Ferry Blvd at across Martha St (FB)",
+      "description": "",
+      "lat": 40.450214,
+      "lon": -122.293062,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9010",
+      "stop_code": "9010",
+      "name": "Balls Ferry Rd at Childress Dr",
+      "description": "",
+      "lat": 40.45388,
+      "lon": -122.289151,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9011",
+      "stop_code": "9011",
+      "name": "Balls Ferry Rd at Ventura St",
+      "description": "@ Allstate Insurance Building",
+      "lat": 40.451049,
+      "lon": -122.292437,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "4026",
+      "stop_code": "4026",
+      "name": "Bechelli Ln at 3rd St",
+      "description": "@ Country Club Shopping Center",
+      "lat": 40.559972,
+      "lon": -122.36277,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4018",
+      "stop_code": "4018",
+      "name": "Bechelli Ln at 3rd St",
+      "description": "@ Bike Shop",
+      "lat": 40.558581,
+      "lon": -122.362531,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4064",
+      "stop_code": "",
+      "name": "Bechelli Ln at Costco Wholesale (FS)",
+      "description": "",
+      "lat": 40.541899,
+      "lon": -122.357181,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4043",
+      "stop_code": "",
+      "name": "Bechelli Ln at Joaquin Ave (FS)",
+      "description": "",
+      "lat": 40.550908,
+      "lon": -122.36268,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4017",
+      "stop_code": "4017",
+      "name": "Bechelli Ln at Layton Rd",
+      "description": "@ Bechelli Oaks Apartments",
+      "lat": 40.554814,
+      "lon": -122.362491,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4027",
+      "stop_code": "4027",
+      "name": "Bechelli Ln at Layton Rd",
+      "description": "",
+      "lat": 40.556435,
+      "lon": -122.362782,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4069",
+      "stop_code": "",
+      "name": "Bechelli Ln at Loma Vista Dr (FS)",
+      "description": "",
+      "lat": 40.549593,
+      "lon": -122.36244,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4019",
+      "stop_code": "4019",
+      "name": "Bechelli Ln at Wilshire Dr",
+      "description": "",
+      "lat": 40.561714,
+      "lon": -122.362479,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4049",
+      "stop_code": "",
+      "name": "Bechelli Ln at across Costco Wholesale (FS)",
+      "description": "",
+      "lat": 40.540492,
+      "lon": -122.355672,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "8004",
+      "stop_code": "8004",
+      "name": "Bella Vista (SR 299 @ My-T Fine Foods)",
+      "description": "21919 SR 299",
+      "lat": 40.638206,
+      "lon": -122.24325,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "1402",
+      "stop_code": "1402",
+      "name": "Benton Dr at Delta St",
+      "description": "",
+      "lat": 40.599577,
+      "lon": -122.389446,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1403",
+      "stop_code": "1403",
+      "name": "Benton Dr at Loma St",
+      "description": "",
+      "lat": 40.599537,
+      "lon": -122.386136,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1400",
+      "stop_code": "1400",
+      "name": "Benton Dr at Quartz Hill Rd",
+      "description": "@ Lake Redding Park (West Entrance)",
+      "lat": 40.59504,
+      "lon": -122.401227,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1109",
+      "stop_code": "1109",
+      "name": "Benton Dr at Quartz Hill Rd",
+      "description": "@ Elk's Lodge/Senior Center",
+      "lat": 40.594949,
+      "lon": -122.401514,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1401",
+      "stop_code": "1401",
+      "name": "Benton Dr w/o Delta St",
+      "description": "@ Heritage Plaza Apts",
+      "lat": 40.59958,
+      "lon": -122.392489,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "4050",
+      "stop_code": "",
+      "name": "Bonnyview Rd at Bechelli Ln (FS)",
+      "description": "",
+      "lat": 40.538752,
+      "lon": -122.353722,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "3020",
+      "stop_code": "3020",
+      "name": "Breslauer Way at Eastside Rd",
+      "description": "",
+      "lat": 40.550375,
+      "lon": -122.385549,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3041",
+      "stop_code": "",
+      "name": "Breslauer Way at Eastside Rd (NS)",
+      "description": "",
+      "lat": 40.55059,
+      "lon": -122.386096,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3021",
+      "stop_code": "3021",
+      "name": "Breslauer Way at Veterans Ln",
+      "description": "@ Shasta County Social Service Offices",
+      "lat": 40.55003,
+      "lon": -122.382336,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "1100",
+      "stop_code": "1100",
+      "name": "Browning St at Mission De Oro Dr",
+      "description": "",
+      "lat": 40.593107,
+      "lon": -122.356852,
+      "routes": [
+        "Route 11",
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1116",
+      "stop_code": "1116",
+      "name": "Browning St at Mission De Oro Dr",
+      "description": "",
+      "lat": 40.592858,
+      "lon": -122.35683,
+      "routes": [
+        "Route 11",
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "2026",
+      "stop_code": "2026",
+      "name": "Buenaventura Blvd at Eureka Way",
+      "description": "@ Top's Fresh Market",
+      "lat": 40.583391,
+      "lon": -122.426537,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "2042",
+      "stop_code": "2042",
+      "name": "Buenaventura Blvd at Eureka Way",
+      "description": "",
+      "lat": 40.583321,
+      "lon": -122.426966,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "8007",
+      "stop_code": "8007",
+      "name": "Burney (SR 299 @ Burney Sporting Goods)",
+      "description": "37427 SR 299",
+      "lat": 40.888921,
+      "lon": -121.65358,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "1421",
+      "stop_code": "",
+      "name": "Canby @ Browning (SB)",
+      "description": "",
+      "lat": 40.591732,
+      "lon": -122.353645,
+      "routes": [
+        "Route 11",
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1422",
+      "stop_code": "",
+      "name": "Canby @ The Home Depot (NB)",
+      "description": "",
+      "lat": 40.591695,
+      "lon": -122.353393,
+      "routes": [
+        "Route 11",
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "4000",
+      "stop_code": "4000",
+      "name": "Canby Transfer Center",
+      "description": "Transfer Point",
+      "lat": 40.589334,
+      "lon": -122.353512,
+      "routes": [
+        "Route 11",
+        "Route 14",
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1039",
+      "stop_code": "1039",
+      "name": "Cascade Blvd at Autumn Harvest Way",
+      "description": "",
+      "lat": 40.654953,
+      "lon": -122.359942,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1037",
+      "stop_code": "1037",
+      "name": "Cascade Blvd at Cottage Ave",
+      "description": "",
+      "lat": 40.664929,
+      "lon": -122.357417,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1036",
+      "stop_code": "1036",
+      "name": "Cascade Blvd at Morningstar Way",
+      "description": "Across from Project City Post Office",
+      "lat": 40.676045,
+      "lon": -122.353785,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1038",
+      "stop_code": "1038",
+      "name": "Cascade Blvd at Mulberry St",
+      "description": "@ Elegant Home Furnishing",
+      "lat": 40.659316,
+      "lon": -122.357921,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1041",
+      "stop_code": "1041",
+      "name": "Cascade Blvd at Oasis Rd",
+      "description": "@ AM/PM Mini Mkt",
+      "lat": 40.642481,
+      "lon": -122.367132,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1040",
+      "stop_code": "1040",
+      "name": "Cascade Blvd at Riddle Rd",
+      "description": "@ Oasis Fun Center",
+      "lat": 40.652647,
+      "lon": -122.362079,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1035",
+      "stop_code": "1035",
+      "name": "Cascade Blvd at Shasta Dam Blvd",
+      "description": "@ Rite Aide",
+      "lat": 40.679764,
+      "lon": -122.351185,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1008",
+      "stop_code": "1008",
+      "name": "Caterpillar Rd at Grand Ave",
+      "description": "",
+      "lat": 40.62521,
+      "lon": -122.368415,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1007",
+      "stop_code": "1007",
+      "name": "Caterpillar Rd at Prestige Way",
+      "description": "",
+      "lat": 40.625464,
+      "lon": -122.372774,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1006",
+      "stop_code": "1006",
+      "name": "Caterpillar Rd at Redwood Blvd",
+      "description": "",
+      "lat": 40.625612,
+      "lon": -122.37807,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "3005",
+      "stop_code": "3005",
+      "name": "Cedars Rd at Branstetter Ln",
+      "description": "",
+      "lat": 40.536838,
+      "lon": -122.388995,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "3004",
+      "stop_code": "3004",
+      "name": "Cedars Rd at Concord Ln",
+      "description": "",
+      "lat": 40.531264,
+      "lon": -122.387021,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "3006",
+      "stop_code": "3006",
+      "name": "Cedars Rd at Kenyon Dr",
+      "description": "",
+      "lat": 40.54553,
+      "lon": -122.389544,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "3007",
+      "stop_code": "3007",
+      "name": "Cedars Rd at Riviera Dr",
+      "description": "",
+      "lat": 40.54759,
+      "lon": -122.389891,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "4007",
+      "stop_code": "4007",
+      "name": "Churn Creek Rd at Cypress Ave",
+      "description": "@ Rite Aid",
+      "lat": 40.570415,
+      "lon": -122.35329,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4034",
+      "stop_code": "4034",
+      "name": "Churn Creek Rd at Cypress Ave",
+      "description": "@ Safeway",
+      "lat": 40.571554,
+      "lon": -122.352862,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4054",
+      "stop_code": "",
+      "name": "Churn Creek Rd at Denton Wy (FS)",
+      "description": "",
+      "lat": 40.546877,
+      "lon": -122.352868,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4030",
+      "stop_code": "4030",
+      "name": "Churn Creek Rd at Echo Rd",
+      "description": "",
+      "lat": 40.55506,
+      "lon": -122.35287,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4013",
+      "stop_code": "4013",
+      "name": "Churn Creek Rd at Echo Rd",
+      "description": "@ Marquis Shasta",
+      "lat": 40.555568,
+      "lon": -122.353146,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4032",
+      "stop_code": "4032",
+      "name": "Churn Creek Rd at Hartnell Ave",
+      "description": "",
+      "lat": 40.562801,
+      "lon": -122.352993,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4011",
+      "stop_code": "4011",
+      "name": "Churn Creek Rd at Hartnell Ave",
+      "description": "@ Graham Park",
+      "lat": 40.563187,
+      "lon": -122.353274,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4062",
+      "stop_code": "",
+      "name": "Churn Creek Rd at Hillmonte Dr (FS)",
+      "description": "",
+      "lat": 40.539367,
+      "lon": -122.34952,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4052",
+      "stop_code": "",
+      "name": "Churn Creek Rd at Hillmonte Dr (FS)",
+      "description": "",
+      "lat": 40.539975,
+      "lon": -122.35012,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4035",
+      "stop_code": "4035",
+      "name": "Churn Creek Rd at Industrial St",
+      "description": "@ Grocery Outlet",
+      "lat": 40.575596,
+      "lon": -122.352924,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4014",
+      "stop_code": "4014",
+      "name": "Churn Creek Rd at Loma Vista Dr",
+      "description": "",
+      "lat": 40.549688,
+      "lon": -122.353062,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4029",
+      "stop_code": "4029",
+      "name": "Churn Creek Rd at Loma Vista Dr",
+      "description": "",
+      "lat": 40.549751,
+      "lon": -122.352777,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4008",
+      "stop_code": "4008",
+      "name": "Churn Creek Rd at Maraglia St",
+      "description": "",
+      "lat": 40.568759,
+      "lon": -122.353268,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4005",
+      "stop_code": "4005",
+      "name": "Churn Creek Rd at Mistletoe Ln",
+      "description": "@ Arco AM/PM",
+      "lat": 40.578115,
+      "lon": -122.353749,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4036",
+      "stop_code": "4036",
+      "name": "Churn Creek Rd at Mistletoe Ln",
+      "description": "@ Redding Bank of Commerce",
+      "lat": 40.578958,
+      "lon": -122.353772,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4010",
+      "stop_code": "4010",
+      "name": "Churn Creek Rd at Parsons Dr",
+      "description": "@ El Mariachi's Mexican Restaurant",
+      "lat": 40.565074,
+      "lon": -122.35327,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4033",
+      "stop_code": "4033",
+      "name": "Churn Creek Rd at Parsons Dr",
+      "description": "",
+      "lat": 40.565089,
+      "lon": -122.353012,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4004",
+      "stop_code": "4004",
+      "name": "Churn Creek Rd at Presidio St",
+      "description": "@ Shasta Center",
+      "lat": 40.582336,
+      "lon": -122.354457,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4037",
+      "stop_code": "4037",
+      "name": "Churn Creek Rd at Presidio St",
+      "description": "",
+      "lat": 40.582398,
+      "lon": -122.354158,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4031",
+      "stop_code": "4031",
+      "name": "Churn Creek Rd at Shirley Ln",
+      "description": "@ Enterprise High",
+      "lat": 40.558935,
+      "lon": -122.35291,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4012",
+      "stop_code": "4012",
+      "name": "Churn Creek Rd at Shirley Ln",
+      "description": "Across from Enterprise High",
+      "lat": 40.559354,
+      "lon": -122.353225,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4006",
+      "stop_code": "4006",
+      "name": "Churn Creek Rd at Wall St",
+      "description": "@ Walgreens",
+      "lat": 40.571818,
+      "lon": -122.353302,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "2033",
+      "stop_code": "2033",
+      "name": "Court St at 11th St",
+      "description": "Across from YMCA",
+      "lat": 40.587111,
+      "lon": -122.397856,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "2036",
+      "stop_code": "2036",
+      "name": "Court St at 11th St",
+      "description": "@ YMCA",
+      "lat": 40.587664,
+      "lon": -122.398294,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "2034",
+      "stop_code": "2034",
+      "name": "Court St at Shasta St",
+      "description": "Previously, \"Court/Eureka\"--changed to match NB name.    Note: west side (Rite Aid)",
+      "lat": 40.585661,
+      "lon": -122.396972,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "2035",
+      "stop_code": "2035",
+      "name": "Court St at Shasta St",
+      "description": "@ Walgreens",
+      "lat": 40.58566,
+      "lon": -122.396621,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1416",
+      "stop_code": "1416",
+      "name": "Cypress Ave at Athens Ave",
+      "description": "",
+      "lat": 40.573665,
+      "lon": -122.378229,
+      "routes": [
+        "Route 14",
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1111",
+      "stop_code": "1111",
+      "name": "Cypress Ave at Beverly Dr",
+      "description": "@ Big O Tires",
+      "lat": 40.570919,
+      "lon": -122.365733,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1417",
+      "stop_code": "1417",
+      "name": "Cypress Ave at Civic Center Dr",
+      "description": "",
+      "lat": 40.575034,
+      "lon": -122.382048,
+      "routes": [
+        "Route 14",
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1110",
+      "stop_code": "1110",
+      "name": "Cypress Ave at Civic Center Dr",
+      "description": "@ City Hall",
+      "lat": 40.57427,
+      "lon": -122.380802,
+      "routes": [
+        "Route 11",
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1418",
+      "stop_code": "1418",
+      "name": "Cypress Ave at Pine St",
+      "description": "@ Safeway",
+      "lat": 40.576509,
+      "lon": -122.386004,
+      "routes": [
+        "Route 14",
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1415",
+      "stop_code": "1415",
+      "name": "Cypress Ave at Rosemary Ave",
+      "description": "@ Jeff's Cattle Co.",
+      "lat": 40.571179,
+      "lon": -122.364599,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "4002",
+      "stop_code": "4002",
+      "name": "Dana Dr at Bradford Way",
+      "description": "Across from Walmart",
+      "lat": 40.585829,
+      "lon": -122.344213,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4039",
+      "stop_code": "4039",
+      "name": "Dana Dr at Bradford Way",
+      "description": "@ Walmart",
+      "lat": 40.585556,
+      "lon": -122.343251,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4038",
+      "stop_code": "4038",
+      "name": "Dana Dr at Churn Creek Rd",
+      "description": "@ Jack in the Box",
+      "lat": 40.585648,
+      "lon": -122.350341,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4003",
+      "stop_code": "4003",
+      "name": "Dana Dr at Friendly Rd",
+      "description": "@ Target",
+      "lat": 40.585862,
+      "lon": -122.348284,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "29907",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal",
+      "description": "",
+      "lat": 40.583554,
+      "lon": -122.392639,
+      "routes": []
+    },
+    {
+      "stop_id": "29908",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 1",
+      "description": "",
+      "lat": 40.583175,
+      "lon": -122.392362,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "29918",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 11",
+      "description": "",
+      "lat": 40.583236,
+      "lon": -122.392652,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "29919",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 12",
+      "description": "",
+      "lat": 40.583055,
+      "lon": -122.392574,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "29909",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 2",
+      "description": "",
+      "lat": 40.583344,
+      "lon": -122.392436,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "29921",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 299x",
+      "description": "",
+      "lat": 40.584136,
+      "lon": -122.393043,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "29910",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 3",
+      "description": "",
+      "lat": 40.583525,
+      "lon": -122.39251,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "29911",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 4",
+      "description": "",
+      "lat": 40.583707,
+      "lon": -122.392584,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "29920",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 44x",
+      "description": "",
+      "lat": 40.584244,
+      "lon": -122.393038,
+      "routes": [
+        "Route 44X"
+      ]
+    },
+    {
+      "stop_id": "29913",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 6",
+      "description": "",
+      "lat": 40.584057,
+      "lon": -122.392725,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "29916",
+      "stop_code": "",
+      "name": "Downtown Passenger Terminal Gate 9",
+      "description": "",
+      "lat": 40.583585,
+      "lon": -122.392796,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "2045",
+      "stop_code": "2045",
+      "name": "E Placer St at San Francisco St (across from Holiday Market)",
+      "description": "",
+      "lat": 40.574988,
+      "lon": -122.41551,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "3023",
+      "stop_code": "3023",
+      "name": "E. Bonnyview Rd at N. Bonnyview Rd (Bonnyview Market)",
+      "description": "@ Bonnyview Market",
+      "lat": 40.542101,
+      "lon": -122.376173,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3039",
+      "stop_code": "",
+      "name": "E. Bonnyview Rd at N. Bonnyview Rd (NS)",
+      "description": "",
+      "lat": 40.542446,
+      "lon": -122.376063,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3038",
+      "stop_code": "",
+      "name": "E. Bonnyview Rd at Nicolet Ln",
+      "description": "",
+      "lat": 40.538828,
+      "lon": -122.375435,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3024",
+      "stop_code": "3024",
+      "name": "E. Bonnyview Rd at Nicolet Ln",
+      "description": "",
+      "lat": 40.538734,
+      "lon": -122.375618,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3036",
+      "stop_code": "",
+      "name": "E. Bonnyview Rd at S. Bonnyview Rd (FS)",
+      "description": "",
+      "lat": 40.532579,
+      "lon": -122.374343,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3025",
+      "stop_code": "3025",
+      "name": "E. Bonnyview Rd at Willowbrae Ave",
+      "description": "",
+      "lat": 40.536554,
+      "lon": -122.375312,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3037",
+      "stop_code": "",
+      "name": "E. Bonnyview Rd at Willowbrae Ave (FS)",
+      "description": "",
+      "lat": 40.536935,
+      "lon": -122.375205,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3034",
+      "stop_code": "",
+      "name": "Eastside Rd at Wyndham Ln (FS)",
+      "description": "",
+      "lat": 40.56048,
+      "lon": -122.386399,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3042",
+      "stop_code": "",
+      "name": "Eastside Rd at Wyndham Ln (NS)",
+      "description": "",
+      "lat": 40.560402,
+      "lon": -122.386271,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3008",
+      "stop_code": "3008",
+      "name": "El Reno Ln at Westside Rd",
+      "description": "",
+      "lat": 40.549452,
+      "lon": -122.387994,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "5027",
+      "stop_code": "5027",
+      "name": "Hartnell Ave at Bechelli Ln",
+      "description": "@ US District Court",
+      "lat": 40.563875,
+      "lon": -122.363617,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5008",
+      "stop_code": "5008",
+      "name": "Hartnell Ave at Bechelli Ln",
+      "description": "",
+      "lat": 40.563651,
+      "lon": -122.363615,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5006",
+      "stop_code": "5006",
+      "name": "Hartnell Ave at Cypress Ave",
+      "description": "",
+      "lat": 40.570122,
+      "lon": -122.369682,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5029",
+      "stop_code": "5029",
+      "name": "Hartnell Ave at Parkview Ave",
+      "description": "@ Round Table Pizza",
+      "lat": 40.56919,
+      "lon": -122.369289,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5028",
+      "stop_code": "5028",
+      "name": "Hartnell Ave at Shotwick Trail",
+      "description": "@ VA Clinic",
+      "lat": 40.565129,
+      "lon": -122.368114,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5007",
+      "stop_code": "5007",
+      "name": "Hartnell Ave at Shotwick Trail",
+      "description": "Across from VA Clinic",
+      "lat": 40.564919,
+      "lon": -122.368284,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "1408",
+      "stop_code": "1408",
+      "name": "Hilltop Dr at Browning St",
+      "description": "@ Best Buy",
+      "lat": 40.592586,
+      "lon": -122.35856,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1414",
+      "stop_code": "1414",
+      "name": "Hilltop Dr at Commerce St",
+      "description": "@ Trinity Lutheran Church",
+      "lat": 40.573209,
+      "lon": -122.358171,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1112",
+      "stop_code": "1112",
+      "name": "Hilltop Dr at Commerce St",
+      "description": "",
+      "lat": 40.572766,
+      "lon": -122.357905,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1410",
+      "stop_code": "1410",
+      "name": "Hilltop Dr at E. Palisades Ave",
+      "description": "@ Bank of America",
+      "lat": 40.58915,
+      "lon": -122.358341,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1413",
+      "stop_code": "1413",
+      "name": "Hilltop Dr at Industrial St",
+      "description": "@ Cattlemans",
+      "lat": 40.575642,
+      "lon": -122.358105,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1106",
+      "stop_code": "1106",
+      "name": "Hilltop Dr at Lake Blvd",
+      "description": "",
+      "lat": 40.608949,
+      "lon": -122.374269,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1405",
+      "stop_code": "1405",
+      "name": "Hilltop Dr at Mercedes Ln",
+      "description": "",
+      "lat": 40.600197,
+      "lon": -122.372264,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1104",
+      "stop_code": "1104",
+      "name": "Hilltop Dr at Mercedes Ln",
+      "description": "Previously, \"Hilltop/Peppertree\"--changed to match SB name.",
+      "lat": 40.600547,
+      "lon": -122.37237,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1113",
+      "stop_code": "1113",
+      "name": "Hilltop Dr at Mistletoe Ln",
+      "description": "@ Marie Calender's",
+      "lat": 40.578886,
+      "lon": -122.357713,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1412",
+      "stop_code": "1412",
+      "name": "Hilltop Dr at Mistletoe Ln",
+      "description": "@ Holiday Inn",
+      "lat": 40.579852,
+      "lon": -122.357993,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1101",
+      "stop_code": "1101",
+      "name": "Hilltop Dr at Palisades Ave",
+      "description": "",
+      "lat": 40.595507,
+      "lon": -122.362167,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1407",
+      "stop_code": "1407",
+      "name": "Hilltop Dr at Palisades Ave",
+      "description": "",
+      "lat": 40.595329,
+      "lon": -122.362132,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1411",
+      "stop_code": "1411",
+      "name": "Hilltop Dr at Presidio St",
+      "description": "@ Red Lion",
+      "lat": 40.581517,
+      "lon": -122.357934,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1114",
+      "stop_code": "1114",
+      "name": "Hilltop Dr at Presidio St",
+      "description": "",
+      "lat": 40.582111,
+      "lon": -122.357662,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1409",
+      "stop_code": "1409",
+      "name": "Hilltop Dr at Rockaway Dr",
+      "description": "@ Bed Bath & Beyond",
+      "lat": 40.590709,
+      "lon": -122.358444,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1115",
+      "stop_code": "1115",
+      "name": "Hilltop Dr at Rockaway Dr",
+      "description": "@ Hilltop Town and Country",
+      "lat": 40.591145,
+      "lon": -122.358172,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1102",
+      "stop_code": "1102",
+      "name": "Hilltop Dr at Sandpointe Dr",
+      "description": "",
+      "lat": 40.597075,
+      "lon": -122.367839,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1406",
+      "stop_code": "1406",
+      "name": "Hilltop Dr at Sandpointe Dr",
+      "description": "",
+      "lat": 40.596735,
+      "lon": -122.36746,
+      "routes": [
+        "Route 14"
+      ]
+    },
+    {
+      "stop_id": "1103",
+      "stop_code": "1103",
+      "name": "Hilltop Dr at St. Thomas Pkwy",
+      "description": "@ Hilltop Estates",
+      "lat": 40.599153,
+      "lon": -122.370999,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "7005",
+      "stop_code": "7005",
+      "name": "Lake Blvd at Black Marble Way",
+      "description": "",
+      "lat": 40.610979,
+      "lon": -122.369708,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1014",
+      "stop_code": "1014",
+      "name": "Lake Blvd at Clay St",
+      "description": "",
+      "lat": 40.613821,
+      "lon": -122.385415,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1049",
+      "stop_code": "1049",
+      "name": "Lake Blvd at Clay St",
+      "description": "",
+      "lat": 40.613541,
+      "lon": -122.385396,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "7004",
+      "stop_code": "7004",
+      "name": "Lake Blvd at Hilltop Dr",
+      "description": "@ Walgreen's",
+      "lat": 40.610127,
+      "lon": -122.373569,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7019",
+      "stop_code": "7019",
+      "name": "Lake Blvd at Hilltop Dr (NS)",
+      "description": "",
+      "lat": 40.609959,
+      "lon": -122.375123,
+      "routes": [
+        "Route 11",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1045",
+      "stop_code": "1045",
+      "name": "Lake Blvd at Keswick Dam Rd",
+      "description": "",
+      "lat": 40.62587,
+      "lon": -122.40527,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "29924",
+      "stop_code": "",
+      "name": "Lake Blvd at Keswick Dam Rd",
+      "description": "",
+      "lat": 40.625994,
+      "lon": -122.404912,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "7018",
+      "stop_code": "7018",
+      "name": "Lake Blvd at Masonic Dr (FS)",
+      "description": "",
+      "lat": 40.609644,
+      "lon": -122.379049,
+      "routes": [
+        "Route 1",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7006",
+      "stop_code": "7006",
+      "name": "Lake Blvd at N. Boulder Dr",
+      "description": "",
+      "lat": 40.611058,
+      "lon": -122.37077,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7003",
+      "stop_code": "7003",
+      "name": "Lake Blvd at N. Market St",
+      "description": "",
+      "lat": 40.60943,
+      "lon": -122.375721,
+      "routes": [
+        "Route 14",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1052",
+      "stop_code": "1052",
+      "name": "Lake Blvd at Northpoint Dr (FS)",
+      "description": "",
+      "lat": 40.61171,
+      "lon": -122.382086,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "7017",
+      "stop_code": "7017",
+      "name": "Lake Blvd at Northpoint Dr (FS)",
+      "description": "",
+      "lat": 40.61088,
+      "lon": -122.381176,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1047",
+      "stop_code": "1047",
+      "name": "Lake Blvd at Panorama Dr",
+      "description": "",
+      "lat": 40.61893,
+      "lon": -122.397178,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1050",
+      "stop_code": "1050",
+      "name": "Lake Blvd at Santa Rosa Way",
+      "description": "",
+      "lat": 40.621782,
+      "lon": -122.402246,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1048",
+      "stop_code": "1048",
+      "name": "Lake Blvd at St. Marks St",
+      "description": "",
+      "lat": 40.616306,
+      "lon": -122.392427,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "29923",
+      "stop_code": "",
+      "name": "Lake Blvd at St. Marks St",
+      "description": "",
+      "lat": 40.616888,
+      "lon": -122.393023,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1051",
+      "stop_code": "1051",
+      "name": "Lake Blvd at St. Nicholas Ave",
+      "description": "",
+      "lat": 40.619509,
+      "lon": -122.397904,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1046",
+      "stop_code": "1046",
+      "name": "Lake Blvd at Tamarack Dr",
+      "description": "",
+      "lat": 40.620575,
+      "lon": -122.400736,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "2001",
+      "stop_code": "2001",
+      "name": "Lincoln St at S. Market St",
+      "description": "",
+      "lat": 40.578592,
+      "lon": -122.38906,
+      "routes": [
+        "Route 11",
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "8006",
+      "stop_code": "8006",
+      "name": "Montgomery Creek (SR 299 @ Montgomery Creek Library)",
+      "description": "",
+      "lat": 40.842069,
+      "lon": -121.924014,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "7015",
+      "stop_code": "7015",
+      "name": "N. Market St at Benton Dr",
+      "description": "@ Olde West Gun & Loan",
+      "lat": 40.598501,
+      "lon": -122.385462,
+      "routes": [
+        "Route 11",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7002",
+      "stop_code": "7002",
+      "name": "N. Market St at Benton Dr",
+      "description": "",
+      "lat": 40.598926,
+      "lon": -122.384421,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7016",
+      "stop_code": "7016",
+      "name": "N. Market St at Quartz Hill Rd",
+      "description": "",
+      "lat": 40.59536,
+      "lon": -122.388698,
+      "routes": [
+        "Route 11",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "7001",
+      "stop_code": "7001",
+      "name": "N. Market St at Quartz Hill Rd",
+      "description": "",
+      "lat": 40.595321,
+      "lon": -122.388104,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "9026",
+      "stop_code": "9026",
+      "name": "NB SR 273 at Shasta Gateway",
+      "description": "",
+      "lat": 40.435049,
+      "lon": -122.288607,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9037",
+      "stop_code": "9037",
+      "name": "North St at East St (FS)",
+      "description": "",
+      "lat": 40.451854,
+      "lon": -122.299985,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9055",
+      "stop_code": "9055",
+      "name": "North St at Freeman St (FS)",
+      "description": "",
+      "lat": 40.451509,
+      "lon": -122.300023,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9006",
+      "stop_code": "9006",
+      "name": "North St at Sharon Ave",
+      "description": "",
+      "lat": 40.461707,
+      "lon": -122.295447,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9005",
+      "stop_code": "9005",
+      "name": "North St at Tremonto Rd",
+      "description": "",
+      "lat": 40.458196,
+      "lon": -122.294846,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9036",
+      "stop_code": "9036",
+      "name": "North St at Tremonto Rd (NS)",
+      "description": "",
+      "lat": 40.457684,
+      "lon": -122.295026,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9004",
+      "stop_code": "9004",
+      "name": "North St at Ventura St",
+      "description": "@ Vittles",
+      "lat": 40.45503,
+      "lon": -122.295983,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9035",
+      "stop_code": "9035",
+      "name": "North St at Wendy Ln (NS)",
+      "description": "",
+      "lat": 40.462924,
+      "lon": -122.295852,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "1013",
+      "stop_code": "1013",
+      "name": "Northpoint Dr at Lake Blvd",
+      "description": "@ Raley's",
+      "lat": 40.611697,
+      "lon": -122.380962,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1001",
+      "stop_code": "1001",
+      "name": "Northpoint Dr at Lake Blvd",
+      "description": "@ Raley's",
+      "lat": 40.611854,
+      "lon": -122.38057,
+      "routes": [
+        "Route 11",
+        "Route 14",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1002",
+      "stop_code": "1002",
+      "name": "Northpoint Dr at Redwood Blvd",
+      "description": "",
+      "lat": 40.613571,
+      "lon": -122.376284,
+      "routes": [
+        "Route 11",
+        "Route 14",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1012",
+      "stop_code": "1012",
+      "name": "Northpoint Dr at Redwood Blvd",
+      "description": "",
+      "lat": 40.613722,
+      "lon": -122.376381,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1902",
+      "stop_code": "",
+      "name": "Oak Bottom Beach",
+      "description": "",
+      "lat": 40.650304,
+      "lon": -122.590394,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "1043",
+      "stop_code": "1043",
+      "name": "Oasis Rd at Beltline Rd",
+      "description": "",
+      "lat": 40.633114,
+      "lon": -122.391621,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1055",
+      "stop_code": "1055",
+      "name": "Oasis Rd at Beltline Rd (NS)",
+      "description": "",
+      "lat": 40.632906,
+      "lon": -122.391589,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1067",
+      "stop_code": "1067",
+      "name": "Oasis Rd at Cascade Blvd (NS)",
+      "description": "",
+      "lat": 40.642035,
+      "lon": -122.367678,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1053",
+      "stop_code": "1053",
+      "name": "Oasis Rd at Lake Blvd (FS)",
+      "description": "",
+      "lat": 40.62755,
+      "lon": -122.404194,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1042",
+      "stop_code": "1042",
+      "name": "Oasis Rd at Randolph Rd",
+      "description": "",
+      "lat": 40.640514,
+      "lon": -122.375167,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1056",
+      "stop_code": "1056",
+      "name": "Oasis Rd at Randolph Rd (FS)",
+      "description": "",
+      "lat": 40.640779,
+      "lon": -122.374544,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1054",
+      "stop_code": "1054",
+      "name": "Oasis Rd at Redding STEM (FS)",
+      "description": "",
+      "lat": 40.63054,
+      "lon": -122.399064,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "4059",
+      "stop_code": "",
+      "name": "Old Alturas Rd @ Churn Creek Rd (FS)",
+      "description": "",
+      "lat": 40.588506,
+      "lon": -122.350196,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4041",
+      "stop_code": "4041",
+      "name": "Old Alturas Rd at Bradford Way",
+      "description": "@ Winco",
+      "lat": 40.587039,
+      "lon": -122.344259,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4001",
+      "stop_code": "4001",
+      "name": "Old Alturas Rd at Bradford Way",
+      "description": "@ Costco",
+      "lat": 40.586776,
+      "lon": -122.344491,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4042",
+      "stop_code": "4042",
+      "name": "Old Alturas Rd at Friendly Rd",
+      "description": "@ Cinemark",
+      "lat": 40.588317,
+      "lon": -122.347395,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "5501",
+      "stop_code": "5501",
+      "name": "Orland",
+      "description": "",
+      "lat": 39.748765,
+      "lon": -122.202687,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "9021",
+      "stop_code": "9021",
+      "name": "Parallel Rd at Hill St",
+      "description": "",
+      "lat": 40.4702,
+      "lon": -122.33097,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9018",
+      "stop_code": "9018",
+      "name": "Parallel Rd at Hill St",
+      "description": "",
+      "lat": 40.470422,
+      "lon": -122.331053,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "1108",
+      "stop_code": "1108",
+      "name": "Quartz Hill Rd at Benton Dr",
+      "description": "@ Lake Redding Golf Course",
+      "lat": 40.596509,
+      "lon": -122.399686,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "1107",
+      "stop_code": "1107",
+      "name": "Quartz Hill Rd at Delta St",
+      "description": "Across from Aquatic Center",
+      "lat": 40.59616,
+      "lon": -122.392829,
+      "routes": [
+        "Route 11"
+      ]
+    },
+    {
+      "stop_id": "3022",
+      "stop_code": "3022",
+      "name": "Radio Ln at Cerro Ln",
+      "description": "",
+      "lat": 40.547773,
+      "lon": -122.379493,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3040",
+      "stop_code": "",
+      "name": "Radio Ln at Cerro Ln (NS)",
+      "description": "",
+      "lat": 40.547647,
+      "lon": -122.378169,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9902",
+      "stop_code": "9902",
+      "name": "Red Bluff Bus & Ride @ Rio St and Walnut St.",
+      "description": "",
+      "lat": 40.178541,
+      "lon": -122.234455,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "1004",
+      "stop_code": "1004",
+      "name": "Redwood Blvd at Butternut Trail",
+      "description": "",
+      "lat": 40.621492,
+      "lon": -122.381034,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1005",
+      "stop_code": "1005",
+      "name": "Redwood Blvd at Caterpillar Rd",
+      "description": "@ Shasta County Opportunity Center",
+      "lat": 40.625089,
+      "lon": -122.380159,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1003",
+      "stop_code": "1003",
+      "name": "Redwood Blvd at Marijean Way",
+      "description": "",
+      "lat": 40.618199,
+      "lon": -122.375482,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "9000",
+      "stop_code": "9000",
+      "name": "Rhonda Ave at Walmart",
+      "description": "South of Pleasant Hill Dr., east of Walmart.",
+      "lat": 40.432513,
+      "lon": -122.287636,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3026",
+      "stop_code": "3026",
+      "name": "S. Bonnyview Rd at E. Bonnyview Rd",
+      "description": "",
+      "lat": 40.531569,
+      "lon": -122.374855,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3035",
+      "stop_code": "",
+      "name": "S. Bonnyview Rd at Eastside Rd (FS)",
+      "description": "",
+      "lat": 40.529873,
+      "lon": -122.379623,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "2002",
+      "stop_code": "2002",
+      "name": "S. Market St at California St",
+      "description": "",
+      "lat": 40.571292,
+      "lon": -122.38832,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "2005",
+      "stop_code": "2005",
+      "name": "S. Market St at Ellis St",
+      "description": "@ RABA Office",
+      "lat": 40.564858,
+      "lon": -122.387544,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9041",
+      "stop_code": "9041",
+      "name": "S. Market St at Ellis St (NS)",
+      "description": "",
+      "lat": 40.564801,
+      "lon": -122.38798,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "2003",
+      "stop_code": "2003",
+      "name": "S. Market St at Grange St",
+      "description": "",
+      "lat": 40.56729,
+      "lon": -122.388084,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9040",
+      "stop_code": "9040",
+      "name": "S. Market St at Parkview Ave (FS)",
+      "description": "",
+      "lat": 40.573143,
+      "lon": -122.387882,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "8018",
+      "stop_code": "8018",
+      "name": "S. Shore @ Paige Bar Road (Kennedy Memorial)",
+      "description": "",
+      "lat": 40.600241,
+      "lon": -122.535307,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "8015",
+      "stop_code": "8015",
+      "name": "S. Shore Dr at Brandy Creek Beach",
+      "description": "Whiskeytown NRA",
+      "lat": 40.616486,
+      "lon": -122.572093,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "8017",
+      "stop_code": "8017",
+      "name": "S. Shore Dr at Brandy Creek Marina",
+      "description": "",
+      "lat": 40.621176,
+      "lon": -122.57097,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "9027",
+      "stop_code": "9027",
+      "name": "SB Rhonda Rd at Pleasant Hills Dr",
+      "description": "",
+      "lat": 40.433322,
+      "lon": -122.289297,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9022",
+      "stop_code": "9022",
+      "name": "SR 273 at 3rd St",
+      "description": "",
+      "lat": 40.459285,
+      "lon": -122.314656,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9017",
+      "stop_code": "9017",
+      "name": "SR 273 at Alexander Ave",
+      "description": "",
+      "lat": 40.4601,
+      "lon": -122.315293,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9001",
+      "stop_code": "9001",
+      "name": "SR 273 at Barney Rd",
+      "description": "",
+      "lat": 40.439338,
+      "lon": -122.291604,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9002",
+      "stop_code": "9002",
+      "name": "SR 273 at Bruce St",
+      "description": "",
+      "lat": 40.444504,
+      "lon": -122.295192,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9024",
+      "stop_code": "9024",
+      "name": "SR 273 at Bruce St",
+      "description": "",
+      "lat": 40.444495,
+      "lon": -122.295666,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3001",
+      "stop_code": "3001",
+      "name": "SR 273 at Canyon Rd",
+      "description": "",
+      "lat": 40.506106,
+      "lon": -122.37914,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3032",
+      "stop_code": "3032",
+      "name": "SR 273 at Canyon Rd",
+      "description": "@ Win-River",
+      "lat": 40.506047,
+      "lon": -122.379493,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9051",
+      "stop_code": "9051",
+      "name": "SR 273 at Jesse Rd (FS)",
+      "description": "",
+      "lat": 40.486666,
+      "lon": -122.354744,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9019",
+      "stop_code": "9019",
+      "name": "SR 273 at Latona Rd",
+      "description": "@ Jolly's Giant Flea Mart",
+      "lat": 40.481608,
+      "lon": -122.346682,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9020",
+      "stop_code": "9020",
+      "name": "SR 273 at Overland Dr",
+      "description": "",
+      "lat": 40.482269,
+      "lon": -122.348296,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9025",
+      "stop_code": "9025",
+      "name": "SR 273 at Pinion Ave",
+      "description": "@ Tower Mart",
+      "lat": 40.438234,
+      "lon": -122.291302,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3003",
+      "stop_code": "3003",
+      "name": "SR 273 at Westwood Ave",
+      "description": "",
+      "lat": 40.523126,
+      "lon": -122.382336,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9047",
+      "stop_code": "9047",
+      "name": "SR 273 at Westwood Ave (FS)",
+      "description": "",
+      "lat": 40.522328,
+      "lon": -122.382616,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "29903",
+      "stop_code": "29903",
+      "name": "SR 299 @ Hill Country Health and Wellness Center",
+      "description": "",
+      "lat": 40.803703,
+      "lon": -121.939862,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "8005",
+      "stop_code": "8005",
+      "name": "SR 299 @ Round Mountain Garden",
+      "description": "",
+      "lat": 40.793616,
+      "lon": -121.943014,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "8014",
+      "stop_code": "8014",
+      "name": "SR 299 at 2nd St",
+      "description": "",
+      "lat": 40.596904,
+      "lon": -122.488764,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "8016",
+      "stop_code": "8016",
+      "name": "SR 299 at Buell Alley",
+      "description": "",
+      "lat": 40.597365,
+      "lon": -122.489859,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "29902",
+      "stop_code": "",
+      "name": "SR 299/CAL Fire Diddy Wells Station #74",
+      "description": "",
+      "lat": 40.704338,
+      "lon": -122.095287,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "29901",
+      "stop_code": "",
+      "name": "SR 299/Elm",
+      "description": "",
+      "lat": 40.87931,
+      "lon": -121.674805,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "29904",
+      "stop_code": "29904",
+      "name": "SR 89 @ SR 299 Park and Ride Lot",
+      "description": "",
+      "lat": 40.937346,
+      "lon": -121.606,
+      "routes": [
+        "Route 299X"
+      ]
+    },
+    {
+      "stop_id": "5503",
+      "stop_code": "5503",
+      "name": "Sacramento Airport Terminal A",
+      "description": "",
+      "lat": 38.692581,
+      "lon": -121.588724,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "5504",
+      "stop_code": "5504",
+      "name": "Sacramento Airport Terminal B",
+      "description": "",
+      "lat": 38.69124,
+      "lon": -121.590623,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "5505",
+      "stop_code": "5505",
+      "name": "Sacramento Valley Station",
+      "description": "",
+      "lat": 38.584671,
+      "lon": -121.501495,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "29934",
+      "stop_code": "29934",
+      "name": "Shasta College (Detour)",
+      "description": "",
+      "lat": 40.627725,
+      "lon": -122.318454,
+      "routes": [
+        "Route 299X",
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1063",
+      "stop_code": "1063",
+      "name": "Shasta Dam Blvd and Grand River Ave (NS)",
+      "description": "",
+      "lat": 40.680493,
+      "lon": -122.361666,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1062",
+      "stop_code": "1062",
+      "name": "Shasta Dam Blvd at 5001 Oregon",
+      "description": "",
+      "lat": 40.680357,
+      "lon": -122.357537,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1064",
+      "stop_code": "1064",
+      "name": "Shasta Dam Blvd at Farmers Marketplace (MB)",
+      "description": "",
+      "lat": 40.680596,
+      "lon": -122.364518,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1034",
+      "stop_code": "1034",
+      "name": "Shasta Dam Blvd at Grand Coulee Blvd",
+      "description": "",
+      "lat": 40.68017,
+      "lon": -122.358041,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1032",
+      "stop_code": "1032",
+      "name": "Shasta Dam Blvd at Hardenbrook Ave",
+      "description": "",
+      "lat": 40.680504,
+      "lon": -122.366825,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1061",
+      "stop_code": "1061",
+      "name": "Shasta Dam Blvd at Kennett St (NS)",
+      "description": "",
+      "lat": 40.680323,
+      "lon": -122.351581,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "29929",
+      "stop_code": "29929",
+      "name": "Shasta Dam Blvd at Locust Ave",
+      "description": "",
+      "lat": 40.680529,
+      "lon": -122.3684,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "1033",
+      "stop_code": "1033",
+      "name": "Shasta Dam Blvd at Median Ave",
+      "description": "@ car wash",
+      "lat": 40.680377,
+      "lon": -122.363635,
+      "routes": [
+        "Route 1"
+      ]
+    },
+    {
+      "stop_id": "4404",
+      "stop_code": "",
+      "name": "Shingletown Park and Ride Lot",
+      "description": "",
+      "lat": 40.492736,
+      "lon": -121.887694,
+      "routes": [
+        "Route 44X"
+      ]
+    },
+    {
+      "stop_id": "29922",
+      "stop_code": "",
+      "name": "Silver St at Briggs St (Fairgrounds)",
+      "description": "",
+      "lat": 40.452771,
+      "lon": -122.307864,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9052",
+      "stop_code": "9052",
+      "name": "Silver St at Briggs St (Fairgrounds) (FS)",
+      "description": "",
+      "lat": 40.452629,
+      "lon": -122.307926,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9014",
+      "stop_code": "9014",
+      "name": "Silver St at North St",
+      "description": "",
+      "lat": 40.449504,
+      "lon": -122.303077,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9054",
+      "stop_code": "9054",
+      "name": "Silver St at North St (NS)",
+      "description": "",
+      "lat": 40.449278,
+      "lon": -122.303027,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9015",
+      "stop_code": "9015",
+      "name": "Silver St at School St",
+      "description": "",
+      "lat": 40.450913,
+      "lon": -122.305158,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9053",
+      "stop_code": "9053",
+      "name": "Silver St at School St (FS)",
+      "description": "",
+      "lat": 40.450624,
+      "lon": -122.30501,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9012",
+      "stop_code": "9012",
+      "name": "South St at E. Center St",
+      "description": "",
+      "lat": 40.448818,
+      "lon": -122.297574,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9008",
+      "stop_code": "9008",
+      "name": "Stingy Ln at Bay St",
+      "description": "",
+      "lat": 40.460596,
+      "lon": -122.288683,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9007",
+      "stop_code": "9007",
+      "name": "Stingy Ln at Daisy St",
+      "description": "",
+      "lat": 40.465174,
+      "lon": -122.295269,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9034",
+      "stop_code": "9034",
+      "name": "Stingy Ln at Daisy St (NS)",
+      "description": "",
+      "lat": 40.465247,
+      "lon": -122.295087,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9032",
+      "stop_code": "9032",
+      "name": "Stingy Ln at Rupert Rd (Anderson River Park) (NS)",
+      "description": "",
+      "lat": 40.460365,
+      "lon": -122.288108,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9009",
+      "stop_code": "9009",
+      "name": "Stingy Ln at Silo Ct",
+      "description": "",
+      "lat": 40.458648,
+      "lon": -122.285865,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9033",
+      "stop_code": "9033",
+      "name": "Stingy Ln at St. Stephens Dr (NS)",
+      "description": "",
+      "lat": 40.461404,
+      "lon": -122.289575,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "7000",
+      "stop_code": "7000",
+      "name": "Trinity St at California St",
+      "description": "",
+      "lat": 40.588406,
+      "lon": -122.393382,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1009",
+      "stop_code": "1009",
+      "name": "Twin View Blvd at Caterpillar Rd",
+      "description": "",
+      "lat": 40.6225,
+      "lon": -122.369215,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1010",
+      "stop_code": "1010",
+      "name": "Twin View Blvd at Midway Dr",
+      "description": "@ Shascade",
+      "lat": 40.620308,
+      "lon": -122.370844,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "1011",
+      "stop_code": "1011",
+      "name": "Twin View Blvd at Valleyridge Dr",
+      "description": "",
+      "lat": 40.617004,
+      "lon": -122.373204,
+      "routes": [
+        "Route 7"
+      ]
+    },
+    {
+      "stop_id": "4040",
+      "stop_code": "4040",
+      "name": "Victor Ave at Dana Dr",
+      "description": "",
+      "lat": 40.585966,
+      "lon": -122.338716,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "4060",
+      "stop_code": "",
+      "name": "Victor Ave at Dana Dr (NS)",
+      "description": "",
+      "lat": 40.585848,
+      "lon": -122.338984,
+      "routes": [
+        "Route 4"
+      ]
+    },
+    {
+      "stop_id": "2023",
+      "stop_code": "2023",
+      "name": "W Placer St at San Francisco St (across from Holiday Market)",
+      "description": "",
+      "lat": 40.575803,
+      "lon": -122.414873,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "9048",
+      "stop_code": "9048",
+      "name": "Westside Rd @ Clear Creek Ave (FS)",
+      "description": "",
+      "lat": 40.515895,
+      "lon": -122.381689,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "29932",
+      "stop_code": "29932",
+      "name": "Westside Rd at Branstetter Ln",
+      "description": "",
+      "lat": 40.535028,
+      "lon": -122.385194,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "3002",
+      "stop_code": "3002",
+      "name": "Westside Rd at Clear Creek Rd",
+      "description": "@ Park-and-ride  No existing pole/flag",
+      "lat": 40.5159,
+      "lon": -122.381492,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "29933",
+      "stop_code": "29933",
+      "name": "Westside Rd at Concord Ln",
+      "description": "",
+      "lat": 40.530222,
+      "lon": -122.384198,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "9050",
+      "stop_code": "9050",
+      "name": "Westside Rd at Happy Valley Rd (FS)",
+      "description": "",
+      "lat": 40.494078,
+      "lon": -122.365875,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "3000",
+      "stop_code": "3000",
+      "name": "Westside Rd at Happy Valley Rd (NS)",
+      "description": "At Happy Valley Rd, Routes 3 and 8 ALWAYS only use NB station (movement: enter near Midway Market, turn right on frontage road, serve this station, turn right on Happy Valley Rd).       AC uses the same movement for NB travel (i.e., uses this NB station).",
+      "lat": 40.494129,
+      "lon": -122.365713,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "29931",
+      "stop_code": "29931",
+      "name": "Westside Rd at Kenyon Dr",
+      "description": "",
+      "lat": 40.544754,
+      "lon": -122.386744,
+      "routes": [
+        "Route 3"
+      ]
+    },
+    {
+      "stop_id": "9049",
+      "stop_code": "9049",
+      "name": "Westside Rd at SR 273",
+      "description": "",
+      "lat": 40.513364,
+      "lon": -122.381392,
+      "routes": [
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "9038",
+      "stop_code": "9038",
+      "name": "Westside Rd at SR 273 (FS)",
+      "description": "",
+      "lat": 40.513293,
+      "lon": -122.381214,
+      "routes": [
+        "Route 3",
+        "Route 9"
+      ]
+    },
+    {
+      "stop_id": "8013",
+      "stop_code": "8013",
+      "name": "Whiskeytown Visitor Center",
+      "description": "",
+      "lat": 40.614869,
+      "lon": -122.520272,
+      "routes": [
+        "Route 19"
+      ]
+    },
+    {
+      "stop_id": "5502",
+      "stop_code": "5502",
+      "name": "Williams",
+      "description": "",
+      "lat": 39.156858,
+      "lon": -122.146894,
+      "routes": [
+        "Route 5x"
+      ]
+    },
+    {
+      "stop_id": "9903",
+      "stop_code": "9903",
+      "name": "Yuba Street at Railroad Tracks",
+      "description": "",
+      "lat": 40.582755,
+      "lon": -122.393179,
+      "routes": [
+        "Route 5x"
+      ]
+    }
+  ]
+}
