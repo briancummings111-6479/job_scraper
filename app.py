@@ -33,10 +33,12 @@ def save_search_config():
         config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "search_config.json")
         import json
         
-        def clean_list(val):
+        def clean_list(val, allow_comma=True):
             if isinstance(val, str):
-                delimiter = ';' if ';' in val else ','
-                return [x.strip() for x in val.split(delimiter) if x.strip()]
+                delimiter = ';' if ';' in val or not allow_comma else (',' if ',' in val else None)
+                if delimiter:
+                    return [x.strip() for x in val.split(delimiter) if x.strip()]
+                return [val.strip()] if val.strip() else []
             elif isinstance(val, list):
                 return [str(x).strip() for x in val if str(x).strip()]
             return []
@@ -51,7 +53,7 @@ def save_search_config():
         if 'all_keywords' in data:
             current_config['all_keywords'] = clean_list(data['all_keywords'])
         if 'location' in data:
-            current_config['location'] = clean_list(data['location'])
+            current_config['location'] = clean_list(data['location'], allow_comma=False)
         if 'radius' in data:
             current_config['radius'] = int(data['radius'])
         if 'job_types' in data:

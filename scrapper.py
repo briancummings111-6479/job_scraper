@@ -2918,7 +2918,7 @@ class JobScraper:
     def extract_shift(self, text):
         return extract_shift(text)
 
-    def is_duplicate(self, job_data):
+    def is_duplicate(self, job_data, mark_seen=True):
         job_url = job_data.get('job_url', '')
         if job_url and 'jk=' in job_url:
             match = re.search(r'jk=([a-zA-Z0-9]+)', job_url)
@@ -2926,10 +2926,11 @@ class JobScraper:
                 jk_id = match.group(1)
                 if jk_id in self.seen_jobs:
                     return True
-                self.seen_jobs.add(jk_id)
+                if mark_seen:
+                    self.seen_jobs.add(jk_id)
                 return False
                 
-        if not job_data['job_title'] or not job_data['company']:
+        if not job_data.get('job_title') or not job_data.get('company'):
             return False
             
         loc = job_data.get('location', '')
@@ -2938,7 +2939,8 @@ class JobScraper:
         if job_id in self.seen_jobs:
             return True
             
-        self.seen_jobs.add(job_id)
+        if mark_seen:
+            self.seen_jobs.add(job_id)
         return False
     
     def check_cloudflare(self):
@@ -3147,12 +3149,11 @@ class JobScraper:
                 print(f"\n--- Searching for Job Type: {jt} ---")
                 
                 query_params = [
-                    f"q=title:({job_title.replace(' ', '+')})",
+                    f"q={job_title.replace(' ', '+')}",
                     f"l={location.replace(' ', '+')}",
                     f"radius={radius}",
                     f"fromage={days_ago}",
-                    f"jt={jt}",
-                    "explvl=ENTRY_LEVEL"
+                    f"jt={jt}"
                 ]
                 
                 search_url = f"{base_url}?{'&'.join(query_params)}"
@@ -3290,7 +3291,12 @@ class JobScraper:
                                                 break
 
                                 # EARLY PRE-CLICK FILTERING:
-                                # Save 2-4 seconds per duplicate/rejected job by checking card DOM metadata before clicking
+                                # 1. Detect non-job promotional banners, salary widgets, or search alert cards early
+                                if not card_title and not card_company:
+                                    print(f"    [INFO] Non-job promotional/widget card {idx + 1} skipped without clicking")
+                                    continue
+
+                                # 2. Save 2-4 seconds per duplicate/rejected job by checking card DOM metadata before clicking
                                 if card_title and is_bogus_title(card_title):
                                     print(f"    [SKIP] Bogus card title: '{card_title}' for job {idx + 1}")
                                     continue
@@ -3315,7 +3321,7 @@ class JobScraper:
                                         'pay': card_pay,
                                         'job_url': f"https://www.indeed.com/viewjob?jk={jk}" if jk else ""
                                     }
-                                    if self.is_duplicate(candidate_card_job):
+                                    if self.is_duplicate(candidate_card_job, mark_seen=False):
                                         print(f"    [WARN] Duplicate job skipped: {card_title} at {card_company or 'Unknown Company'}")
                                         continue
 
@@ -3615,7 +3621,7 @@ class JobScraper:
                                     print(f"    [SKIP] Filtered non-entry-level / rejected: {job_data['job_title']} ({rej_reason})")
                                     continue
 
-                                if self.is_duplicate(job_data):
+                                if self.is_duplicate(job_data, mark_seen=True):
                                     print(f"    [WARN] Duplicate job skipped: {job_data['job_title']} at {job_data['company']}")
                                     continue
 
