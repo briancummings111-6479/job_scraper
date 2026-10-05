@@ -68,6 +68,8 @@ def save_search_config():
             current_config['industry_keywords'] = data['industry_keywords']
         if 'keyword_groups' in data and isinstance(data['keyword_groups'], dict):
             current_config['keyword_groups'] = data['keyword_groups']
+        if 'channels' in data:
+            current_config['channels'] = clean_list(data['channels'])
 
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(current_config, f, indent=2)
@@ -501,10 +503,14 @@ def generate_targeted():
             if not any(b in rej.lower() for b in bypass_terms)
         ]
 
+        raw_channels = data.get("channels")
+        channels = [c.strip() for c in raw_channels if c.strip()] if isinstance(raw_channels, list) else None
+
         excel_file = run_scraping_job(
             keywords=formatted_keywords,
             location=[raw_location],
             radius=radius,
+            channels=channels,
             rejected_titles=active_rejections,
             days_ago=7,
             max_pages=2,

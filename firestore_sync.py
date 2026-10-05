@@ -6,8 +6,11 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, is_bogus_title
 except ImportError:
+    def is_bogus_title(title: str) -> bool:
+        return False
+
     def clean_job_title(title: str) -> str:
         if not title:
             return ""
@@ -39,6 +42,9 @@ except ImportError:
 
     def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
         return f"{title} position at {company} in {location}."
+
+_PROCESSED_JOB_IDS = set()
+_REJECTED_JOB_IDS = set()
 
 def get_firestore_client():
     if firebase_admin._apps:
@@ -163,7 +169,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
 
     for job in jobs_list:
         clean_title = clean_job_title(job.get("job_title", ""))
-        if not clean_title or clean_title == "N/A":
+        if not clean_title or clean_title == "N/A" or is_bogus_title(clean_title):
             continue
 
         raw_loc = job.get("location", "Redding, CA")
@@ -189,6 +195,9 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             title=clean_title,
             location=cleaned_loc
         )
+
+        if doc_id in _REJECTED_JOB_IDS or doc_id in _PROCESSED_JOB_IDS:
+            continue
 
         doc_ref = db.collection(collection_name).document(doc_id)
         job_copy = dict(job)
@@ -218,6 +227,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         if gemini_res:
             if not gemini_res.is_entry_level:
                 print(f"[FIRESTORE] Skipping rejected job via Gemini: {clean_title} ({gemini_res.rejection_reason})")
+                _REJECTED_JOB_IDS.add(doc_id)
                 continue
             sector = gemini_res.sector
             if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and (not job.get("pay") or job.get("pay") == "N/A"):
@@ -286,6 +296,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         }
 
         batch.set(doc_ref, payload, merge=True)
+        _PROCESSED_JOB_IDS.add(doc_id)
         batch_count += 1
         total_written += 1
 

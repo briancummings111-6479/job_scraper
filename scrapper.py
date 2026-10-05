@@ -34,6 +34,7 @@ def load_search_config(config_file="search_config.json"):
         "keywords": ["warehouse", "retail", "cashier", "cook", "dishwasher", "server", "custodian", "laborer", "stocker", "delivery", "caregiver", "groundskeeper"],
         "standard_keywords": ["warehouse", "retail", "cashier", "cook", "dishwasher", "server", "custodian", "laborer", "stocker", "delivery", "caregiver", "groundskeeper"],
         "all_keywords": ["account executive", "admin", "assistant", "Associate", "Attendant", "baker", "bar", "barista", "builder", "burger", "butcher", "cafe", "care", "caregiver", "carpenter", "cashier", "cdl", "chef", "clerk", "clinic", "cna", "construction", "consultant", "cook", "coordinator", "courier", "crew", "Custodian", "Customer Service", "data entry", "delivery", "dental", "dining", "dishwasher", "driver", "electrician", "engineer", "executive", "fast food", "food", "foreman", "Groundskeeper", "Handler", "health", "heavy equipment", "hospital", "host", "housekeeper", "hvac", "installer", "it", "janitor", "kitchen", "laborer", "landscaper", "lead", "maintenance", "management", "manager", "mechanic", "medical", "merchandiser", "network", "nurse", "office", "operations", "patient", "pharmacy", "pizza", "plumber", "receptionist", "representative", "restaurant", "retail", "rn", "sales", "sales associate", "secretary", "security guard", "server", "shipping", "site", "software", "Stocker", "store", "supervisor", "support", "systems", "taco", "team lead", "technician", "therapist", "transport", "truck", "warehouse", "welder"],
+        "channels": ["Indeed", "Snagajob"],
         "location": ["Redding, CA 96002"],
         "radius": 15,
         "job_types": ["parttime", "fulltime"],
@@ -47,7 +48,7 @@ def load_search_config(config_file="search_config.json"):
             "Warehouse & Logistics": ["warehouse", "material handler", "package handler", "loader", "unloader", "shipping"],
             "Transportation & Delivery": ["delivery", "courier", "van driver", "route driver"],
             "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician"],
-            "Trades": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter"],
+            "Trades": ["laborer", "helper", "apprentice", "construction", "maintenance", "carpenter", "painter", "mechanic", "auto tech", "tire tech", "lube tech"],
             "Healthcare & Caregiving": ["caregiver", "home health aide", "cna", "nursing assistant"],
             "Office & Clerical": ["clerk", "receptionist", "assistant", "data entry", "office assistant"]
         }
@@ -62,6 +63,8 @@ def load_search_config(config_file="search_config.json"):
         except Exception as e:
             print(f"[WARN] Error loading {config_file}: {e}. Using built-in defaults.")
             
+    if not defaults.get("channels"):
+        defaults["channels"] = ["Indeed", "Snagajob"]
     if not defaults.get("standard_keywords"):
         defaults["standard_keywords"] = list(defaults.get("keywords", []))
     if not defaults.get("all_keywords"):
@@ -117,6 +120,15 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\bactive secret clearance\b",
     r"\btop secret clearance\b",
     r"\b(?:[5-9]|\d{2,})\+?\s*years?(?:\s+of)?\s+experience\b",
+    r"\brespiratory\s+(?:care\s+)?practitioner\b",
+    r"\brespiratory\s+therapist\b",
+    r"\brrt\b",
+    r"\bcrt\b",
+    r"\bphysical\s+therapist\b",
+    r"\boccupational\s+therapist\b",
+    r"\bspeech\s+(?:language\s+)?pathologist\b",
+    r"\bradiologic\s+technologist\b",
+    r"\bpharmacist\b",
 ]
 
 def is_expired_job_content(text: str) -> bool:
@@ -192,6 +204,34 @@ def clean_job_title(title: str) -> str:
     cleaned = re.sub(r'\s+', ' ', cleaned)
     return cleaned.strip(' -')
 
+BOGUS_TITLE_PATTERNS = [
+    r'\bjobs\s+in\b',                             # e.g., "retail jobs in Redding, CA 96002"
+    r"we\s+can'?t\s+find\s+this\s+page",          # Indeed 404 page heading
+    r"page\s+not\s+found",                        # Generic 404
+    r"additional\s+verification\s+required",      # Bot verification prompt
+    r"verify\s+you\s+are\s+human",                # Captcha
+    r"just\s+a\s+moment",                         # Cloudflare
+    r"attention\s+required",                      # Cloudflare
+    r"access\s+denied",                           # 403 Forbidden
+    r"error\s+404",                               # Error code
+    r"security\s+check",                          # Security check
+    r"please\s+enable\s+cookies",                 # Cookie warning
+    r"enable\s+javascript",                       # JS warning
+    r"^job\s+search\b",                           # Search header
+    r"^search\s+results\b",                       # Search results header
+]
+
+def is_bogus_title(title: str) -> bool:
+    if not title:
+        return True
+    t = str(title).strip()
+    if len(t) <= 2:
+        return True
+    for pat in BOGUS_TITLE_PATTERNS:
+        if re.search(pat, t, re.IGNORECASE):
+            return True
+    return False
+
 def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual: float = 75000.0) -> tuple:
     if not pay_text or pay_text == "N/A":
         return False, ""
@@ -234,6 +274,10 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     if config is None:
         config = load_search_config()
     
+    # Check bogus or error title
+    if not title or is_bogus_title(title):
+        return True, f"Bogus or invalid title: '{title}'"
+
     # Location Check: Must reside in Shasta County, CA
     if location and str(location).strip() not in ["N/A", "None", ""]:
         is_shasta, loc_reason = is_shasta_county_location(location)
@@ -241,6 +285,8 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
             return True, loc_reason
 
     t_clean = clean_job_title(title)
+    if is_bogus_title(t_clean):
+        return True, f"Bogus or invalid title: '{t_clean}'"
     t_lower = t_clean.lower()
     c_lower = str(company or "").lower().strip()
     d_lower = str(description or "").lower()
@@ -1627,7 +1673,7 @@ class JobScraper:
                 return "Security"
             if "cashier" in title_comp or "retail" in title_comp or "sales associate" in title_comp or "clerk" in title_comp or "shop" in title_comp or "store" in title_comp:
                 return "Retail & Merchandising"
-            if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp:
+            if "laborer" in title_comp or "construction" in title_comp or "carpenter" in title_comp or "maintenance" in title_comp or "helper" in title_comp or "landscap" in title_comp or "mechanic" in title_comp or "plumber" in title_comp or "electrician" in title_comp or "tire" in title_comp or "lube" in title_comp or "auto tech" in title_comp:
                 return "Trades"
             
             if "food" in section_name:
@@ -3145,19 +3191,40 @@ class JobScraper:
                         
                         total_cards = len(cards)
                         print(f"  Found {total_cards} job listings on this page")
-                        
+                        search_page_url = self.driver.current_url
+
                         for idx in range(total_cards):
+                            navigated_away = False
                             try:
                                 print(f"  Processing job {idx + 1}/{total_cards}...")
-                                
-                                # REPAIR FAILURE MODE 2 (Stale Element Reference):
-                                # Re-fetch fresh live DOM cards on every iteration to prevent stale element reference
+
+                                # Ensure browser is on the search results page (recover if navigated away previously)
+                                cur_url = self.driver.current_url
+                                if "/viewjob" in cur_url or (search_page_url and "/jobs" in search_page_url and "/jobs" not in cur_url):
+                                    print("    [NAV] Navigating back to search results page...")
+                                    try:
+                                        self.driver.back()
+                                        self.random_delay(1.5, 2.5)
+                                    except Exception:
+                                        pass
+
+                                # REPAIR FAILURE MODE 2 (Stale Element Reference & Lazy Loading):
+                                # Re-fetch fresh live DOM cards on every iteration
                                 live_cards = self._get_indeed_cards()
                                 if idx >= len(live_cards):
-                                    print(f"    [INFO] Card {idx + 1} no longer in DOM after update")
-                                    break
+                                    # Attempt scrolling down to trigger lazy loading of additional cards
+                                    try:
+                                        self.driver.execute_script("window.scrollBy(0, 450);")
+                                        self.random_delay(0.8, 1.2)
+                                        live_cards = self._get_indeed_cards()
+                                    except Exception:
+                                        pass
+
+                                if idx >= len(live_cards):
+                                    print(f"    [INFO] Card {idx + 1} not found in DOM ({len(live_cards)} available), continuing...")
+                                    continue
                                 card = live_cards[idx]
-                                
+
                                 # REPAIR FAILURE MODE 1 (None at None):
                                 # Extract baseline title, company, location, pay, and jk directly from the card element
                                 card_title = None
@@ -3166,7 +3233,7 @@ class JobScraper:
                                         t_elems = card.find_elements(By.CSS_SELECTOR, t_sel)
                                         if t_elems and t_elems[0].text.strip():
                                             cleaned = clean_job_title(t_elems[0].text.strip())
-                                            if cleaned:
+                                            if cleaned and not is_bogus_title(cleaned):
                                                 card_title = cleaned
                                                 break
                                     except Exception:
@@ -3222,10 +3289,39 @@ class JobScraper:
                                                 jk = m.group(1)
                                                 break
 
-                                # REPAIR FAILURE MODE 3 (Element Not Interactable):
+                                # EARLY PRE-CLICK FILTERING:
+                                # Save 2-4 seconds per duplicate/rejected job by checking card DOM metadata before clicking
+                                if card_title and is_bogus_title(card_title):
+                                    print(f"    [SKIP] Bogus card title: '{card_title}' for job {idx + 1}")
+                                    continue
+
+                                if card_title:
+                                    is_rej, rej_reason = is_rejected_job(
+                                        card_title, 
+                                        card_company or "", 
+                                        description="", 
+                                        pay=card_pay or "", 
+                                        location=card_location or location
+                                    )
+                                    if is_rej:
+                                        print(f"    [SKIP] Filtered non-entry-level / rejected: {card_title} ({rej_reason})")
+                                        continue
+
+                                    candidate_card_job = {
+                                        'source': 'Indeed',
+                                        'job_title': card_title,
+                                        'company': card_company or "Unknown Company",
+                                        'location': card_location or location,
+                                        'pay': card_pay,
+                                        'job_url': f"https://www.indeed.com/viewjob?jk={jk}" if jk else ""
+                                    }
+                                    if self.is_duplicate(candidate_card_job):
+                                        print(f"    [WARN] Duplicate job skipped: {card_title} at {card_company or 'Unknown Company'}")
+                                        continue
+
                                 # Locate interactive anchor, center-scroll, close popups, and use JavaScript click fallback
                                 click_target = None
-                                for sel in ["a.jcs-JobTitle", "a[data-jk]", "h2 a", "h3 a", "a[id^='job_']", "div.cardOutline"]:
+                                for sel in ["div.cardOutline", "div.job_seen_beacon", "span[id^='jobTitle']", "h2.jobTitle", "a.jcs-JobTitle", "a[data-jk]"]:
                                     found = card.find_elements(By.CSS_SELECTOR, sel)
                                     if found:
                                         click_target = found[0]
@@ -3235,7 +3331,7 @@ class JobScraper:
 
                                 try:
                                     self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", click_target)
-                                    self.random_delay(0.4, 0.8)
+                                    self.random_delay(0.3, 0.6)
                                 except Exception:
                                     pass
 
@@ -3254,7 +3350,12 @@ class JobScraper:
 
                                 self.random_delay(1.5, 2.5)
 
-                                # Wait briefly for detail pane to update
+                                # Check if click triggered navigation to /viewjob or external page
+                                cur_url = self.driver.current_url
+                                if "/viewjob" in cur_url or (search_page_url and "/jobs" in search_page_url and "/jobs" not in cur_url):
+                                    navigated_away = True
+
+                                # Wait briefly for detail pane or viewjob container
                                 try:
                                     self.short_wait.until(
                                         lambda d: d.find_elements(By.CSS_SELECTOR, "#jobDescriptionText, [data-testid='jobsearch-JobInfoHeader-title'], div.jobsearch-jobDescriptionText")
@@ -3301,35 +3402,45 @@ class JobScraper:
                                     'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 }
 
-                                # Extract title from pane with fallback to card_title
+                                # Scope detail search: use pane if on search page, or full driver if navigated to viewjob
+                                pane_containers = self.driver.find_elements(
+                                    By.CSS_SELECTOR, 
+                                    "#jobsearch-ViewjobPaneWrapper, div.jobsearch-JobComponent, #viewJobSSRRoot, div.jobsearch-RightPane"
+                                )
+                                search_scope = pane_containers[0] if (pane_containers and not navigated_away) else self.driver
+
+                                # Extract title from pane with fallback to card_title (NEVER use generic 'h1')
                                 pane_title = None
                                 title_selectors = [
                                     "h2[data-testid='jobsearch-JobInfoHeader-title']",
+                                    "h1[data-testid='jobsearch-JobInfoHeader-title']",
                                     "h2.jobsearch-JobInfoHeader-title",
                                     "h1.jobsearch-JobInfoHeader-title",
-                                    "h1[data-testid='jobsearch-JobInfoHeader-title']",
                                     "span.jobsearch-JobInfoHeader-title-container",
+                                    "h2.icl-u-xs-mb--xs",
                                     "h1.icl-u-xs-mb--xs",
-                                    "h1"
+                                    ".jobsearch-JobInfoHeader-title",
+                                    ".jobsearch-JobComponent-title"
                                 ]
                                 for selector in title_selectors:
                                     try:
-                                        t_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        t_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
                                         if t_elems and t_elems[0].text.strip():
                                             raw_title = t_elems[0].text.strip()
-                                            if len(raw_title) > 2 and "job post details" not in raw_title.lower():
+                                            if len(raw_title) > 2 and "job post details" not in raw_title.lower() and not is_bogus_title(raw_title):
                                                 pane_title = clean_job_title(raw_title)
                                                 if pane_title:
                                                     break
                                     except Exception:
                                         continue
 
-                                job_data['job_title'] = pane_title or card_title
-
-                                # VALIDATION GUARD (Failure Mode 1): Do not allow 'None' job titles to be recorded
-                                if not job_data['job_title'] or str(job_data['job_title']).strip().lower() in ('none', ''):
-                                    print(f"    [SKIP] Could not extract valid job title for job {idx + 1}")
+                                # Prefer valid pane_title, then card_title
+                                candidate_title = pane_title or card_title
+                                if not candidate_title or is_bogus_title(candidate_title):
+                                    print(f"    [SKIP] Could not extract valid non-bogus job title for job {idx + 1}")
                                     continue
+
+                                job_data['job_title'] = candidate_title
 
                                 # Extract company from pane with fallback to card_company
                                 pane_company = None
@@ -3344,7 +3455,7 @@ class JobScraper:
                                 ]
                                 for selector in company_selectors:
                                     try:
-                                        c_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        c_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
                                         if c_elems and c_elems[0].text.strip():
                                             pane_company = c_elems[0].text.strip()
                                             break
@@ -3364,7 +3475,7 @@ class JobScraper:
                                 ]
                                 for selector in location_selectors:
                                     try:
-                                        l_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        l_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
                                         if l_elems and l_elems[0].text.strip():
                                             spec_loc = clean_location_str(l_elems[0].text.strip())
                                             if spec_loc:
@@ -3384,7 +3495,7 @@ class JobScraper:
                                 ]
                                 for selector in date_selectors:
                                     try:
-                                        d_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        d_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
                                         if d_elems and d_elems[0].text.strip():
                                             raw_date = d_elems[0].text.replace('Posted', '').strip()
                                             job_data['date_posted'] = self.extract_date_posted(raw_date)
@@ -3402,7 +3513,7 @@ class JobScraper:
                                 description = ""
                                 for selector in desc_selectors:
                                     try:
-                                        desc_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                        desc_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
                                         if desc_elems and desc_elems[0].text.strip():
                                             description = desc_elems[0].text.strip()
                                             break
@@ -3413,7 +3524,7 @@ class JobScraper:
                                 pane_text = ""
                                 for pane_sel in ["#jobsearch-ViewjobPaneWrapper", "div.jobsearch-JobComponent", "#viewJobSSRRoot"]:
                                     try:
-                                        p_elems = self.driver.find_elements(By.CSS_SELECTOR, pane_sel)
+                                        p_elems = search_scope.find_elements(By.CSS_SELECTOR, pane_sel)
                                         if p_elems and p_elems[0].text.strip():
                                             pane_text = p_elems[0].text.strip()
                                             break
@@ -3425,7 +3536,7 @@ class JobScraper:
                                     continue
 
                                 try:
-                                    metadata_elems = self.driver.find_elements(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
+                                    metadata_elems = search_scope.find_elements(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
                                     if metadata_elems and metadata_elems[0].text.strip():
                                         metadata_text = metadata_elems[0].text.strip()
                                         if not job_data['pay']:
@@ -3437,7 +3548,7 @@ class JobScraper:
 
                                 qual_text = ""
                                 try:
-                                    qual_elems = self.driver.find_elements(By.CSS_SELECTOR, "div#qualificationsSection li, div[data-testid='qualifications'] li")
+                                    qual_elems = search_scope.find_elements(By.CSS_SELECTOR, "div#qualificationsSection li, div[data-testid='qualifications'] li")
                                     if qual_elems:
                                         qual_text = "; ".join(q.text.strip() for q in qual_elems if q.text.strip())
                                 except Exception:
@@ -3516,6 +3627,13 @@ class JobScraper:
                             except Exception as e:
                                 print(f"    [X] Error processing job: {str(e)}")
                                 continue
+                            finally:
+                                if navigated_away:
+                                    try:
+                                        self.driver.back()
+                                        self.random_delay(1.2, 2.0)
+                                    except Exception:
+                                        pass
 
                         try:
                             next_selectors = [
@@ -3757,13 +3875,13 @@ class JobScraper:
 def run_pdf_scrape(pdf_path=None):
     return run_scraping_job(run_pdf=True, run_online=False, filename_prefix="pdf_only", pdf_path=pdf_path, days_ago=14)
 
-def run_redding_scrape(keywords=None):
-    return run_scraping_job(keywords=keywords, location=["Redding, CA 96002"], run_pdf=False, filename_prefix="redding_only")
+def run_redding_scrape(keywords=None, channels=None):
+    return run_scraping_job(keywords=keywords, location=["Redding, CA 96002"], channels=channels, run_pdf=False, filename_prefix="redding_only")
 
-def run_burney_scrape(keywords=None):
-    return run_scraping_job(keywords=keywords, location=["Burney, CA 96013"], run_pdf=False, filename_prefix="burney_only")
+def run_burney_scrape(keywords=None, channels=None):
+    return run_scraping_job(keywords=keywords, location=["Burney, CA 96013"], channels=channels, run_pdf=False, filename_prefix="burney_only")
 
-def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, days_ago=None, max_pages=None, rejected_titles=None, rejected_employers=None, run_pdf=True, run_online=True, filename_prefix="job_results", pdf_path=None):
+def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, days_ago=None, max_pages=None, rejected_titles=None, rejected_employers=None, channels=None, run_pdf=True, run_online=True, filename_prefix="job_results", pdf_path=None):
     config = load_search_config()
     
     if keywords is None: keywords = config.get("keywords")
@@ -3774,12 +3892,18 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
     if max_pages is None: max_pages = config.get("max_pages", 3)
     if rejected_titles is None: rejected_titles = config.get("rejected_titles")
     if rejected_employers is None: rejected_employers = config.get("rejected_employers")
+    if channels is None: channels = config.get("channels", ["Indeed", "Snagajob"])
+    if isinstance(channels, str):
+        channels = [c.strip() for c in channels.split(",") if c.strip()]
+    if not channels:
+        channels = ["Indeed", "Snagajob"]
     
     scraper = None
     output_file = None
     
     print("\n" + "="*60)
     print(f"JOB SCRAPER - {filename_prefix.upper()} MODE")
+    print(f"Channels: {', '.join(channels)}")
     print("="*60 + "\n")
     
     try:
@@ -3791,35 +3915,56 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
         print("Waiting 5 seconds for initial checks...")
         scraper.random_delay(5, 8)
         
+        last_synced_count = 0
+
         if run_pdf:
             scraper.scrape_local_pdf(days_ago=days_ago, pdf_path=pdf_path)
+            if len(scraper.jobs_data) > last_synced_count:
+                new_jobs = scraper.jobs_data[last_synced_count:]
+                try:
+                    from firestore_sync import sync_jobs_to_firestore
+                    sync_jobs_to_firestore(new_jobs)
+                    last_synced_count = len(scraper.jobs_data)
+                except Exception as fs_err:
+                    print(f"[WARN] Incremental Firestore sync failed: {fs_err}")
         
         if run_online:
+            active_channels_lower = [c.lower() for c in channels]
             for keyword in keywords:
                 for loc in location:
-                    print(f"Processing Keyword: {keyword} in {loc}")
-                    scraper.scrape_indeed(
-                        job_title=keyword, 
-                        location=loc, 
-                        radius=radius,
-                        job_types=job_types,
-                        days_ago=days_ago,
-                        max_pages=max_pages
-                    )
-                    scraper.random_delay(3, 5)
+                    print(f"Processing Keyword: {keyword} in {loc} (Channels: {', '.join(channels)})")
                     
-                    scraper.scrape_snagajob(
-                        job_title=keyword,
-                        location=loc,
-                        max_pages=min(2, max_pages)
-                    )
-                    scraper.random_delay(3, 5)
+                    if any("indeed" in c for c in active_channels_lower):
+                        scraper.scrape_indeed(
+                            job_title=keyword, 
+                            location=loc, 
+                            radius=radius,
+                            job_types=job_types,
+                            days_ago=days_ago,
+                            max_pages=max_pages
+                        )
+                        scraper.random_delay(3, 5)
+                    
+                    if any("snagajob" in c or "snag" in c for c in active_channels_lower):
+                        scraper.scrape_snagajob(
+                            job_title=keyword,
+                            location=loc,
+                            max_pages=min(2, max_pages)
+                        )
+                        scraper.random_delay(3, 5)
+
+                    for ch in channels:
+                        ch_low = ch.lower()
+                        if not any(k in ch_low for k in ["indeed", "snag"]):
+                            print(f"[CHANNEL] '{ch}' selected (integration pending/beta).")
 
                     # Incremental sync to Firestore so jobs appear live in CMS while scraping
-                    if scraper.jobs_data:
+                    if len(scraper.jobs_data) > last_synced_count:
+                        new_jobs = scraper.jobs_data[last_synced_count:]
                         try:
                             from firestore_sync import sync_jobs_to_firestore
-                            sync_jobs_to_firestore(scraper.jobs_data)
+                            sync_jobs_to_firestore(new_jobs)
+                            last_synced_count = len(scraper.jobs_data)
                         except Exception as fs_err:
                             print(f"[WARN] Incremental Firestore sync failed: {fs_err}")
             
@@ -3834,12 +3979,15 @@ def run_scraping_job(keywords=None, location=None, radius=None, job_types=None, 
             
             scraper.save_to_excel(output_file, rejected_titles=rejected_titles, rejected_employers=rejected_employers)
             
-            # Synchronize directly to Firestore
-            try:
-                from firestore_sync import sync_jobs_to_firestore
-                sync_jobs_to_firestore(scraper.jobs_data)
-            except Exception as fs_err:
-                print(f"[WARN] Firestore sync failed: {fs_err}")
+            # Synchronize remaining new jobs directly to Firestore
+            if len(scraper.jobs_data) > last_synced_count:
+                new_jobs = scraper.jobs_data[last_synced_count:]
+                try:
+                    from firestore_sync import sync_jobs_to_firestore
+                    sync_jobs_to_firestore(new_jobs)
+                    last_synced_count = len(scraper.jobs_data)
+                except Exception as fs_err:
+                    print(f"[WARN] Firestore sync failed: {fs_err}")
 
             # Synchronize directly to Google Sheets
             try:
