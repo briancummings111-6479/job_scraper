@@ -69,6 +69,22 @@ def test_unit_logic():
         ("Home Care Aide", "Visiting Angels", "Serving Shasta County seniors with over 25 years of caregiving experience.", False, "$18.00"),
         ("Patient Services Representative", "Health Clinic", "Schedule patient appointments. Work alongside medical assistants and nurses.", False, "$19.00"),
         ("Traffic Control Flagger", "Construction Co", "Direct traffic on job sites. Must have valid driver's license for 3 years.", False, "$20.00"),
+        # New regression test cases for Radiologic Technologist sidebar bleed:
+        ("Retail Associates", "Burlington", "Customer service and merchandise displays. Trending nearby: Travel Radiologic Technologist", False, "$17.00"),
+        ("Sandwich maker , Cashier", "Subway", "Making sandwiches and taking orders. Nearby: Radiologic Technologist", False, "$16.50"),
+        ("Popeyes Cook - PT", "Popeyes", "Prep and fry station. Recommended: Radiologic Technologist", False, "$17.00"),
+        ("Server", "Market Street Steakhouse", "Food and beverage service. Similar jobs: Radiologic Technologist", False, "$16.50"),
+        ("Housekeeper (Part Time)", "Oxford Suites", "Clean guest rooms and replace linens. Sidebar: Radiologic Technologist", False, "$17.00"),
+        ("General Labor", "Shasta Precast", "Clean equipment and move materials. Sidebar: Radiologic Technologist", False, "$18.00"),
+        # New regression test cases for promo wage ceiling artifacts ($100k, $115k, $48.08, $55.29, $53.85):
+        ("Seasonal Retail Sales Associate-MT SHASTA MALL - Now Hiring", "Aeropostale", "Retail store associate. Ad: Earn up to $100,000 as surrogate", False, "$100,000"),
+        ("Part Time Product Demonstrator in Costco", "Club Demonstration Services", "Sample product demonstrations in warehouse. Ad banner: $100,000", False, "$100,000"),
+        ("Nanny needed for one toddler with car, pet-friendly, weekdays", "Private Family", "Afternoon care for toddler.", False, "$53.85/hr"),
+        ("Caregiver", "Visiting Angels", "Senior in-home companionship and daily support.", False, "$48.08/hr"),
+        ("Caregiver / Personal Assistant- Redding", "Homecare Professionals", "Assist clients with personal care and meal prep.", False, "$55.29/hr"),
+        # Ensure actual Radiologic Technologist / Imaging roles ARE rejected:
+        ("Radiologic Technologist", "Mercy Medical Center", "Diagnostic X-ray and fluoroscopy procedures.", True, "$45.00/hr"),
+        ("Travel Radiologic Technologist", "AlliedTravelCareers", "13-week travel contract.", True, "$2,600 per week"),
     ]
 
     for item in test_cases:

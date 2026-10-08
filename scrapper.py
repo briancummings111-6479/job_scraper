@@ -109,22 +109,18 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\bdoctorate\b",
     r"\bboard certified\b",
     r"\bbcba\b",
-    r"\bbehavior analyst\b",
+    r"\bboard\s+certified\s+behavior\s+analyst\b",
     r"\blcsw\b",
     r"\blmft\b",
     r"\blpcc\b",
     r"\blpc\b",
     r"\blicensed professional counselor\b",
-    r"\bprosthetist\b",
-    r"\borthotist\b",
-    r"\bdietitian\b",
-    r"\bdietician\b",
-    r"\bveterinarian\b",
-    r"\bdvm\b",
+    r"\blicensed\s+(?:prosthetist|orthotist)\b",
+    r"\b(?:registered|licensed)\s+dieti[tc]ian\b",
+    r"\b(?:licensed\s+veterinarian|dvm\s+required)\b",
     r"\blvn\b",
     r"\blpn\b",
     r"\blicensed vocational nurse\b",
-    r"\bsuperintendent\b",
     r"\botr\b",
     r"\bover[\s\-]the[\s\-]road\b",
     r"\bactive secret clearance\b",
@@ -133,9 +129,8 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\b(?:must\s+be\s+a\s+|licensed\s+|certified\s+)(?:respiratory|physical|occupational)\s+therapist\b",
     r"\brrt\b",
     r"\bcrt\b",
-    r"\bspeech\s+(?:language\s+)?pathologist\b",
-    r"\bradiologic\s+technologist\b",
-    r"\bct\s+tech(?:nologist)?\b",
+    r"\b(?:must\s+be\s+a\s+|licensed\s+|certified\s+)speech\s+(?:language\s+)?pathologist\b",
+    r"\b(?:must\s+be\s+a\s+|licensed\s+|certified\s+)radiologic\s+technologist\b",
     r"\barrt(?:\s*\([a-z\s]+\))?\b",
     r"\bepa\s+(?:universal|section\s+608|608)\b",
     r"\b1099\s+(?:contractor|position|basis)\b",
@@ -148,7 +143,6 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\bassociate\s+(?:ii|iii|iv|v)\b",
     r"\blevel\s+(?:ii|iii|iv|v|2|3|4|5)\b",
     r"\btier\s+(?:ii|iii|iv|v|2|3|4|5)\b",
-    r"\b(?:field|lead|master|heavy\s+equipment|diesel)\s+mechanic\b",
     r"\b(?:experience|experienced)\s+only\b",
     r"\b(?:must\s+be\s+willing\s+to\s+travel|extensive\s+travel\s+required)\b",
 ]
@@ -456,9 +450,19 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
 
     # Check pay ceiling
     if pay and pay != "N/A":
-        # Guard against known promotional / gig banner artifacts (e.g. DoorDash "$53.85/hr") on standard entry-level titles
-        is_standard_entry = any(k in t_lower for k in ["dish", "cook", "cashier", "server", "barista", "food service", "team member", "guest advocate", "attendant", "host", "custodian", "janitor", "cleaner", "laundry", "housekeeper", "stocker", "clerk", "retail", "laborer", "aide"])
-        if is_standard_entry and ("53.85" in str(pay) or "112,000" in str(pay)):
+        # Guard against known promotional / gig banner artifacts (e.g. DoorDash "$53.85/hr", Surrogacy "$100k-$115k", Panel "$50-$100") on standard entry-level titles
+        is_standard_entry = any(k in t_lower for k in [
+            "dish", "cook", "cashier", "server", "barista", "food service", "team member", "guest advocate",
+            "attendant", "host", "custodian", "janitor", "cleaner", "laundry", "housekeeper", "stocker",
+            "clerk", "retail", "laborer", "aide", "caregiver", "babysitter", "childcare", "nanny",
+            "child care", "front desk", "receptionist", "customer service", "demonstrator", "driver",
+            "helper", "associate", "camp staff", "assistant", "flagger", "parts washer", "crew", "sales",
+            "stylist", "line cook", "prep cook", "dining"
+        ])
+        is_promo_wage = any(art in str(pay).lower() for art in [
+            "53.85", "112,000", "115,000", "100,000", "48.08", "55.29", "50k", "60k", "75k", "85k"
+        ])
+        if is_standard_entry and is_promo_wage:
             pass  # Ignore promotional banner artifact on entry-level titles
         else:
             exceeds, reason = is_pay_exceeding_ceiling(pay)
@@ -490,11 +494,11 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     if d_lower and re.search(r'\b(?:100%\s+remote|fully\s+remote|work\s+from\s+home\s+position|remote\s+paid\s+research|paid\s+research\s+panelist|paid\s+focus\s+group|focus\s+group\s+participant|online\s+survey\s+taker|survey\s+panelist|research\s+study\s+panelist)\b', d_lower):
         return True, "Remote / Online survey or panel position in description"
 
-    # Check Travel Healthcare / Travel Contract positions
+    # Check Travel Healthcare / Travel Contract / Radiologic Technologist positions
     if re.search(r'\b(?:travel\s+ct|travel\s+tech|travel\s+technologist|travel\s+nurse|traveling\s+nurse|travel\s+contract|travel\s+assignment|allied\s+travel)\b', t_lower):
         return True, f"Travel healthcare / contract assignment: '{t_clean}'"
-    if re.search(r'\bct\s+(?:tech|technologist)\b', t_lower):
-        return True, f"CT Technologist requires ARRT radiology credentials: '{t_clean}'"
+    if re.search(r'\b(?:ct\s+(?:tech|technologist)|radiologic\s+technologist|radiology\s+tech(?:nologist)?|ultrasound\s+tech|x[\s\-]ray\s+tech|mri\s+tech)\b', t_lower):
+        return True, f"Radiology / Imaging technologist requires ARRT radiology credentials: '{t_clean}'"
     if d_lower and re.search(r'\b(?:travel\s+assignment|travel\s+contract|allied\s+travel\s+careers|travel\s+healthcare)\b', d_lower):
         return True, "Travel healthcare / non-local assignment in description"
 
@@ -562,7 +566,8 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     # Check pay ceiling from description if not passed explicitly
     if not pay and d_lower:
         desc_pay = extract_pay(description)
-        if desc_pay and not ("53.85" in desc_pay or "112,000" in desc_pay):
+        is_promo = any(art in str(desc_pay).lower() for art in ["53.85", "112,000", "115,000", "100,000", "48.08", "55.29", "50k", "60k", "75k", "85k"])
+        if desc_pay and not is_promo:
             exceeds, reason = is_pay_exceeding_ceiling(desc_pay)
             if exceeds:
                 return True, reason
@@ -1115,6 +1120,15 @@ def extract_pay(text):
         return None
     text_clean = str(text).replace('\ufffd', ' ').replace('\u2013', '-').replace('\u2014', '-')
     
+    # Scrub known promotional / surrogacy / gig advertisement snippets before extracting true employer pay
+    promo_scrub_patterns = [
+        r'(?i)(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?(?:100,000|112,000|115,000|60k|75k|85k)[^\.\n]*|surrogate\s+mothers?|gestational\s+carrier|miracle\s+of\s+life|healthy\s+pregnancy\?\s+learn\s+about)[^\.\n]*[\.\n]?',
+        r'(?i)(?:doordash\s+shopper|drive\s+with\s+doordash|deliver\s+with\s+uber|looking\s+for\s+part-time\s+jobs\?\s*-\s*deliver)[^\.\n]*[\.\n]?',
+        r'(?i)(?:paid\s+focus\s+group|paid\s+research\s+panelist|online\s+survey\s+taker|research\s+study\s+panelist)[^\.\n]*[\.\n]?'
+    ]
+    for p_pat in promo_scrub_patterns:
+        text_clean = re.sub(p_pat, ' ', text_clean)
+
     pay_patterns = [
         # Range with units: $16.50 - $19.00 per hour / /hr / hr / yr / annually / per week / per month
         r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?(?:\s*(?:per\s+hour|per\s+year|per\s+week|per\s+month|\/hr|\/yr|\/week|\/mo|\/month|yr|hr|annually|hourly|monthly))?',
@@ -1133,6 +1147,9 @@ def extract_pay(text):
         if match:
             val = match.group(0).strip()
             val = re.sub(r'^(?:pay|rate|compensation|wage|starting\s*at)\s*:\s*', '', val, flags=re.IGNORECASE).strip()
+            # Double check if extracted value is a known promotional ad artifact
+            if any(art in val.lower() for art in ["53.85", "112,000", "115,000", "100,000", "48.08", "55.29"]):
+                continue
             return val
     return None
 
@@ -3376,22 +3393,31 @@ class JobScraper:
                             self.driver.execute_script("""
                                 const junkSelectors = [
                                     'job-card',
+                                    'snag-job-card',
+                                    'app-job-card',
                                     'aside',
                                     'footer',
                                     'nav',
+                                    'app-similar-jobs',
+                                    'app-recommended-jobs',
+                                    'snag-similar-jobs',
+                                    'snag-recommendations',
                                     '[data-snagtag="job-card"]',
                                     '[data-snagtag*="recommend"]',
                                     '[data-snagtag*="similar"]',
+                                    '[data-snagtag*="carousel"]',
                                     '[class*="similar"]',
                                     '[class*="recommended"]',
                                     '[class*="related"]',
                                     '[class*="sponsored"]',
                                     '[class*="advertisement"]',
                                     '[class*="ad-container"]',
+                                    '[class*="carousel"]',
                                     '[class*="promo"]',
                                     '[id*="similar"]',
                                     '[id*="recommended"]',
-                                    '[id*="sponsored"]'
+                                    '[id*="sponsored"]',
+                                    '[id*="carousel"]'
                                 ];
                                 junkSelectors.forEach(sel => {
                                     document.querySelectorAll(sel).forEach(el => el.remove());
@@ -3412,28 +3438,44 @@ class JobScraper:
 
                         full_desc = ""
                         desc_parts = []
-                        # 1. Try heading-based container extraction for all relevant sections (Snagajob Angular template)
+                        # 1. Try dedicated container selectors first (avoids parent container bleed)
                         try:
-                            desc_headings = main_content.find_elements(By.XPATH, ".//h2[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')] | .//h3[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')]")
-                            seen_parents = set()
-                            for dh in desc_headings:
-                                try:
-                                    parent_box = dh.find_element(By.XPATH, "..")
-                                    if parent_box not in seen_parents:
-                                        seen_parents.add(parent_box)
-                                        d_text = parent_box.text.strip()
-                                        d_text = re.sub(r'^(?:About this job\s*|Job Description\s*)+', '', d_text, flags=re.IGNORECASE).strip()
-                                        if d_text and len(d_text) > 20 and d_text not in desc_parts:
-                                            desc_parts.append(d_text)
-                                except:
-                                    continue
-                        except:
+                            desc_containers = main_content.find_elements(By.CSS_SELECTOR, "[data-snagtag='job-description'], [data-snagtag='job-details'], #job-description, .job-description, section.job-description, div[itemprop='description'], div[class*='jobDescription'], div[class*='JobDescription']")
+                            for dc in desc_containers:
+                                t = dc.text.strip()
+                                if t and len(t) > 50 and t not in desc_parts:
+                                    desc_parts.append(t)
+                        except Exception:
                             pass
+
+                        # 2. Try heading-based container extraction
+                        if not desc_parts:
+                            try:
+                                desc_headings = main_content.find_elements(By.XPATH, ".//h2[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')] | .//h3[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')]")
+                                seen_parents = set()
+                                for dh in desc_headings:
+                                    try:
+                                        sibs = dh.find_elements(By.XPATH, "./following-sibling::div | ./following-sibling::p | ./following-sibling::ul")
+                                        sib_texts = [s.text.strip() for s in sibs if s.text.strip() and len(s.text.strip()) > 15]
+                                        if sib_texts:
+                                            desc_parts.append("\n\n".join(sib_texts))
+                                        else:
+                                            parent_box = dh.find_element(By.XPATH, "..")
+                                            if parent_box not in seen_parents:
+                                                seen_parents.add(parent_box)
+                                                d_text = parent_box.text.strip()
+                                                d_text = re.sub(r'^(?:About this job\s*|Job Description\s*)+', '', d_text, flags=re.IGNORECASE).strip()
+                                                if d_text and len(d_text) > 20 and d_text not in desc_parts:
+                                                    desc_parts.append(d_text)
+                                    except:
+                                        continue
+                            except:
+                                pass
 
                         if desc_parts:
                             full_desc = "\n\n".join(desc_parts)
 
-                        # 2. Try Snagajob data-snagtag selectors
+                        # 3. Try Snagajob data-snagtag selectors fallback
                         if not full_desc or len(full_desc.strip()) < 100:
                             snag_tags = ["job-details", "job-description", "job-requirements", "job-body", "job-content"]
                             tag_parts = []
@@ -3481,7 +3523,7 @@ class JobScraper:
                             except:
                                 pass
 
-                        # 3. Check if description truncated before list items or requirements
+                        # 4. Check if description truncated before list items or requirements
                         if full_desc and (full_desc.strip().endswith("Requirements:") or full_desc.strip().endswith("Requirements") or "What Were Looking For" in full_desc[-60:] or "What We're Looking For" in full_desc[-60:]):
                             try:
                                 uls = main_content.find_elements(By.XPATH, ".//ul | .//ol")
@@ -3493,12 +3535,20 @@ class JobScraper:
                                 pass
 
                         if full_desc:
-                            # Strip any trailing similar jobs or recommendations text
+                            # Prune any trailing similar jobs or recommendations text
                             for split_pat in [
-                                r'\n+\s*(?:similar\s+jobs|recommended\s+jobs|people\s+also\s+viewed|jobs\s+you\s+might\s+like|other\s+jobs\s+at|browse\s+more\s+jobs|explore\s+more\s+jobs)\b',
-                                r'\n+\s*(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?\d+[\d,]*\s+as\s+a\s+surrogate)\b',
+                                r'(?i)\n+\s*(?:similar\s+jobs|recommended\s+jobs|people\s+also\s+viewed|jobs\s+you\s+might\s+like|other\s+jobs\s+at|browse\s+more\s+jobs|explore\s+more\s+jobs)\b',
+                                r'(?i)\n+\s*(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?\d+[\d,]*\s+as\s+a\s+surrogate|surrogacy\s+opportunity)\b',
+                                r'(?i)\n+\s*(?:travel\s+radiologic\s+technologist|travel\s+physical\s+therapist|travel\s+ct\s+tech)\b',
                             ]:
-                                full_desc = re.split(split_pat, full_desc, flags=re.IGNORECASE)[0].strip()
+                                full_desc = re.split(split_pat, full_desc)[0].strip()
+
+                            # Scrub inline ad banners / surrogate text / DoorDash banners
+                            full_desc = re.sub(r'(?i)(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?(?:100,000|112,000|115,000|60k|75k|85k)|surrogate\s+mothers?|gestational\s+carrier|miracle\s+of\s+life|healthy\s+pregnancy\?\s+learn\s+about)[^\.\n]*[\.\n]?', ' ', full_desc)
+                            full_desc = re.sub(r'(?i)(?:doordash\s+shopper|drive\s+with\s+doordash|deliver\s+with\s+uber|looking\s+for\s+part-time\s+jobs\?\s*-\s*deliver)[^\.\n]*[\.\n]?', ' ', full_desc)
+                            full_desc = re.sub(r'(?i)(?:paid\s+focus\s+group|paid\s+research\s+panelist|online\s+survey\s+taker|research\s+study\s+panelist)[^\.\n]*[\.\n]?', ' ', full_desc)
+                            full_desc = re.sub(r'(?i)(?:travel\s+radiologic\s+technologist|travel\s+ct\s+tech|travel\s+occupational\s+therapist|travel\s+physical\s+therapist)[^\.\n]*[\.\n]?', ' ', full_desc)
+                            full_desc = re.sub(r'\s{2,}', ' ', full_desc).strip()
 
                             if is_expired_job_content(full_desc):
                                 print(f"    [SKIP] Description indicates expired: {url}")
@@ -3510,7 +3560,7 @@ class JobScraper:
                             job_data["pay"] = verified_pay
                         elif full_desc:
                             desc_pay = extract_pay(full_desc)
-                            if desc_pay and not ("53.85" in desc_pay or "112,000" in desc_pay):
+                            if desc_pay and not any(art in desc_pay.lower() for art in ["53.85", "112,000", "115,000", "100,000", "48.08", "55.29"]):
                                 job_data["pay"] = desc_pay
                             else:
                                 job_data["pay"] = "Unstated"
@@ -3538,7 +3588,7 @@ class JobScraper:
                                 print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
                                 continue
                             job_data["industry"] = gemini_res.sector
-                            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A", "Unstated"]:
+                            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A"]:
                                 job_data["pay"] = gemini_res.pay_rate
                             job_data["experience"] = extract_key_requirements(
                                 text=full_desc,
@@ -3855,7 +3905,24 @@ class JobScraper:
                 
                 search_url = f"{base_url}?{'&'.join(query_params)}"
                 
-                self.driver.get(search_url)
+                # Network resilience: retry on temporary DNS / socket glitches
+                loaded = False
+                for attempt in range(2):
+                    try:
+                        self.driver.get(search_url)
+                        loaded = True
+                        break
+                    except Exception as net_err:
+                        err_str = str(net_err)
+                        if "ERR_NAME_NOT_RESOLVED" in err_str or "net::" in err_str:
+                            print(f"  [WARN] Indeed page load glitch on attempt {attempt + 1}: {err_str[:60]}, retrying in 3s...")
+                            time.sleep(3)
+                        else:
+                            raise
+                if not loaded:
+                    print(f"  [ERROR] Skipping {jt} due to connection error on {search_url}")
+                    continue
+
                 print("[OK] Indeed page loaded - verifying verification...")
                 self.random_delay(5, 8)
                 self.check_cloudflare()
