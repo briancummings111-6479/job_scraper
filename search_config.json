@@ -12,10 +12,7 @@
     "delivery",
     "caregiver",
     "groundskeeper",
-    "nursery worker",
     "landscaper",
-    "kennel",
-    "babysitter",
     "child care",
     "daycare",
     "construction laborer",
@@ -28,10 +25,7 @@
     "housekeeper",
     "store clerk",
     "security guard",
-    "gate attendant",
     "social service aide",
-    "shelter support",
-    "maintenance",
     "route driver",
     "driver",
     "package handler",
@@ -67,7 +61,6 @@
     "Associate",
     "Attendant",
     "auto tech",
-    "babysitter",
     "baker",
     "bar",
     "barber",
@@ -133,7 +126,6 @@
     "forklift",
     "framing",
     "front desk",
-    "gate attendant",
     "general service",
     "groomer",
     "grounds maintenance",
@@ -158,7 +150,6 @@
     "it",
     "it support",
     "janitor",
-    "kennel",
     "kitchen",
     "laborer",
     "landscaper",
@@ -166,7 +157,6 @@
     "loader",
     "loss prevention",
     "lube tech",
-    "maintenance",
     "management",
     "manager",
     "material handler",
@@ -177,7 +167,6 @@
     "nanny",
     "network",
     "nurse",
-    "nursery worker",
     "nursing assistant",
     "office",
     "office assistant",
@@ -210,7 +199,6 @@
     "security officer",
     "server",
     "shelter caretaker",
-    "shelter support",
     "shipping",
     "site",
     "site cleanup",
@@ -909,14 +897,12 @@
   "keyword_groups": {
     "Agriculture & Groundskeeping": [
       "farm hand",
-      "nursery worker",
       "landscaper",
       "grounds maintenance",
       "groundskeeper",
       "farming"
     ],
     "Animal Care & Veterinary Services": [
-      "kennel",
       "veterinary",
       "vet aide",
       "pet bather",
@@ -925,7 +911,6 @@
       "shelter caretaker"
     ],
     "Childcare & Education Support": [
-      "babysitter",
       "nanny",
       "child care",
       "daycare"
@@ -1013,14 +998,12 @@
     "Security & Public Safety": [
       "security guard",
       "unarmed security",
-      "gate attendant",
       "loss prevention",
       "security officer"
     ],
     "Social & Human Services": [
       "community outreach",
       "food bank sorter",
-      "shelter support",
       "case aide",
       "social service aide"
     ],
@@ -1043,8 +1026,7 @@
       "plumber helper",
       "electrician helper",
       "trade apprentice",
-      "welder",
-      "maintenance"
+      "welder"
     ],
     "Transportation & Delivery": [
       "delivery",

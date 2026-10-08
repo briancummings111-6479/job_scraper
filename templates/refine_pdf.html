@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Miner | PDF Refinement Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --bg: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.65);
+            --card-hover: rgba(31, 41, 55, 0.7);
+            --text: #f9fafb;
+            --text-dim: #9ca3af;
+            --border: rgba(255, 255, 255, 0.07);
+            --border-hover: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.15);
+            --error: #ef4444;
+            --violet: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .app-header {
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .brand-logo {
+            font-size: 1.75rem;
+        }
+
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to right, #818cf8, #a78bfa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text);
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .welcome-panel h1 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-panel p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .refiner-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 1200px) {
+            .refiner-layout {
+                grid-template-columns: 1.4fr 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: var(--primary-glow);
+            border-radius: 8px;
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Upload area */
+        .upload-zone {
+            border: 2px dashed rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.02);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* Lists and details */
+        .jobs-table-container {
+            max-height: 550px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .jobs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .jobs-table th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .jobs-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .jobs-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-source {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .badge-page {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .job-link {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .job-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Warnings list */
+        .warnings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .warning-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .warning-item-warn {
+            background: var(--warning-glow);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .warning-item-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Configuration Editor */
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            display: block;
+            color: var(--text-dim);
+        }
+
+        .textarea-editor {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+        }
+
+        .textarea-editor:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .json-editor {
+            height: 200px;
+        }
+
+        /* Buttons and tools */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal Overlay for loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 15, 25, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-msg {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: #a7f3d0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <a href="/" class="brand">
+            <span class="brand-logo">🔍</span>
+            <span class="brand-title">Career Miner</span>
+        </a>
+        <nav class="nav-links">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/refine" class="nav-link active">PDF Refiner</a>
+        </nav>
+        <div style="width: 100px;"></div>
+    </header>
+
+    <main class="dashboard-container">
+        <section class="welcome-panel">
+            <h1>PDF Refinement Console</h1>
+            <p>Upload a Shasta County Area job listings PDF, review parsed results, tune cleaning rules, and commit parameters to the production scraper script.</p>
+        </section>
+
+        <section id="status-box" class="status-msg"></section>
+
+        <div class="refiner-layout">
+            <!-- Left Panel: Job Listings Table & File Selection -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="card-icon">📂</span>
+                            <h2 class="card-title">Select County PDF Pack</h2>
+                        </div>
+                    </div>
+                    <div id="drop-zone" class="upload-zone">
+                        <span class="upload-icon">📥</span>
+                        <p id="upload-prompt">Click to browse or drag and drop a County PDF document here</p>
+                        <input type="file" id="pdf-file-input" class="upload-input" accept=".pdf">
+                    </div>
+                </div>
+
+                <div class="card" id="preview-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="card-icon">👁️</span>
+                            <h2 class="card-title">Parsed Listings Preview (<span id="job-count">0</span> jobs)</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="jobs-table-container">
+                        <table class="jobs-table">
+                            <thead>
+                                <tr>
+                                    <th>Page</th>
+                                    <th>Job Title</th>
+                                    <th>Company</th>
+                                    <th>Location</th>
+                                    <th>Pay</th>
+                                    <th>URL</th>
+                                    <th>Industry</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-tbody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Diagnostics & Pattern Editors -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div class="card" id="diagnostics-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="card-icon">🚨</span>
+                            <h2 class="card-title">Diagnostics & Warnings</h2>
+                        </div>
+                    </div>
+                    <div class="warnings-list" id="warnings-container">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <div class="card" id="settings-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <span class="card-icon">⚙️</span>
+                            <h2 class="card-title">Scraper Configurations</h2>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="txt-invalid-titles">Ignore Titles (One item per line):</label>
+                        <textarea id="txt-invalid-titles" class="textarea-editor"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="txt-mappings">Company Link Mappings (JSON array of [keyword, cleanName, source, url]):</label>
+                        <textarea id="txt-mappings" class="textarea-editor json-editor"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="txt-overrides">Block Text Keyword Overrides (JSON array of [keyword, cleanName, source, url]):</label>
+                        <textarea id="txt-overrides" class="textarea-editor json-editor"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="txt-layout">Page Layout Overrides (JSON mapping: {"pageNumber": "1-column"|"2-column"}):</label>
+                        <textarea id="txt-layout" class="textarea-editor" style="height: 60px;"></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" id="btn-preview" onclick="runPreview()">
+                            🔄 Preview Changes
+                        </button>
+                        <button class="btn btn-success" id="btn-approve" onclick="approveScrape()" style="flex-grow: 1;">
+                            ✨ Approve & Integrate to Production
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text" style="font-size: 1.2rem; font-weight: 500;">Parsing PDF and applying configurations...</p>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('pdf-file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const statusBox = document.getElementById('status-box');
+        
+        let uploadedFile = null;
+
+        // Click on drop zone triggers input select
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // Drag/drop behaviors
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--primary)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            uploadedFile = file;
+            uploadPrompt.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            uploadPrompt.style.fontWeight = '600';
+            uploadPrompt.style.color = '#fff';
+            uploadPDF();
+        }
+
+        function showLoading(msg) {
+            document.getElementById('loading-text').textContent = msg;
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
+
+        function showStatus(msg, isError = false) {
+            statusBox.textContent = msg;
+            statusBox.style.display = 'block';
+            statusBox.style.background = isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)';
+            statusBox.style.borderColor = isError ? 'var(--error)' : 'var(--success)';
+            statusBox.style.color = isError ? '#fca5a5' : '#a7f3d0';
+            setTimeout(() => {
+                statusBox.style.display = 'none';
+            }, 8000);
+        }
+
+        // Upload PDF initial scrape
+        function uploadPDF() {
+            if (!uploadedFile) return;
+
+            showLoading('Uploading PDF and performing initial parsing...');
+            const formData = new FormData();
+            formData.append('pdf_file', uploadedFile);
+
+            fetch('/refine-pdf/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'success') {
+                    showStatus('PDF uploaded and processed successfully.');
+                    renderResults(data);
+                } else {
+                    showStatus(data.message, true);
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                showStatus('Error uploading file: ' + err, true);
+            });
+        }
+
+        // Render listings and config fields
+        function renderResults(data) {
+            // Unhide elements
+            document.getElementById('preview-card').style.display = 'flex';
+            document.getElementById('diagnostics-card').style.display = 'flex';
+            document.getElementById('settings-card').style.display = 'flex';
+
+            // Set job count
+            document.getElementById('job-count').textContent = data.jobs.length;
+
+            // Render Jobs Tbody
+            const tbody = document.getElementById('jobs-tbody');
+            tbody.innerHTML = '';
+            data.jobs.forEach(j => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="badge badge-page">${j.page || 'N/A'}</span></td>
+                    <td title="${j.job_title || ''}">${j.job_title || 'N/A'}</td>
+                    <td title="${j.company || ''}">${j.company || 'N/A'}</td>
+                    <td title="${j.location || ''}">${j.location || 'N/A'}</td>
+                    <td title="${j.pay || ''}">${j.pay || 'N/A'}</td>
+                    <td>${j.job_url ? `<a href="${j.job_url}" target="_blank" class="job-link" title="${j.job_url}">Link</a>` : '<span style="color:var(--text-dim)">None</span>'}</td>
+                    <td><span class="badge badge-source">${j.industry || 'N/A'}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Render Diagnostics
+            const warningsContainer = document.getElementById('warnings-container');
+            warningsContainer.innerHTML = '';
+            if (data.warnings.length === 0) {
+                warningsContainer.innerHTML = `<div class="warning-item warning-item-warn" style="background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.2);color:#a7f3d0;">✨ No high-risk warnings detected in this draft parsing.</div>`;
+            } else {
+                data.warnings.forEach(w => {
+                    const item = document.createElement('div');
+                    item.className = `warning-item warning-item-${w.level}`;
+                    item.innerHTML = `<span>${w.level === 'error' ? '❌' : '⚠️'}</span> <div>${w.message}</div>`;
+                    warningsContainer.appendChild(item);
+                });
+            }
+
+            // Fill configurations
+            document.getElementById('txt-invalid-titles').value = data.config.invalid_titles.join('\n');
+            document.getElementById('txt-mappings').value = JSON.stringify(data.config.company_mappings, null, 2);
+            document.getElementById('txt-overrides').value = JSON.stringify(data.config.overrides, null, 2);
+            document.getElementById('txt-layout').value = JSON.stringify(data.config.layout_overrides || {}, null, 2);
+        }
+
+        // Run preview scrape with custom user adjustments
+        function runPreview() {
+            if (!uploadedFile) {
+                showStatus('Please select a PDF file first.', true);
+                return;
+            }
+
+            // Validate JSON fields
+            let invalid_titles, company_mappings, overrides, layout_overrides;
+            try {
+                invalid_titles = document.getElementById('txt-invalid-titles').value.split('\n').map(x => x.trim()).filter(x => x !== '');
+                company_mappings = JSON.parse(document.getElementById('txt-mappings').value);
+                overrides = JSON.parse(document.getElementById('txt-overrides').value);
+                layout_overrides = JSON.parse(document.getElementById('txt-layout').value);
+            } catch (jsonErr) {
+                showStatus('Formatting Error: Please verify that all mappings, overrides, and layout variables are formatted as valid JSON.', true);
+                return;
+            }
+
+            showLoading('Regenerating dry-run preview...');
+            
+            const formData = new FormData();
+            formData.append('pdf_file', uploadedFile);
+            formData.append('config_data', JSON.stringify({
+                invalid_titles,
+                company_mappings,
+                overrides,
+                layout_overrides
+            }));
+
+            fetch('/refine-pdf/preview', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'success') {
+                    showStatus('Preview regenerated using updated rules.');
+                    renderResults(data);
+                } else {
+                    showStatus(data.message, true);
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                showStatus('Error fetching preview: ' + err, true);
+            });
+        }
+
+        // Approve and integrate to production
+        function approveScrape() {
+            if (!uploadedFile) {
+                showStatus('Please select a PDF file first.', true);
+                return;
+            }
+
+            let invalid_titles, company_mappings, overrides, layout_overrides;
+            try {
+                invalid_titles = document.getElementById('txt-invalid-titles').value.split('\n').map(x => x.trim()).filter(x => x !== '');
+                company_mappings = JSON.parse(document.getElementById('txt-mappings').value);
+                overrides = JSON.parse(document.getElementById('txt-overrides').value);
+                layout_overrides = JSON.parse(document.getElementById('txt-layout').value);
+            } catch (jsonErr) {
+                showStatus('Formatting Error: Please check configurations are valid JSON.', true);
+                return;
+            }
+
+            showLoading('Writing configuration and running production scraper...');
+            
+            const formData = new FormData();
+            formData.append('pdf_file', uploadedFile);
+            formData.append('config_data', JSON.stringify({
+                invalid_titles,
+                company_mappings,
+                overrides,
+                layout_overrides
+            }));
+
+            fetch('/refine-pdf/approve', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'success') {
+                    showStatus('Rules committed successfully! CSV and Excel files compiled.');
+                    alert(`Integration Complete!\n\nRules have been saved to pdf_config.json.\nProduction Excel sheet created: ${data.file_name}`);
+                    window.location.href = '/';
+                } else {
+                    showStatus(data.message, true);
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                showStatus('Error approving settings: ' + err, true);
+            });
+        }
+    </script>
+</body>
+</html>

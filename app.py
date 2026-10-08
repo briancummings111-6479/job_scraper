@@ -539,5 +539,116 @@ def generate_targeted():
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)})
 
+import threading
+from review_expired_jobs import run_review_expired_jobs
+
+review_job_state = {
+    "running": False,
+    "progress": 0,
+    "total": 0,
+    "current": 0,
+    "expired_count": 0,
+    "active_count": 0,
+    "company_skipped_count": 0,
+    "message": "Idle",
+    "completed": False,
+    "error": None,
+    "result": None,
+    "sheet_url": "https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=778721942#gid=778721942"
+}
+review_lock = threading.Lock()
+
+def _background_review_task(sheet_id, tab_name, concurrency, update_sheet):
+    global review_job_state
+    try:
+        def on_progress(p_data):
+            with review_lock:
+                review_job_state["current"] = p_data.get("current", 0)
+                review_job_state["total"] = p_data.get("total", 0)
+                review_job_state["expired_count"] = p_data.get("expired_count", 0)
+                review_job_state["active_count"] = p_data.get("active_count", 0)
+                review_job_state["company_skipped_count"] = p_data.get("company_skipped_count", 0)
+                if review_job_state["total"] > 0:
+                    review_job_state["progress"] = int((review_job_state["current"] / review_job_state["total"]) * 100)
+                job = p_data.get("job", {})
+                status_lbl = job.get("status", "")
+                review_job_state["message"] = (
+                    f"Auditing ({review_job_state['current']}/{review_job_state['total']}): "
+                    f"[{job.get('source', '')}] {job.get('title', '')[:30]} -> {status_lbl}"
+                )
+        
+        res = run_review_expired_jobs(
+            sheet_id=sheet_id,
+            tab_name=tab_name,
+            concurrency=concurrency,
+            update_sheet=update_sheet,
+            progress_callback=on_progress
+        )
+
+        with review_lock:
+            review_job_state["running"] = False
+            review_job_state["completed"] = True
+            review_job_state["progress"] = 100
+            review_job_state["result"] = res
+            review_job_state["message"] = (
+                f"Completed! {res.get('reviewed_jobs', 0)} jobs audited: "
+                f"{res.get('expired_count', 0)} Expired, {res.get('active_count', 0)} Active. "
+                f"{res.get('company_skipped', 0)} Company jobs skipped. Column P updated in Google Sheet."
+            )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        with review_lock:
+            review_job_state["running"] = False
+            review_job_state["completed"] = False
+            review_job_state["error"] = str(e)
+            review_job_state["message"] = f"Error during review: {str(e)}"
+
+@app.route('/api/review-expired-jobs', methods=['POST'])
+def start_review_expired_jobs_endpoint():
+    global review_job_state
+    data = request.get_json() or {}
+    sheet_id = data.get("sheet_id", "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU")
+    tab_name = data.get("tab_name", "Redding Area Job Postings")
+    concurrency = int(data.get("concurrency", 3))
+    update_sheet = bool(data.get("update_sheet", True))
+
+    with review_lock:
+        if review_job_state["running"]:
+            return jsonify({
+                "status": "busy",
+                "message": "A review task is already running. Please monitor progress."
+            })
+        
+        review_job_state = {
+            "running": True,
+            "progress": 0,
+            "total": 0,
+            "current": 0,
+            "expired_count": 0,
+            "active_count": 0,
+            "company_skipped_count": 0,
+            "message": "Initializing browser engine & connecting to Google Sheet...",
+            "completed": False,
+            "error": None,
+            "result": None,
+            "sheet_url": f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit?gid=778721942#gid=778721942"
+        }
+
+    thread = threading.Thread(
+        target=_background_review_task,
+        args=(sheet_id, tab_name, concurrency, update_sheet),
+        daemon=True
+    )
+    thread.start()
+
+    return jsonify({"status": "started", "message": "Job expiry review initiated in background."})
+
+@app.route('/api/review-expired-jobs/status', methods=['GET'])
+def get_review_expired_jobs_status():
+    with review_lock:
+        return jsonify(dict(review_job_state))
+
 if __name__ == '__main__':
     app.run(debug=True)
+

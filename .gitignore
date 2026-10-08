@@ -6,7 +6,9 @@ chrome_profile/
 chrome_profile_backup/
 output/
 drivers/
+playwright_profile/
 *.html
+!templates/*.html
 venv/
 env/
 serviceAccountKey.json

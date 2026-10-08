@@ -1,0 +1,3165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Miner | Advanced Job Scraper Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --bg: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.65);
+            --card-hover: rgba(31, 41, 55, 0.7);
+            --text: #f9fafb;
+            --text-dim: #9ca3af;
+            --border: rgba(255, 255, 255, 0.07);
+            --border-hover: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --error: #ef4444;
+            --violet: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header / Navbar */
+        .app-header {
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.25rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .brand-logo {
+            font-size: 1.75rem;
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to right, #818cf8, #a78bfa, #34d399);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success);
+            animation: blink 2s infinite ease-in-out;
+        }
+
+        /* Dashboard Container */
+        .dashboard-container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Welcome Section */
+        .welcome-panel {
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-panel h1 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-panel p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        /* Layout Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1.25fr 1fr;
+            }
+        }
+
+        /* Generic Card Styling */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: var(--primary-glow);
+            border-radius: 10px;
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Left Column Scraper Actions Card */
+        .scraper-actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .action-row {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s;
+        }
+
+        .action-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.07);
+        }
+
+        @media (min-width: 576px) {
+            .action-row {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .action-details {
+            flex-grow: 1;
+            padding-right: 1rem;
+        }
+
+        .action-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Buttons */
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.35);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background-color: #242936;
+            color: #4b5563;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        button.secondary-btn {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: none;
+        }
+
+        button.secondary-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: none;
+        }
+
+        /* Right Column Drag & Drop Card */
+        .drop-zone-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.03);
+            box-shadow: inset 0 0 15px rgba(99, 102, 241, 0.05);
+        }
+
+        .drop-zone.dragover {
+            transform: scale(0.99);
+        }
+
+        .upload-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: var(--text-dim);
+            transition: all 0.3s;
+        }
+
+        .drop-zone:hover .upload-icon-wrapper,
+        .drop-zone.dragover .upload-icon-wrapper {
+            color: #818cf8;
+            background: var(--primary-glow);
+            border-color: rgba(99, 102, 241, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone-text {
+            font-size: 1rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .drop-zone-subtext {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Bottom Console Log Card */
+        .console-card {
+            grid-column: 1 / -1;
+        }
+
+        .console-content {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .console-header-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .console-log-area {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #status-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.5;
+            letter-spacing: 0.01em;
+        }
+
+        /* Spinner & Progress */
+        .spinner-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(99, 102, 241, 0.15);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 9999px;
+            overflow: hidden;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--primary), var(--violet));
+            border-radius: 9999px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Download Section */
+        .download-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+
+        #download-link {
+            display: none;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(135deg, var(--success), #059669);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px var(--success-glow);
+            animation: slideUpFade 0.5s ease-out;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        #download-link:active {
+            transform: translateY(0);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); }
+            50% { filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6)); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            width: 95vw;
+            max-width: 1280px;
+            max-height: 93vh;
+            overflow-y: auto;
+            padding: 1.75rem 2.25rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            animation: slideUpFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            box-shadow: none;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+            background: transparent;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .form-row-3,
+            .form-row-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-input,
+        .form-textarea {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 65px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 1.25rem;
+        }
+
+        /* Keyword Library & Quick Selector */
+        .quick-action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text);
+            padding: 6px 12px;
+            font-size: 0.82rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .quick-action-btn.save-std-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+            color: #34d399;
+        }
+
+        .quick-action-btn.clear-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: #f87171;
+        }
+
+        .kw-badge-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        .badge-count {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.18);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #c7d2fe;
+        }
+
+        .badge-time {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .kw-library-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+
+        .kw-library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .kw-search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 4px 10px;
+            flex-grow: 1;
+            max-width: 260px;
+        }
+
+        .kw-search-input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 0.84rem;
+            outline: none;
+            width: 100%;
+        }
+
+        .kw-add-box {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .kw-add-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 4px 10px;
+            color: var(--text);
+            font-size: 0.84rem;
+            width: 130px;
+        }
+
+        .kw-add-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Industry Groups Grid & Cards */
+        .kw-groups-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .kw-groups-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kw-group-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kw-group-card:hover {
+            border-color: rgba(99, 102, 241, 0.35);
+            background: rgba(255, 255, 255, 0.035);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .kw-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .kw-group-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .kw-group-action-btn {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: #c7d2fe;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .kw-group-action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .kw-group-action-btn.all-active {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .kw-group-action-btn.all-active:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: #f87171;
+        }
+
+        .kw-group-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .kw-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.82rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-dim);
+            cursor: grab;
+            user-select: none;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .kw-chip:active {
+            cursor: grabbing;
+        }
+
+        .kw-chip.dragging {
+            opacity: 0.35;
+            transform: scale(0.94);
+            border: 1px dashed var(--primary);
+            background: rgba(99, 102, 241, 0.25);
+        }
+
+        .kw-chip:hover {
+            border-color: var(--primary);
+            color: var(--text);
+            background: rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .kw-chip.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.4));
+            border-color: rgba(99, 102, 241, 0.85);
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+            font-weight: 500;
+        }
+
+        .kw-chip .chip-grip {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            cursor: grab;
+            margin-right: -2px;
+            user-select: none;
+        }
+
+        .kw-chip:hover .chip-grip {
+            opacity: 0.9;
+            color: #a78bfa;
+        }
+
+        .kw-chip .chip-icon {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .kw-chip.active .chip-icon {
+            opacity: 1;
+            color: #34d399;
+        }
+
+        .kw-chip .chip-move {
+            margin-left: 2px;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            display: none;
+            line-height: 1;
+            padding: 1px 3px;
+            border-radius: 4px;
+        }
+
+        .kw-chip:hover .chip-move {
+            display: inline-block;
+        }
+
+        .kw-chip .chip-move:hover {
+            color: #c7d2fe;
+            background: rgba(99, 102, 241, 0.3);
+        }
+
+        .kw-chip .chip-del {
+            margin-left: 2px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.35);
+            cursor: pointer;
+            display: none;
+            line-height: 1;
+        }
+
+        .kw-chip:hover .chip-del {
+            display: inline-block;
+        }
+
+        .kw-chip .chip-del:hover {
+            color: var(--error);
+        }
+
+        /* Drop Target Active State on Group Card */
+        .kw-group-card.drop-target-hover {
+            border-color: #818cf8 !important;
+            background: rgba(99, 102, 241, 0.12) !important;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.35) !important;
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        /* Move Dropdown Popup */
+        .kw-move-popup {
+            position: fixed;
+            z-index: 1050;
+            background: #1e1b4b;
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.65);
+            padding: 6px 0;
+            min-width: 220px;
+            max-height: 320px;
+            overflow-y: auto;
+            animation: slideUpFade 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .kw-move-popup-header {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #a78bfa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .kw-move-item {
+            padding: 7px 12px;
+            font-size: 0.83rem;
+            color: #e0e7ff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.12s;
+        }
+
+        .kw-move-item:hover {
+            background: rgba(99, 102, 241, 0.35);
+            color: #ffffff;
+        }
+
+        .kw-move-item.current-group {
+            opacity: 0.4;
+            pointer-events: none;
+            font-style: italic;
+        }
+
+        /* Drag Notification Toast */
+        .kw-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e1b4b;
+            border: 1px solid rgba(99, 102, 241, 0.6);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            animation: slideUpFade 0.25s ease-out;
+        }
+
+        /* Inline Group Term Adder */
+        .kw-group-add-row {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 0.25rem;
+            padding-top: 0.45rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .kw-group-add-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.77rem;
+            color: var(--text);
+            outline: none;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .kw-group-add-input:focus {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+        }
+
+        .kw-group-add-input::placeholder {
+            color: rgba(255, 255, 255, 0.28);
+            font-style: italic;
+        }
+
+        .kw-group-add-btn {
+            background: rgba(99, 102, 241, 0.18);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #c7d2fe;
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.2;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .kw-group-add-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            transform: scale(1.06);
+        }
+
+        /* Modal Sub-tabs / Advanced Editor */
+        .config-accordion-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #a78bfa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .config-accordion-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        /* Dashboard Active Keywords Pill */
+        .dash-criteria-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(99, 102, 241, 0.07);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 0.5rem;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .dash-criteria-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        /* Search Channel Filter Chips */
+        .channel-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            align-items: center;
+        }
+
+        .channel-filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-dim);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .channel-filter-chip:hover {
+            border-color: var(--primary);
+            color: var(--text);
+            background: rgba(99, 102, 241, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .channel-filter-chip.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.35));
+            border-color: rgba(99, 102, 241, 0.85);
+            color: #ffffff;
+            font-weight: 500;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+        }
+
+        .channel-filter-chip .channel-icon {
+            font-size: 0.9rem;
+        }
+
+        .channel-filter-chip .channel-status {
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .channel-filter-chip .channel-status.live {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .channel-filter-chip.active .channel-status.live {
+            background: rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+        }
+
+        .channel-filter-chip .channel-status.beta {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .channel-filter-chip.active .channel-status.beta {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fde68a;
+        }
+
+        .channel-filter-chip .channel-status.custom {
+            background: rgba(167, 139, 250, 0.15);
+            color: #c7d2fe;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+
+        .channel-filter-chip .channel-check {
+            font-size: 0.75rem;
+            opacity: 0.3;
+            margin-left: 2px;
+        }
+
+        .channel-filter-chip.active .channel-check {
+            opacity: 1;
+            color: #34d399;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="app-header">
+            <a href="/" class="brand">
+                <span class="brand-logo">🔍</span>
+                <span class="brand-title">Career Miner</span>
+            </a>
+            <nav style="display: flex; gap: 1.5rem; align-items: center;">
+                <a href="/"
+                    style="color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.95rem; text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);">Dashboard</a>
+                <a href="/refine"
+                    style="color: var(--text-dim); text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-dim)'">PDF
+                    Refiner</a>
+            </nav>
+            <div class="system-status">
+                <div class="status-dot"></div>
+                <span>Console Active</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-container">
+            <!-- Welcome Header -->
+            <section class="welcome-panel">
+                <h1>Scraper Console</h1>
+                <p>Execute job board scraping and parse weekly county PDF listings packs.</p>
+            </section>
+
+            <!-- Grid Layout -->
+            <div class="dashboard-grid">
+                <!-- Left Panel: Job Board Operations -->
+                <section class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <h2 class="card-title">Job Board Scraping</h2>
+                    </div>
+
+                    <!-- Active Criteria Indicator Banner -->
+                    <div id="dash-kw-banner" class="dash-criteria-pill">
+                        <div class="dash-criteria-left">
+                            <span style="font-size: 1.1rem;">🎯</span>
+                            <div>
+                                <strong id="dash-kw-count-text" style="color: #c7d2fe; font-size: 0.92rem;">Active
+                                    Keywords: Loading...</strong>
+                                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 2px; flex-wrap: wrap;">
+                                    <div id="dash-kw-preview-text"
+                                        style="font-size: 0.8rem; color: var(--text-dim); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        ...</div>
+                                    <span id="dash-channels-badge" class="badge-time" style="background: rgba(99, 102, 241, 0.18); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.35); font-size: 0.74rem;">📡 Channels: Indeed, Snagajob</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <button type="button" class="quick-action-btn" onclick="quickRestoreStandardKeywords()"
+                                title="Reset to standard default keywords">
+                                ⭐ Standard (<span id="dash-std-count">12</span>)
+                            </button>
+                            <button type="button" class="quick-action-btn" onclick="openSearchConfigModal()"
+                                title="Customize keywords & criteria">
+                                ✏️ Custom
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="scraper-actions-list">
+                        <!-- Candidate-Specific Search Row -->
+                        <div class="action-row" style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.03);">
+                            <div class="action-details">
+                                <h3 class="action-name" style="color: #34d399;">🎯 Candidate-Specific Search</h3>
+                                <p class="action-desc">Run on-demand searches for specific participant trade skills, certifications, or transit bounds.</p>
+                            </div>
+                            <button type="button" class="action-btn" onclick="openTargetedDrawer()"
+                                style="background: linear-gradient(135deg, #10b981, #059669);">
+                                Open Search Drawer
+                            </button>
+                        </div>
+
+                        <!-- Review Active / Expired Sheet Listings Row -->
+                        <div class="action-row" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.03);">
+                            <div class="action-details">
+                                <h3 class="action-name" style="color: #fbbf24;">📋 Review Active Listings in Sheet</h3>
+                                <p class="action-desc">Audit Indeed, Snagajob, ZipRecruiter & other portal postings in Google Sheet ("Redding Area Job Postings"). Flags inactive postings as "Expired" in Column P, and skips Company source jobs.</p>
+                            </div>
+                            <button id="btn-review-expired" type="button" class="action-btn" onclick="startReviewExpiredJobs()"
+                                style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Audit Sheet Postings
+                            </button>
+                        </div>
+
+                        <!-- Redding -->
+                        <div class="action-row">
+                            <div class="action-details">
+                                <h3 class="action-name">Search Redding</h3>
+                                <p class="action-desc" id="desc-redding">Target Indeed & Snagajob listings within 15 miles of Redding, CA (96002).</p>
+                            </div>
+                            <button id="btn-redding" class="action-btn" onclick="runTask('/generate-redding')">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                Redding
+                            </button>
+                        </div>
+                        <!-- Burney -->
+                        <div class="action-row">
+                            <div class="action-details">
+                                <h3 class="action-name">Search Burney</h3>
+                                <p class="action-desc" id="desc-burney">Target Indeed & Snagajob listings within 15 miles of Burney, CA (96013).</p>
+                            </div>
+                            <button id="btn-burney" class="action-btn" onclick="runTask('/generate-burney')">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                    </path>
+                                    <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Burney
+                            </button>
+                        </div>
+                        <!-- Search Config Settings -->
+                        <div class="action-row"
+                            style="border-color: rgba(99, 102, 241, 0.2); background: rgba(99, 102, 241, 0.03);">
+                            <div class="action-details">
+                                <h3 class="action-name" style="color: #a78bfa;">⚙️ Search Parameters</h3>
+                                <p class="action-desc">Edit search keywords, channels (Indeed, Snagajob, etc.), locations, radius, and exclusion filters.</p>
+                            </div>
+                            <button type="button" class="action-btn" onclick="openSearchConfigModal()"
+                                style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                    </path>
+                                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Edit Criteria
+                            </button>
+                        </div>
+                        <!-- Full Scan -->
+                        <div class="action-row">
+                            <div class="action-details">
+                                <h3 class="action-name">Full Scraping Scan</h3>
+                                <p class="action-desc">Run standard comprehensive scraping analysis across all locations (slow).</p>
+                            </div>
+                            <button id="btn-scrape" class="action-btn secondary-btn" onclick="runTask('/generate')">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9">
+                                    </path>
+                                </svg>
+                                Run Full Scan
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Right Panel: PDF Document Intelligence -->
+                <section class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📂</div>
+                        <h2 class="card-title">County PDF Scraper</h2>
+                    </div>
+                    <div class="drop-zone-container">
+                        <input type="file" id="pdf-upload-input" accept=".pdf" style="display: none;"
+                            onchange="uploadAndScrapePdf(event)">
+                        <div class="drop-zone" id="pdf-drop-zone"
+                            onclick="document.getElementById('pdf-upload-input').click()">
+                            <div class="upload-icon-wrapper">
+                                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="drop-zone-text">Drag & drop Shasta County PDF here</p>
+                                <p class="drop-zone-subtext">or click to browse local files</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Full-Width Panel: Execution Console Monitor -->
+                <section class="card console-card">
+                    <div class="card-header">
+                        <div class="card-icon">💻</div>
+                        <h2 class="card-title">Execution Console Monitor</h2>
+                    </div>
+                    <!-- Empty State / Idle -->
+                    <div id="console-idle-state" style="text-align: center; padding: 1.5rem 0; color: var(--text-dim);">
+                        Console is idle. Launch any action above to start monitor logs.
+                    </div>
+                    <!-- Live Console Logs -->
+                    <div class="console-content" id="console-content">
+                        <div class="console-header-details">
+                            <span style="font-weight: 600; color: #818cf8;">status_log_stream:</span>
+                            <span id="console-timer"
+                                style="color: var(--text-dim); font-variant-numeric: tabular-nums;">Elapsed: 0s</span>
+                        </div>
+                        <div class="console-log-area">
+                            <div class="spinner-wrapper" id="loader-wrapper">
+                                <div class="spinner"></div>
+                            </div>
+                            <div id="status-text">Initializing mining engine...</div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="progress-bar-container" id="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <!-- Report Download & Optional Email Trigger -->
+                        <div class="download-wrapper"
+                            style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem;">
+                            <a id="download-link" href="#" target="_blank">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    viewBox="0 0 24 24">
+                                    <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Download Scraped Report (.xlsx)
+                            </a>
+                            <div id="email-report-box"
+                                style="display: none; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 14px; border-radius: 12px;">
+                                <span style="font-size: 1rem;">📧</span>
+                                <input type="email" id="email-recipient-input" placeholder="Recipient email address..."
+                                    style="background: transparent; border: none; color: var(--text); outline: none; font-size: 0.88rem; width: 230px; font-family: inherit;">
+                                <button type="button" id="btn-send-email" class="quick-action-btn"
+                                    onclick="sendReportByEmail()"
+                                    style="padding: 5px 12px; font-size: 0.82rem; background: rgba(99, 102, 241, 0.25); border-color: var(--primary);">Email
+                                    Report</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Criteria Settings Modal -->
+    <div id="config-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ Search Criteria & Parameters</h3>
+                <button type="button" class="close-btn" onclick="closeSearchConfigModal()">&times;</button>
+            </div>
+
+            <!-- Quick Action Toolbar & Active Keywords -->
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="form-label" for="cfg-keywords" style="margin-bottom: 0;">🎯 Active Search Keywords</label>
+                    <div class="kw-badge-group">
+                        <span id="kw-active-count-badge" class="badge-count">0 Terms Active</span>
+                        <span id="kw-active-est-time" class="badge-time">~0 min</span>
+                    </div>
+                </div>
+
+                <div class="quick-action-bar">
+                    <button type="button" class="quick-action-btn" onclick="loadStandardKeywordsPreset()"
+                        title="Load default standard list">
+                        ⭐ Standard List (<span id="std-count-lbl">12</span>)
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="selectAllLibraryKeywords()"
+                        title="Select all terms from master library">
+                        📚 Select All Library (<span id="lib-count-lbl">80+</span>)
+                    </button>
+                    <button type="button" class="quick-action-btn clear-btn" onclick="clearActiveKeywords()"
+                        title="Clear active terms to easily pick 1 or 2 terms">
+                        🧹 Clear Active
+                    </button>
+                    <button type="button" class="quick-action-btn save-std-btn" onclick="saveActiveAsStandardPreset()"
+                        title="Save current active selection as your new standard preset">
+                        💾 Set as Standard Preset
+                    </button>
+                </div>
+
+                <textarea id="cfg-keywords" class="form-textarea" rows="3" placeholder="warehouse, store, installer..."
+                    oninput="onActiveKeywordsTextareaChange()"></textarea>
+            </div>
+
+            <!-- Complete Keyword Library Interactive Industry Group Selector -->
+            <div class="form-group">
+                <div class="kw-library-container">
+                    <div class="kw-library-header">
+                        <div>
+                            <span style="font-size: 0.95rem; font-weight: 600; color: #a78bfa;">📚 Keyword Library by Industry Group</span>
+                            <div style="font-size: 0.78rem; color: var(--text-dim);">Click individual chips or use 1-click group buttons to add/remove entire domains.</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                            <div class="kw-search-box">
+                                <span style="font-size: 0.8rem; margin-right: 4px;">🔎</span>
+                                <input type="text" id="kw-lib-filter" class="kw-search-input"
+                                    placeholder="Filter terms or industries..." oninput="filterKeywordChips()">
+                            </div>
+                            <div class="kw-add-box">
+                                <select id="kw-add-group-select" class="form-input"
+                                    style="padding: 4px 8px; font-size: 0.8rem; width: 155px; height: 32px; border-radius: 8px;">
+                                </select>
+                                <input type="text" id="kw-new-input" class="kw-add-input" placeholder="New term..."
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault(); addNewTermToLibrary();}">
+                                <button type="button" class="quick-action-btn" style="padding: 4px 10px;"
+                                    onclick="addNewTermToLibrary()">+ Add</button>
+                                <button type="button" class="quick-action-btn"
+                                    style="padding: 4px 10px; background: rgba(167, 139, 250, 0.18); border-color: #a78bfa; color: #e0e7ff;"
+                                    onclick="promptNewCategory()" title="Create a brand new industry category">+ Category</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Populated dynamically with Industry Group Cards by JavaScript -->
+                    <div id="kw-chips-grid" class="kw-groups-grid"></div>
+                </div>
+            </div>
+
+            <!-- Advanced / Bulk List Editor Accordion -->
+            <div class="form-group">
+                <div class="config-accordion-toggle" onclick="toggleAdvancedListEditor()">
+                    <span>🛠️ Edit Standard Preset & Keyword Library Directly</span>
+                    <span id="accordion-arrow">▼</span>
+                </div>
+                <div id="advanced-list-editor"
+                    style="display: none; flex-direction: column; gap: 0.75rem; padding: 0.9rem; background: rgba(255, 255, 255, 0.02); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06); margin-top: 0.3rem;">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cfg-standard-keywords">Standard List Preset (comma-separated defaults)</label>
+                            <textarea id="cfg-standard-keywords" class="form-textarea" rows="3"
+                                placeholder="warehouse, store, installer..."
+                                oninput="onStandardKeywordsTextareaChange()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cfg-all-keywords">Complete Keyword Library (flat comma-separated list)</label>
+                            <textarea id="cfg-all-keywords" class="form-textarea" rows="3"
+                                placeholder="account executive, admin, assistant..."
+                                oninput="onLibraryTextareaChange()"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="cfg-groups-json">Industry Keyword Groups Structure (JSON)</label>
+                            <textarea id="cfg-groups-json" class="form-textarea" rows="4"
+                                style="font-family: monospace; font-size: 0.85rem;"
+                                placeholder='{"Janitorial & Facilities": ["cleaner", "custodian", ...]}'
+                                oninput="onGroupsJsonChange()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="cfg-channels-raw">Search Channels (comma-separated)</label>
+                            <textarea id="cfg-channels-raw" class="form-textarea" rows="4"
+                                placeholder="Indeed, Snagajob, Glassdoor..."
+                                oninput="onChannelsRawInputChange()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Channels / Job Boards Filter -->
+            <div class="form-group" style="margin-top: 0.25rem; margin-bottom: 0.4rem; background: rgba(255, 255, 255, 0.02); padding: 0.85rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="form-label" style="margin-bottom: 0; color: #a78bfa;">📡 Search Channels & Job Boards</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span id="cfg-channels-count" class="badge-count">2 Channels Active</span>
+                    </div>
+                </div>
+
+                <div class="quick-action-bar" style="margin-bottom: 0.5rem;">
+                    <button type="button" class="quick-action-btn" onclick="setChannelsPreset(['Indeed', 'Snagajob'])"
+                        title="Set to standard active scraping channels">
+                        ⭐ Indeed + Snagajob (Live)
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="setChannelsPreset(['Indeed'])"
+                        title="Search Indeed only">
+                        🔵 Indeed Only
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="setChannelsPreset(['Snagajob'])"
+                        title="Search Snagajob only">
+                        🟠 Snagajob Only
+                    </button>
+                    <button type="button" class="quick-action-btn" onclick="selectAllChannels()"
+                        title="Enable all available channels">
+                        🌐 Select All
+                    </button>
+                </div>
+
+                <div class="channel-chips-container" id="channel-chips-grid"></div>
+
+                <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 0.4rem; align-items: center;">
+                        <input type="text" id="cfg-new-channel-input" class="form-input" 
+                            placeholder="Add custom channel (e.g. Glassdoor, CalJobs)..." 
+                            style="height: 32px; font-size: 0.82rem; padding: 4px 10px; width: 260px;"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); addCustomChannel();}">
+                        <button type="button" class="quick-action-btn" style="height: 32px; padding: 4px 12px;" onclick="addCustomChannel()">+ Add Channel</button>
+                    </div>
+                    <span id="channel-validation-msg" style="font-size: 0.78rem; color: var(--error); display: none;">⚠️ At least one channel must be selected</span>
+                </div>
+            </div>
+
+            <!-- Search Parameters Grid -->
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label class="form-label" for="cfg-location">Search Location</label>
+                    <input type="text" id="cfg-location" class="form-input"
+                        placeholder="Redding, CA 96002">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cfg-radius">Radius (miles)</label>
+                    <input type="number" id="cfg-radius" class="form-input" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cfg-days-ago">Max Days Old</label>
+                    <input type="number" id="cfg-days-ago" class="form-input" min="1" max="30">
+                </div>
+            </div>
+
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label class="form-label" for="cfg-max-pages">Max Pages Per Search</label>
+                    <input type="number" id="cfg-max-pages" class="form-input" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cfg-rejected-titles">Excluded Job Titles (comma separated)</label>
+                    <textarea id="cfg-rejected-titles" class="form-textarea" rows="2"
+                        placeholder="surrogate, Remote, CDL A..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cfg-rejected-employers">Excluded Employers (comma separated)</label>
+                    <textarea id="cfg-rejected-employers" class="form-textarea" rows="2"
+                        placeholder="navy, MAERSK, Vector Marketing..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary-btn" onclick="closeSearchConfigModal()">Cancel</button>
+                <button type="button" id="btn-save-cfg" onclick="saveSearchConfigFromModal()">Save Parameters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide-out Drawer: Candidate-Specific Search Modal -->
+    <div id="targeted-drawer-overlay" class="modal-overlay" onclick="closeTargetedDrawer()">
+        <div class="modal-card" style="max-width: 580px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">🎯 Candidate-Specific Search</h3>
+                <button type="button" class="close-btn" onclick="closeTargetedDrawer()">&times;</button>
+            </div>
+
+            <p style="color: var(--text-dim); font-size: 0.88rem; margin-top: -0.5rem;">
+                Run a tailored search for a specific participant trade skill, license, or commute restriction without altering baseline settings.
+            </p>
+
+            <form id="targeted-search-form" onsubmit="submitTargetedSearch(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- Target Trade / Keywords -->
+                <div class="form-group">
+                    <label class="form-label" for="tgt-keywords">Target Keywords / Trade</label>
+                    <input type="text" id="tgt-keywords" class="form-input" 
+                           placeholder="e.g., CDL A, Welder, Heavy Equipment, Security Guard" required>
+                </div>
+
+                <!-- Quick Preset Chips -->
+                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: -0.4rem;">
+                    <button type="button" class="quick-action-btn" onclick="applyPreset('CDL A, Delivery Driver', 35, 'cdl')">🚛 CDL A</button>
+                    <button type="button" class="quick-action-btn" onclick="applyPreset('Equipment Operator, Excavator', 30, 'equipment')">🚜 Heavy Equip</button>
+                    <button type="button" class="quick-action-btn" onclick="applyPreset('Welder, Fabrication Helper', 25, 'welder')">⚡ Welding</button>
+                    <button type="button" class="quick-action-btn" onclick="applyPreset('Security Guard, Patrol Officer', 15, 'security')">🛡️ Guard Card</button>
+                </div>
+
+                <!-- Location & Radius -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="tgt-location">Location / Zip Code</label>
+                        <input type="text" id="tgt-location" class="form-input" value="Redding, CA 96002" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="tgt-radius">Search Radius</label>
+                        <select id="tgt-radius" class="form-input">
+                            <option value="10">10 Miles (City / Bus Transit)</option>
+                            <option value="15" selected>15 Miles (Greater Redding Area)</option>
+                            <option value="25">25 Miles (Anderson / Shasta Lake)</option>
+                            <option value="35">35 Miles (Regional Corridors)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Exclusion Bypass -->
+                <div class="form-group">
+                    <label class="form-label" for="tgt-bypass">Allowed Rejection Terms (Comma-separated)</label>
+                    <input type="text" id="tgt-bypass" class="form-input" 
+                           placeholder="e.g., cdl, equipment, welder, security" 
+                           title="These terms will not trigger rejection during this run">
+                    <span style="font-size: 0.75rem; color: var(--text-dim);">
+                        Terms entered here bypass the standard negative filter for this targeted run only.
+                    </span>
+                </div>
+
+                <div class="modal-actions" style="margin-top: 0.5rem;">
+                    <button type="button" class="secondary-btn" onclick="closeTargetedDrawer()">Cancel</button>
+                    <button type="submit" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        Run Targeted Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let elapsedTime = 0;
+        let timerInterval = null;
+
+        function startConsoleTimer() {
+            elapsedTime = 0;
+            const timerElem = document.getElementById('console-timer');
+            if (timerElem) timerElem.textContent = 'Elapsed: 0s';
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedTime++;
+                if (timerElem) timerElem.textContent = `Elapsed: ${elapsedTime}s`;
+            }, 1000);
+        }
+
+        function stopConsoleTimer() {
+            clearInterval(timerInterval);
+        }
+
+        async function runTask(endpoint, bodyData = null) {
+            const buttons = document.querySelectorAll('button, .drop-zone');
+            const idleState = document.getElementById('console-idle-state');
+            const consoleContent = document.getElementById('console-content');
+            const statusText = document.getElementById('status-text');
+            const loader = document.getElementById('loader-wrapper');
+            const downloadLink = document.getElementById('download-link');
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+
+            // Set running UI state
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            });
+
+            idleState.style.display = 'none';
+            consoleContent.style.display = 'flex';
+            statusText.textContent = 'Initializing engine... Preparing browser processes.';
+            statusText.className = '';
+            loader.style.display = 'flex';
+            downloadLink.style.display = 'none';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '10%';
+
+            startConsoleTimer();
+
+            // Progress estimation for user feedback
+            let progress = 10;
+            const progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += (90 - progress) * 0.06;
+                    progressFill.style.width = `${progress}%`;
+
+                    if (progress > 30 && progress < 60) {
+                        statusText.textContent = 'Accessing platforms & parsing weekly Shasta County PDF sheets...';
+                    }
+                    if (progress >= 60) {
+                        statusText.textContent = 'Filtering duplicate listings & classifying target job categories...';
+                    }
+                }
+            }, 3000);
+
+            let latestGeneratedFilename = '';
+            const emailBox = document.getElementById('email-report-box');
+            if (emailBox) emailBox.style.display = 'none';
+
+            try {
+                const fetchOptions = {
+                    method: 'POST'
+                };
+                if (bodyData) {
+                    fetchOptions.body = bodyData;
+                    if (typeof bodyData === 'string') {
+                        fetchOptions.headers = { 'Content-Type': 'application/json' };
+                    }
+                } else {
+                    fetchOptions.headers = { 'Content-Type': 'application/json' };
+                }
+
+                const response = await fetch(endpoint, fetchOptions);
+                const data = await response.json();
+
+                clearInterval(progressInterval);
+                stopConsoleTimer();
+                progressFill.style.width = '100%';
+
+                if (data.status === 'success') {
+                    statusText.textContent = `Completed successfully! ${data.message || ''}`;
+                    statusText.className = 'success-msg';
+                    statusText.style.color = 'var(--success)';
+
+                    if (data.download_url || data.file_name) {
+                        const url = data.download_url || `/download/${data.file_name}`;
+                        downloadLink.href = url;
+                        downloadLink.style.display = 'inline-flex';
+                        window.latestReportFilename = data.file_name || (url.split('/').pop());
+                        if (emailBox) emailBox.style.display = 'flex';
+                    }
+                } else {
+                    statusText.textContent = 'Error: ' + data.message;
+                    statusText.className = 'error-msg';
+                    statusText.style.color = 'var(--error)';
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                stopConsoleTimer();
+                statusText.textContent = 'Connection Error: ' + error.message;
+                statusText.className = 'error-msg';
+                statusText.style.color = 'var(--error)';
+            } finally {
+                loader.style.display = 'none';
+                progressBar.style.display = 'none';
+
+                // Re-enable interactive elements
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.opacity = '1';
+                });
+
+                // Clear input
+                const fileInput = document.getElementById('pdf-upload-input');
+                if (fileInput) fileInput.value = '';
+            }
+        }
+
+        async function startReviewExpiredJobs() {
+            const buttons = document.querySelectorAll('button, .drop-zone');
+            const idleState = document.getElementById('console-idle-state');
+            const consoleContent = document.getElementById('console-content');
+            const statusText = document.getElementById('status-text');
+            const loader = document.getElementById('loader-wrapper');
+            const downloadLink = document.getElementById('download-link');
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            const emailBox = document.getElementById('email-report-box');
+
+            if (emailBox) emailBox.style.display = 'none';
+
+            // Set running UI state
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.5';
+            });
+
+            idleState.style.display = 'none';
+            consoleContent.style.display = 'flex';
+            statusText.textContent = 'Connecting to Google Sheet & initiating expiry audit...';
+            statusText.className = '';
+            statusText.style.color = 'var(--text)';
+            loader.style.display = 'flex';
+            downloadLink.style.display = 'none';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '5%';
+
+            startConsoleTimer();
+
+            try {
+                const res = await fetch('/api/review-expired-jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const initData = await res.json();
+
+                if (initData.status === 'started' || initData.status === 'busy') {
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            const pollRes = await fetch('/api/review-expired-jobs/status');
+                            const status = await pollRes.json();
+
+                            if (status.message) {
+                                statusText.textContent = status.message;
+                            }
+                            if (status.total > 0) {
+                                const pct = Math.max(5, Math.min(100, status.progress));
+                                progressFill.style.width = `${pct}%`;
+                            }
+
+                            if (status.completed) {
+                                clearInterval(pollInterval);
+                                stopConsoleTimer();
+                                loader.style.display = 'none';
+                                progressFill.style.width = '100%';
+                                statusText.textContent = status.message || 'Audit complete! Column P updated in Sheet.';
+                                statusText.className = 'success-msg';
+                                statusText.style.color = 'var(--success)';
+
+                                const sheetUrl = status.sheet_url || 'https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=778721942#gid=778721942';
+                                downloadLink.href = sheetUrl;
+                                downloadLink.innerHTML = `
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                    Open Google Sheet (Redding Area Job Postings)
+                                `;
+                                downloadLink.style.display = 'inline-flex';
+
+                                buttons.forEach(btn => {
+                                    btn.disabled = false;
+                                    btn.style.pointerEvents = 'auto';
+                                    btn.style.opacity = '1';
+                                });
+                            } else if (status.error) {
+                                clearInterval(pollInterval);
+                                stopConsoleTimer();
+                                loader.style.display = 'none';
+                                statusText.textContent = 'Error: ' + status.error;
+                                statusText.className = 'error-msg';
+                                statusText.style.color = 'var(--error)';
+
+                                buttons.forEach(btn => {
+                                    btn.disabled = false;
+                                    btn.style.pointerEvents = 'auto';
+                                    btn.style.opacity = '1';
+                                });
+                            }
+                        } catch (pollErr) {
+                            console.error('Polling error:', pollErr);
+                        }
+                    }, 1500);
+                } else {
+                    stopConsoleTimer();
+                    loader.style.display = 'none';
+                    progressBar.style.display = 'none';
+                    statusText.textContent = 'Error starting review: ' + (initData.message || 'Unknown error');
+                    statusText.className = 'error-msg';
+                    statusText.style.color = 'var(--error)';
+
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.opacity = '1';
+                    });
+                }
+            } catch (err) {
+                stopConsoleTimer();
+                loader.style.display = 'none';
+                progressBar.style.display = 'none';
+                statusText.textContent = 'Request failed: ' + err.message;
+                statusText.className = 'error-msg';
+                statusText.style.color = 'var(--error)';
+
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.opacity = '1';
+                });
+            }
+        }
+
+        async function sendReportByEmail() {
+            const input = document.getElementById('email-recipient-input');
+            const recipient = input ? input.value.trim() : '';
+            if (!recipient) {
+                alert('Please enter a recipient email address.');
+                return;
+            }
+            if (!window.latestReportFilename) {
+                alert('No generated report found to send.');
+                return;
+            }
+            const btn = document.getElementById('btn-send-email');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+            }
+            try {
+                const res = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipient_email: recipient,
+                        file_name: window.latestReportFilename
+                    })
+                });
+                const data = await res.json();
+                alert(data.message);
+            } catch (e) {
+                alert('Error sending email: ' + e.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Email Report';
+                }
+            }
+        }
+
+        function uploadAndScrapePdf(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+
+            runTask('/generate-pdf-scrape', formData);
+        }
+
+        // Drag & Drop Integration
+        const dropZone = document.getElementById('pdf-drop-zone');
+        const fileInput = document.getElementById('pdf-upload-input');
+
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length) {
+                    fileInput.files = files;
+                    uploadAndScrapePdf({ target: fileInput });
+                }
+            }, false);
+        }
+
+        // Global Configuration & Keyword State
+        let currentConfig = null;
+        let keywordGroups = {
+            "Food & Restaurant": ["cook", "prep cook", "line cook", "dishwasher", "server", "busser", "host", "barista", "counter attendant", "crew member", "fast food", "kitchen helper"],
+            "Retail & Merchandising": ["cashier", "retail associate", "stocker", "merchandiser", "store clerk", "floor associate", "inventory clerk", "order picker"],
+            "Warehouse & Logistics": ["warehouse worker", "material handler", "package handler", "loader", "unloader", "picker", "packer", "forklift operator", "shipping clerk"],
+            "Transportation & Delivery": ["delivery driver", "courier", "route driver", "van driver", "shuttle driver", "driver helper", "distribution driver"],
+            "Janitorial & Facilities": ["janitor", "custodian", "cleaner", "housekeeper", "floor technician", "facility cleaner", "maid"],
+            "Construction & Trade Helpers": ["construction laborer", "general laborer", "apprentice", "helper", "painter helper", "carpenter helper", "demolition worker"],
+            "Automotive Services": ["lube technician", "tire technician", "detailer", "car wash attendant", "mechanic apprentice", "auto shop helper", "lot attendant"],
+            "Healthcare & Direct Care": ["caregiver", "home health aide", "cna", "nursing assistant", "patient care assistant", "dietary aide", "medical receptionist"],
+            "Hotel & Hospitality": ["front desk clerk", "guest service agent", "laundry attendant", "banquet server", "event setup", "bellhop", "porter"],
+            "Customer Support & Office": ["customer service representative", "call center agent", "front desk", "receptionist", "data entry clerk", "office clerk", "office assistant"],
+            "Security & Asset Protection": ["security guard", "security officer", "loss prevention", "gate attendant", "event security", "patrol officer"],
+            "Landscaping & Grounds": ["groundskeeper", "landscaper", "lawn technician", "grounds maintenance", "mower operator", "nursery worker"]
+        };
+        let masterLibrary = [];
+        let standardKeywords = [];
+        let activeKeywords = [];
+
+        let availableChannels = ["Indeed", "Snagajob", "Glassdoor", "ZipRecruiter", "LinkedIn"];
+        let activeChannels = ["Indeed", "Snagajob"];
+        const channelMeta = {
+            "Indeed": { icon: "🔵", status: "live", statusLabel: "Active", desc: "Full keyword, location, radius & recency scraping" },
+            "Snagajob": { icon: "🟠", status: "live", statusLabel: "Active", desc: "Hourly & regional job listing scraper" },
+            "Glassdoor": { icon: "🟢", status: "beta", statusLabel: "Beta", desc: "Glassdoor job board integration" },
+            "ZipRecruiter": { icon: "🟣", status: "beta", statusLabel: "Beta", desc: "ZipRecruiter marketplace integration" },
+            "LinkedIn": { icon: "🔷", status: "beta", statusLabel: "Beta", desc: "LinkedIn public job board integration" }
+        };
+
+        function renderChannelChips() {
+            const container = document.getElementById('channel-chips-grid');
+            if (!container) return;
+
+            container.innerHTML = '';
+            availableChannels.forEach(ch => {
+                const meta = channelMeta[ch] || { icon: "🌐", status: "custom", statusLabel: "Custom", desc: "Custom channel" };
+                const isActive = activeChannels.includes(ch);
+
+                const chip = document.createElement('div');
+                chip.className = `channel-filter-chip ${isActive ? 'active' : ''}`;
+                chip.title = meta.desc || ch;
+                chip.innerHTML = `
+                    <span class="channel-icon">${meta.icon}</span>
+                    <span class="channel-name" style="font-weight: 500;">${ch}</span>
+                    <span class="channel-status ${meta.status}">${meta.statusLabel}</span>
+                    <span class="channel-check">${isActive ? '✓' : '+'}</span>
+                `;
+                chip.onclick = () => toggleChannelChip(ch);
+                container.appendChild(chip);
+            });
+
+            updateChannelBadges();
+        }
+
+        function toggleChannelChip(channel) {
+            const idx = activeChannels.indexOf(channel);
+            if (idx > -1) {
+                activeChannels.splice(idx, 1);
+            } else {
+                activeChannels.push(channel);
+            }
+            const rawInput = document.getElementById('cfg-channels-raw');
+            if (rawInput) rawInput.value = activeChannels.join(', ');
+            renderChannelChips();
+        }
+
+        function setChannelsPreset(channels) {
+            activeChannels = [...channels];
+            channels.forEach(ch => {
+                if (!availableChannels.includes(ch)) availableChannels.push(ch);
+            });
+            const rawInput = document.getElementById('cfg-channels-raw');
+            if (rawInput) rawInput.value = activeChannels.join(', ');
+            renderChannelChips();
+        }
+
+        function selectAllChannels() {
+            activeChannels = [...availableChannels];
+            const rawInput = document.getElementById('cfg-channels-raw');
+            if (rawInput) rawInput.value = activeChannels.join(', ');
+            renderChannelChips();
+        }
+
+        function addCustomChannel() {
+            const input = document.getElementById('cfg-new-channel-input');
+            if (!input) return;
+            const val = input.value.trim();
+            if (!val) return;
+
+            const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+            parts.forEach(name => {
+                if (!availableChannels.includes(name)) {
+                    availableChannels.push(name);
+                }
+                if (!activeChannels.includes(name)) {
+                    activeChannels.push(name);
+                }
+            });
+
+            input.value = '';
+            const rawInput = document.getElementById('cfg-channels-raw');
+            if (rawInput) rawInput.value = activeChannels.join(', ');
+            renderChannelChips();
+        }
+
+        function onChannelsRawInputChange() {
+            const rawInput = document.getElementById('cfg-channels-raw');
+            if (!rawInput) return;
+            const parsed = parseCommaList(rawInput.value);
+            activeChannels = [...parsed];
+            parsed.forEach(ch => {
+                if (!availableChannels.includes(ch)) availableChannels.push(ch);
+            });
+            renderChannelChips();
+        }
+
+        function updateChannelBadges() {
+            const count = activeChannels.length;
+            const badge = document.getElementById('cfg-channels-count');
+            const valMsg = document.getElementById('channel-validation-msg');
+            if (badge) {
+                badge.textContent = `${count} ${count === 1 ? 'Channel' : 'Channels'} Active`;
+                badge.style.color = count === 0 ? 'var(--error)' : '#a78bfa';
+            }
+            if (valMsg) {
+                valMsg.style.display = count === 0 ? 'inline' : 'none';
+            }
+        }
+
+        const groupIcons = {
+            "Food & Restaurant": "🍽️",
+            "Retail & Merchandising": "🛒",
+            "Warehouse & Logistics": "📦",
+            "Transportation & Delivery": "🚚",
+            "Janitorial & Facilities": "🧹",
+            "Construction & Trade Helpers": "🔨",
+            "Automotive Services": "🔧",
+            "Healthcare & Direct Care": "🏥",
+            "Hotel & Hospitality": "🏨",
+            "Customer Support & Office": "💼",
+            "Security & Asset Protection": "🛡️",
+            "Landscaping & Grounds": "🌱",
+            "Other / Custom": "📁"
+        };
+
+        function parseCommaList(str) {
+            if (!str) return [];
+            return str.split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+        }
+
+        function calculateEstimatedTime(count) {
+            if (count === 0) return '~0 min';
+            if (count === 1) return '~2-3 min';
+            if (count === 2) return '~3-5 min';
+            if (count <= 5) return `~${count * 2}-${count * 3} min`;
+            if (count <= 15) return `~${count * 2}-${count * 2.5} min`;
+            if (count <= 30) return `~40-60 min`;
+            return `~60+ min (${count} terms)`;
+        }
+
+        function updateKeywordBadges(termsList) {
+            const count = termsList.length;
+            const countBadge = document.getElementById('kw-active-count-badge');
+            const timeBadge = document.getElementById('kw-active-est-time');
+            if (countBadge) countBadge.textContent = `${count} ${count === 1 ? 'Term' : 'Terms'} Active`;
+            if (timeBadge) timeBadge.textContent = calculateEstimatedTime(count);
+        }
+
+        function updateGroupSelectDropdown() {
+            const sel = document.getElementById('kw-add-group-select');
+            if (!sel) return;
+            const currentVal = sel.value;
+            sel.innerHTML = '';
+            Object.keys(keywordGroups).forEach(groupName => {
+                const opt = document.createElement('option');
+                opt.value = groupName;
+                const icon = groupIcons[groupName] || '📁';
+                opt.textContent = `${icon} ${groupName}`;
+                sel.appendChild(opt);
+            });
+            if (currentVal && keywordGroups[currentVal]) {
+                sel.value = currentVal;
+            }
+        }
+
+        function syncMasterLibraryFromGroups() {
+            const allSet = new Set();
+            Object.values(keywordGroups).forEach(groupTerms => {
+                groupTerms.forEach(t => allSet.add(t));
+            });
+            masterLibrary.forEach(t => allSet.add(t));
+            masterLibrary = Array.from(allSet).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+            const libLbl = document.getElementById('lib-count-lbl');
+            if (libLbl) libLbl.textContent = masterLibrary.length;
+
+            const libTextarea = document.getElementById('cfg-all-keywords');
+            if (libTextarea && document.activeElement !== libTextarea) {
+                libTextarea.value = masterLibrary.join(', ');
+            }
+
+            const groupsJsonTextarea = document.getElementById('cfg-groups-json');
+            if (groupsJsonTextarea && document.activeElement !== groupsJsonTextarea) {
+                groupsJsonTextarea.value = JSON.stringify(keywordGroups, null, 2);
+            }
+
+            updateGroupSelectDropdown();
+        }
+
+        function renderKeywordChips(filterQuery = '') {
+            const grid = document.getElementById('kw-chips-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            syncMasterLibraryFromGroups();
+
+            const activeSet = new Set(activeKeywords.map(k => k.toLowerCase()));
+            const query = (filterQuery || '').trim().toLowerCase();
+
+            const categorizedTerms = new Set();
+            let totalMatchingGroups = 0;
+
+            Object.entries(keywordGroups).forEach(([groupName, terms]) => {
+                terms.forEach(t => categorizedTerms.add(t.toLowerCase()));
+
+                const isGroupMatch = query && groupName.toLowerCase().includes(query);
+                const matchingTerms = terms.filter(term => {
+                    if (!query || isGroupMatch) return true;
+                    return term.toLowerCase().includes(query);
+                });
+
+                if (matchingTerms.length === 0) return;
+                totalMatchingGroups++;
+
+                const activeInGroup = terms.filter(t => activeSet.has(t.toLowerCase())).length;
+                const isAllActive = terms.length > 0 && activeInGroup === terms.length;
+                const isSomeActive = activeInGroup > 0 && !isAllActive;
+
+                const icon = groupIcons[groupName] || '📁';
+
+                const card = document.createElement('div');
+                card.className = 'kw-group-card';
+                card.dataset.group = groupName;
+
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    card.classList.add('drop-target-hover');
+                });
+
+                card.addEventListener('dragleave', (e) => {
+                    if (!card.contains(e.relatedTarget)) {
+                        card.classList.remove('drop-target-hover');
+                    }
+                });
+
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.classList.remove('drop-target-hover');
+                    let payload = null;
+                    try {
+                        const dataStr = e.dataTransfer.getData('text/plain');
+                        payload = JSON.parse(dataStr);
+                    } catch (err) {
+                        payload = window.draggedKeywordPayload;
+                    }
+                    if (payload && payload.term) {
+                        moveKeywordToGroup(payload.term, payload.sourceGroup, groupName);
+                    }
+                });
+
+                let btnText = `+ Select Group (${terms.length})`;
+                let btnClass = 'kw-group-action-btn';
+                if (isAllActive) {
+                    btnText = `✓ All Active (${terms.length})`;
+                    btnClass += ' all-active';
+                } else if (isSomeActive) {
+                    btnText = `+ Add Rest (${terms.length - activeInGroup})`;
+                }
+
+                card.innerHTML = `
+                    <div class="kw-group-header">
+                        <div class="kw-group-title">
+                            <span>${icon}</span>
+                            <span>${groupName}</span>
+                            <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: normal;">(${activeInGroup}/${terms.length})</span>
+                        </div>
+                        <button type="button" class="${btnClass}" onclick="toggleIndustryGroup('${groupName.replace(/'/g, "\\'")}')" title="1-click toggle all terms in this group">
+                            ${btnText}
+                        </button>
+                    </div>
+                    <div class="kw-group-chips"></div>
+                    <div class="kw-group-add-row">
+                        <input type="text" class="kw-group-add-input" placeholder="+ Add term to ${groupName}..." onkeydown="if(event.key==='Enter'){event.preventDefault(); handleInlineGroupAdd(this, '${groupName.replace(/'/g, "\\'")}');}">
+                        <button type="button" class="kw-group-add-btn" onclick="handleInlineGroupAdd(this.previousElementSibling, '${groupName.replace(/'/g, "\\'")}')" title="Add term to ${groupName}">+</button>
+                    </div>
+                `;
+
+                const chipsContainer = card.querySelector('.kw-group-chips');
+
+                matchingTerms.forEach(term => {
+                    const isActive = activeSet.has(term.toLowerCase());
+                    const chip = document.createElement('div');
+                    chip.className = `kw-chip ${isActive ? 'active' : ''}`;
+                    chip.draggable = true;
+                    chip.title = `Click to toggle search | Drag or click '⇄' to move industry group`;
+
+                    chip.innerHTML = `
+                        <span class="chip-grip" title="Drag keyword to another group">⠿</span>
+                        <span class="chip-icon">${isActive ? '✓' : '+'}</span>
+                        <span class="chip-text">${term}</span>
+                        <span class="chip-move" title="Move to another group">⇄</span>
+                        <span class="chip-del" title="Delete &quot;${term}&quot; from this group">&times;</span>
+                    `;
+
+                    chip.addEventListener('dragstart', (e) => {
+                        chip.classList.add('dragging');
+                        const payload = { term, sourceGroup: groupName };
+                        window.draggedKeywordPayload = payload;
+                        e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    chip.addEventListener('dragend', () => {
+                        chip.classList.remove('dragging');
+                        document.querySelectorAll('.kw-group-card').forEach(c => c.classList.remove('drop-target-hover'));
+                        window.draggedKeywordPayload = null;
+                    });
+
+                    chip.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('chip-del') || e.target.classList.contains('chip-move') || e.target.classList.contains('chip-grip')) return;
+                        toggleKeywordChip(term);
+                    });
+
+                    const moveBtn = chip.querySelector('.chip-move');
+                    if (moveBtn) {
+                        moveBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            showMoveGroupPopup(e, term, groupName);
+                        });
+                    }
+
+                    const delBtn = chip.querySelector('.chip-del');
+                    if (delBtn) {
+                        delBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            removeTermFromLibrary(term, groupName);
+                        });
+                    }
+
+                    chipsContainer.appendChild(chip);
+                });
+
+                grid.appendChild(card);
+            });
+
+            // Handle any Uncategorized / Extra terms
+            const uncategorized = masterLibrary.filter(t => !categorizedTerms.has(t.toLowerCase()));
+            if (uncategorized.length > 0) {
+                const matchingUncat = uncategorized.filter(term => {
+                    if (!query) return true;
+                    return term.toLowerCase().includes(query) || 'other custom'.includes(query);
+                });
+
+                if (matchingUncat.length > 0) {
+                    totalMatchingGroups++;
+                    const activeInGroup = uncategorized.filter(t => activeSet.has(t.toLowerCase())).length;
+                    const isAllActive = uncategorized.length > 0 && activeInGroup === uncategorized.length;
+
+                    const card = document.createElement('div');
+                    card.className = 'kw-group-card';
+                    card.dataset.group = "Custom / Other Terms";
+
+                    card.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        card.classList.add('drop-target-hover');
+                    });
+
+                    card.addEventListener('dragleave', (e) => {
+                        if (!card.contains(e.relatedTarget)) {
+                            card.classList.remove('drop-target-hover');
+                        }
+                    });
+
+                    card.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        card.classList.remove('drop-target-hover');
+                        let payload = null;
+                        try {
+                            const dataStr = e.dataTransfer.getData('text/plain');
+                            payload = JSON.parse(dataStr);
+                        } catch (err) {
+                            payload = window.draggedKeywordPayload;
+                        }
+                        if (payload && payload.term) {
+                            moveKeywordToGroup(payload.term, payload.sourceGroup, "Custom / Other Terms");
+                        }
+                    });
+
+                    let btnText = isAllActive ? `✓ All Active (${uncategorized.length})` : `+ Select Group (${uncategorized.length})`;
+                    let btnClass = isAllActive ? 'kw-group-action-btn all-active' : 'kw-group-action-btn';
+
+                    card.innerHTML = `
+                        <div class="kw-group-header">
+                            <div class="kw-group-title">
+                                <span>📁</span>
+                                <span>Custom / Other Terms</span>
+                                <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: normal;">(${activeInGroup}/${uncategorized.length})</span>
+                            </div>
+                            <button type="button" class="${btnClass}" onclick="toggleCustomGroup()" title="Toggle custom terms">
+                                ${btnText}
+                            </button>
+                        </div>
+                        <div class="kw-group-chips"></div>
+                        <div class="kw-group-add-row">
+                            <input type="text" class="kw-group-add-input" placeholder="+ Add custom term..." onkeydown="if(event.key==='Enter'){event.preventDefault(); handleInlineGroupAdd(this, 'Custom / Other Terms');}">
+                            <button type="button" class="kw-group-add-btn" onclick="handleInlineGroupAdd(this.previousElementSibling, 'Custom / Other Terms')" title="Add custom term">+</button>
+                        </div>
+                    `;
+
+                    const chipsContainer = card.querySelector('.kw-group-chips');
+                    matchingUncat.forEach(term => {
+                        const isActive = activeSet.has(term.toLowerCase());
+                        const chip = document.createElement('div');
+                        chip.className = `kw-chip ${isActive ? 'active' : ''}`;
+                        chip.draggable = true;
+
+                        chip.innerHTML = `
+                            <span class="chip-grip" title="Drag keyword to another group">⠿</span>
+                            <span class="chip-icon">${isActive ? '✓' : '+'}</span>
+                            <span class="chip-text">${term}</span>
+                            <span class="chip-move" title="Move to another group">⇄</span>
+                            <span class="chip-del" title="Delete &quot;${term}&quot;">&times;</span>
+                        `;
+
+                        chip.addEventListener('dragstart', (e) => {
+                            chip.classList.add('dragging');
+                            const payload = { term, sourceGroup: null };
+                            window.draggedKeywordPayload = payload;
+                            e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                            e.dataTransfer.effectAllowed = 'move';
+                        });
+
+                        chip.addEventListener('dragend', () => {
+                            chip.classList.remove('dragging');
+                            document.querySelectorAll('.kw-group-card').forEach(c => c.classList.remove('drop-target-hover'));
+                            window.draggedKeywordPayload = null;
+                        });
+
+                        chip.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('chip-del') || e.target.classList.contains('chip-move') || e.target.classList.contains('chip-grip')) return;
+                            toggleKeywordChip(term);
+                        });
+
+                        const moveBtn = chip.querySelector('.chip-move');
+                        if (moveBtn) {
+                            moveBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                showMoveGroupPopup(e, term, null);
+                            });
+                        }
+
+                        const delBtn = chip.querySelector('.chip-del');
+                        if (delBtn) {
+                            delBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                removeTermFromLibrary(term, null);
+                            });
+                        }
+
+                        chipsContainer.appendChild(chip);
+                    });
+
+                    grid.appendChild(card);
+                }
+            }
+
+            if (totalMatchingGroups === 0) {
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-dim);">No terms matching "${filterQuery}". Use "+ Add" above to add new terms.</div>`;
+            }
+        }
+
+        function moveKeywordToGroup(term, sourceGroup, targetGroup) {
+            if (!term || !targetGroup) return;
+            if (sourceGroup === targetGroup) return;
+
+            const lower = term.toLowerCase();
+
+            if (sourceGroup && keywordGroups[sourceGroup]) {
+                keywordGroups[sourceGroup] = keywordGroups[sourceGroup].filter(t => t.toLowerCase() !== lower);
+            } else {
+                Object.keys(keywordGroups).forEach(grp => {
+                    keywordGroups[grp] = keywordGroups[grp].filter(t => t.toLowerCase() !== lower);
+                });
+            }
+
+            if (targetGroup !== "Custom / Other Terms") {
+                if (!keywordGroups[targetGroup]) {
+                    keywordGroups[targetGroup] = [];
+                }
+                if (!keywordGroups[targetGroup].some(t => t.toLowerCase() === lower)) {
+                    keywordGroups[targetGroup].push(term);
+                }
+            }
+
+            syncMasterLibraryFromGroups();
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+            showKeywordToast(`Moved "<strong>${term}</strong>" to <strong>${targetGroup}</strong>`);
+        }
+
+        function showMoveGroupPopup(e, term, currentGroup) {
+            document.querySelectorAll('.kw-move-popup').forEach(p => p.remove());
+
+            const popup = document.createElement('div');
+            popup.className = 'kw-move-popup';
+
+            const header = document.createElement('div');
+            header.className = 'kw-move-popup-header';
+            header.textContent = `Move "${term}" to:`;
+            popup.appendChild(header);
+
+            Object.keys(keywordGroups).forEach(groupName => {
+                const item = document.createElement('div');
+                const isCurrent = groupName === currentGroup;
+                item.className = `kw-move-item ${isCurrent ? 'current-group' : ''}`;
+                const icon = groupIcons[groupName] || '📁';
+                item.innerHTML = `<span>${icon}</span> <span>${groupName}</span> ${isCurrent ? '<span style="margin-left:auto; font-size:0.7rem;">(current)</span>' : ''}`;
+
+                if (!isCurrent) {
+                    item.addEventListener('click', (clickEvt) => {
+                        clickEvt.stopPropagation();
+                        popup.remove();
+                        moveKeywordToGroup(term, currentGroup, groupName);
+                    });
+                }
+                popup.appendChild(item);
+            });
+
+            const rect = e.target.getBoundingClientRect();
+            popup.style.top = `${Math.min(window.innerHeight - 340, rect.bottom + 6)}px`;
+            popup.style.left = `${Math.min(window.innerWidth - 240, rect.left)}px`;
+
+            document.body.appendChild(popup);
+
+            const closeHandler = (evt) => {
+                if (!popup.contains(evt.target)) {
+                    popup.remove();
+                    document.removeEventListener('click', closeHandler);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeHandler), 50);
+        }
+
+        function showKeywordToast(htmlContent) {
+            document.querySelectorAll('.kw-toast').forEach(t => t.remove());
+            const toast = document.createElement('div');
+            toast.className = 'kw-toast';
+            toast.innerHTML = `<span>✨</span> <div>${htmlContent}</div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 2600);
+        }
+
+        function toggleIndustryGroup(groupName) {
+            const terms = keywordGroups[groupName] || [];
+            if (terms.length === 0) return;
+
+            const currentTerms = parseCommaList(document.getElementById('cfg-keywords').value);
+            const activeSet = new Set(currentTerms.map(t => t.toLowerCase()));
+
+            const allActive = terms.every(t => activeSet.has(t.toLowerCase()));
+
+            if (allActive) {
+                const groupSet = new Set(terms.map(t => t.toLowerCase()));
+                activeKeywords = currentTerms.filter(t => !groupSet.has(t.toLowerCase()));
+            } else {
+                const newActive = [...currentTerms];
+                terms.forEach(term => {
+                    if (!activeSet.has(term.toLowerCase())) {
+                        newActive.push(term);
+                        activeSet.add(term.toLowerCase());
+                    }
+                });
+                activeKeywords = newActive;
+            }
+
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function toggleCustomGroup() {
+            const categorized = new Set();
+            Object.values(keywordGroups).forEach(list => list.forEach(t => categorized.add(t.toLowerCase())));
+            const uncat = masterLibrary.filter(t => !categorized.has(t.toLowerCase()));
+            if (uncat.length === 0) return;
+
+            const currentTerms = parseCommaList(document.getElementById('cfg-keywords').value);
+            const activeSet = new Set(currentTerms.map(t => t.toLowerCase()));
+            const allActive = uncat.every(t => activeSet.has(t.toLowerCase()));
+
+            if (allActive) {
+                const uncatSet = new Set(uncat.map(t => t.toLowerCase()));
+                activeKeywords = currentTerms.filter(t => !uncatSet.has(t.toLowerCase()));
+            } else {
+                const newActive = [...currentTerms];
+                uncat.forEach(term => {
+                    if (!activeSet.has(term.toLowerCase())) {
+                        newActive.push(term);
+                        activeSet.add(term.toLowerCase());
+                    }
+                });
+                activeKeywords = newActive;
+            }
+
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function toggleKeywordChip(term) {
+            const currentTerms = parseCommaList(document.getElementById('cfg-keywords').value);
+            const lowerTerm = term.toLowerCase();
+            const existsIndex = currentTerms.findIndex(t => t.toLowerCase() === lowerTerm);
+
+            if (existsIndex >= 0) {
+                currentTerms.splice(existsIndex, 1);
+            } else {
+                currentTerms.push(term);
+            }
+
+            activeKeywords = currentTerms;
+            document.getElementById('cfg-keywords').value = currentTerms.join(', ');
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function onActiveKeywordsTextareaChange() {
+            activeKeywords = parseCommaList(document.getElementById('cfg-keywords').value);
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function loadStandardKeywordsPreset() {
+            const stdVal = document.getElementById('cfg-standard-keywords')?.value || standardKeywords.join(', ');
+            activeKeywords = parseCommaList(stdVal);
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function selectAllLibraryKeywords() {
+            syncMasterLibraryFromGroups();
+            activeKeywords = [...masterLibrary];
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function clearActiveKeywords() {
+            activeKeywords = [];
+            document.getElementById('cfg-keywords').value = '';
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function saveActiveAsStandardPreset() {
+            const currentVal = document.getElementById('cfg-keywords').value.trim();
+            if (!currentVal) {
+                if (!confirm('Active search keywords are empty. Do you want to set standard list to empty?')) return;
+            }
+            standardKeywords = parseCommaList(currentVal);
+            const stdTextarea = document.getElementById('cfg-standard-keywords');
+            if (stdTextarea) stdTextarea.value = standardKeywords.join(', ');
+
+            const stdCountLbl = document.getElementById('std-count-lbl');
+            if (stdCountLbl) stdCountLbl.textContent = standardKeywords.length;
+            const dashStdCount = document.getElementById('dash-std-count');
+            if (dashStdCount) dashStdCount.textContent = standardKeywords.length;
+
+            standardKeywords.forEach(term => {
+                if (!masterLibrary.some(t => t.toLowerCase() === term.toLowerCase())) {
+                    masterLibrary.push(term);
+                }
+            });
+            syncMasterLibraryFromGroups();
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+
+            alert(`Standard Preset updated (${standardKeywords.length} keywords)! Click "Save Parameters" to permanently save.`);
+        }
+
+        function handleInlineGroupAdd(inputElem, groupName) {
+            if (!inputElem) return;
+            const val = inputElem.value.trim();
+            if (!val) return;
+            addTermsToGroup(val, groupName);
+            inputElem.value = '';
+        }
+
+        function addTermsToGroup(rawInput, targetGroupName) {
+            if (!rawInput) return;
+            const newTerms = parseCommaList(rawInput);
+            if (newTerms.length === 0) return;
+
+            if (targetGroupName === "Custom / Other Terms") {
+                let addedCount = 0;
+                newTerms.forEach(t => {
+                    const lower = t.toLowerCase();
+                    if (!masterLibrary.some(existing => existing.toLowerCase() === lower)) {
+                        masterLibrary.push(t);
+                        addedCount++;
+                    }
+                    if (!activeKeywords.some(existing => existing.toLowerCase() === lower)) {
+                        activeKeywords.push(t);
+                    }
+                });
+                document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+                updateKeywordBadges(activeKeywords);
+                syncMasterLibraryFromGroups();
+                renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+                showKeywordToast(`Added <strong>${newTerms.join(', ')}</strong> to Custom Terms`);
+                return;
+            }
+
+            if (!keywordGroups[targetGroupName]) {
+                keywordGroups[targetGroupName] = [];
+            }
+
+            let addedCount = 0;
+            newTerms.forEach(t => {
+                const lower = t.toLowerCase();
+                if (!keywordGroups[targetGroupName].some(existing => existing.toLowerCase() === lower)) {
+                    keywordGroups[targetGroupName].push(t);
+                    addedCount++;
+                }
+                if (!masterLibrary.some(existing => existing.toLowerCase() === lower)) {
+                    masterLibrary.push(t);
+                }
+                if (!activeKeywords.some(existing => existing.toLowerCase() === lower)) {
+                    activeKeywords.push(t);
+                }
+            });
+
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            updateKeywordBadges(activeKeywords);
+            syncMasterLibraryFromGroups();
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+
+            if (addedCount > 0) {
+                showKeywordToast(`Added <strong>${newTerms.join(', ')}</strong> to <strong>${targetGroupName}</strong>`);
+            } else {
+                showKeywordToast(`Term(s) already in <strong>${targetGroupName}</strong>`);
+            }
+        }
+
+        function promptNewCategory() {
+            const catName = prompt("Enter a name for the new industry category (e.g., 'Hospitality & Tourism' or 'Automotive'):");
+            if (!catName || !catName.trim()) return;
+            const trimmed = catName.trim();
+            if (keywordGroups[trimmed]) {
+                alert(`Category "${trimmed}" already exists.`);
+                return;
+            }
+            keywordGroups[trimmed] = [];
+            groupIcons[trimmed] = "📁";
+            syncMasterLibraryFromGroups();
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+            showKeywordToast(`Created category: <strong>${trimmed}</strong>`);
+        }
+
+        function addNewTermToLibrary() {
+            const input = document.getElementById('kw-new-input');
+            const groupSelect = document.getElementById('kw-add-group-select');
+            if (!input) return;
+            const raw = input.value.trim();
+            if (!raw) return;
+
+            const targetGroup = groupSelect ? groupSelect.value : "Food & Restaurant";
+            addTermsToGroup(raw, targetGroup);
+            input.value = '';
+        }
+
+        function removeTermFromLibrary(term, groupName) {
+            const lower = term.toLowerCase();
+
+            if (groupName && keywordGroups[groupName]) {
+                keywordGroups[groupName] = keywordGroups[groupName].filter(t => t.toLowerCase() !== lower);
+            } else {
+                Object.keys(keywordGroups).forEach(grp => {
+                    keywordGroups[grp] = keywordGroups[grp].filter(t => t.toLowerCase() !== lower);
+                });
+            }
+
+            masterLibrary = masterLibrary.filter(t => t.toLowerCase() !== lower);
+            activeKeywords = activeKeywords.filter(t => t.toLowerCase() !== lower);
+            standardKeywords = standardKeywords.filter(t => t.toLowerCase() !== lower);
+
+            document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+            const stdTextarea = document.getElementById('cfg-standard-keywords');
+            if (stdTextarea) stdTextarea.value = standardKeywords.join(', ');
+
+            const stdCountLbl = document.getElementById('std-count-lbl');
+            if (stdCountLbl) stdCountLbl.textContent = standardKeywords.length;
+
+            updateKeywordBadges(activeKeywords);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function filterKeywordChips() {
+            const query = document.getElementById('kw-lib-filter')?.value || '';
+            renderKeywordChips(query);
+        }
+
+        function toggleAdvancedListEditor() {
+            const el = document.getElementById('advanced-list-editor');
+            const arrow = document.getElementById('accordion-arrow');
+            if (!el) return;
+            if (el.style.display === 'none' || !el.style.display) {
+                el.style.display = 'flex';
+                if (arrow) arrow.textContent = '▲';
+            } else {
+                el.style.display = 'none';
+                if (arrow) arrow.textContent = '▼';
+            }
+        }
+
+        function onStandardKeywordsTextareaChange() {
+            const val = document.getElementById('cfg-standard-keywords')?.value || '';
+            standardKeywords = parseCommaList(val);
+            const stdCountLbl = document.getElementById('std-count-lbl');
+            if (stdCountLbl) stdCountLbl.textContent = standardKeywords.length;
+            const dashStdCount = document.getElementById('dash-std-count');
+            if (dashStdCount) dashStdCount.textContent = standardKeywords.length;
+        }
+
+        function onLibraryTextareaChange() {
+            const val = document.getElementById('cfg-all-keywords')?.value || '';
+            masterLibrary = parseCommaList(val);
+            renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+        }
+
+        function onGroupsJsonChange() {
+            const val = document.getElementById('cfg-groups-json')?.value || '';
+            try {
+                const parsed = JSON.parse(val);
+                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                    keywordGroups = parsed;
+                    renderKeywordChips(document.getElementById('kw-lib-filter')?.value || '');
+                }
+            } catch (e) {
+                // Waiting for valid JSON
+            }
+        }
+
+        function updateDashboardBanner(config) {
+            if (!config) return;
+            const kwList = config.keywords || [];
+            const stdList = config.standard_keywords || kwList;
+            const count = kwList.length;
+            const stdCount = stdList.length;
+
+            const countTextElem = document.getElementById('dash-kw-count-text');
+            const previewTextElem = document.getElementById('dash-kw-preview-text');
+            const dashStdCount = document.getElementById('dash-std-count');
+
+            if (dashStdCount) dashStdCount.textContent = stdCount;
+
+            if (countTextElem) {
+                if (count === 0) {
+                    countTextElem.textContent = 'Active Keywords: None selected (0 terms)';
+                    countTextElem.style.color = 'var(--error)';
+                } else if (count === stdCount && stdCount > 0 && JSON.stringify(kwList.slice().sort()) === JSON.stringify(stdList.slice().sort())) {
+                    countTextElem.textContent = `Standard Search Active (${count} keywords • ${calculateEstimatedTime(count)})`;
+                    countTextElem.style.color = '#a78bfa';
+                } else {
+                    countTextElem.textContent = `Custom Search Active (${count} ${count === 1 ? 'keyword' : 'keywords'} • ${calculateEstimatedTime(count)})`;
+                    countTextElem.style.color = '#34d399';
+                }
+            }
+
+            if (previewTextElem) {
+                if (count === 0) {
+                    previewTextElem.textContent = 'Click "Custom" or "Standard" above to set target search terms.';
+                } else {
+                    const preview = kwList.slice(0, 6).join(', ');
+                    previewTextElem.textContent = preview + (kwList.length > 6 ? ` +${kwList.length - 6} more` : '');
+                }
+            }
+
+            const chList = (config.channels && config.channels.length > 0) ? config.channels : ["Indeed", "Snagajob"];
+            const dashChannelsBadge = document.getElementById('dash-channels-badge');
+            if (dashChannelsBadge) {
+                dashChannelsBadge.textContent = `📡 Channels: ${chList.join(', ')}`;
+            }
+
+            const descRedding = document.getElementById('desc-redding');
+            if (descRedding) {
+                descRedding.textContent = `Target ${chList.join(' & ')} listings within 15 miles of Redding, CA (96002).`;
+            }
+
+            const descBurney = document.getElementById('desc-burney');
+            if (descBurney) {
+                descBurney.textContent = `Target ${chList.join(' & ')} listings within 15 miles of Burney, CA (96013).`;
+            }
+        }
+
+        async function quickRestoreStandardKeywords() {
+            try {
+                if (!currentConfig) {
+                    const res = await fetch('/api/search-config');
+                    const data = await res.json();
+                    if (data.status === 'success') currentConfig = data.config;
+                }
+
+                const targetStandard = (currentConfig && currentConfig.standard_keywords && currentConfig.standard_keywords.length > 0)
+                    ? currentConfig.standard_keywords
+                    : (standardKeywords.length > 0 ? standardKeywords : ["warehouse", "retail", "cashier", "cook", "laborer", "custodian", "delivery"]);
+
+                const payload = {
+                    ...currentConfig,
+                    keywords: targetStandard
+                };
+
+                const res = await fetch('/api/search-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    activeKeywords = [...(data.config.keywords || [])];
+                    updateDashboardBanner(data.config);
+
+                    const countElem = document.getElementById('dash-kw-count-text');
+                    if (countElem) {
+                        countElem.textContent = `⭐ Standard preset loaded (${targetStandard.length} keywords)!`;
+                        countElem.style.color = '#60a5fa';
+                        setTimeout(() => updateDashboardBanner(data.config), 2000);
+                    }
+                } else {
+                    alert('Could not restore standard keywords: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error restoring standard preset: ' + err.message);
+            }
+        }
+
+        // Search Config Modal Functions
+        async function openSearchConfigModal() {
+            try {
+                const res = await fetch('/api/search-config');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    const config = data.config;
+
+                    activeKeywords = config.keywords || [];
+                    standardKeywords = config.standard_keywords || [...activeKeywords];
+                    if (config.keyword_groups && Object.keys(config.keyword_groups).length > 0) {
+                        keywordGroups = config.keyword_groups;
+                    }
+                    masterLibrary = config.all_keywords || [];
+
+                    document.getElementById('cfg-keywords').value = activeKeywords.join(', ');
+                    document.getElementById('cfg-standard-keywords').value = standardKeywords.join(', ');
+                    document.getElementById('cfg-all-keywords').value = masterLibrary.join(', ');
+                    document.getElementById('cfg-groups-json').value = JSON.stringify(keywordGroups, null, 2);
+
+                    const stdCountLbl = document.getElementById('std-count-lbl');
+                    if (stdCountLbl) stdCountLbl.textContent = standardKeywords.length;
+
+                    document.getElementById('cfg-location').value = (config.location || []).join('; ');
+                    document.getElementById('cfg-radius').value = config.radius || 15;
+                    document.getElementById('cfg-days-ago').value = config.days_ago || 4;
+                    document.getElementById('cfg-max-pages').value = config.max_pages || 3;
+                    document.getElementById('cfg-rejected-titles').value = (config.rejected_titles || []).join(', ');
+                    document.getElementById('cfg-rejected-employers').value = (config.rejected_employers || []).join(', ');
+
+                    // Initialize Search Channels
+                    activeChannels = (config.channels && config.channels.length > 0) ? [...config.channels] : ["Indeed", "Snagajob"];
+                    activeChannels.forEach(ch => {
+                        if (!availableChannels.includes(ch)) availableChannels.push(ch);
+                    });
+                    const rawChanInput = document.getElementById('cfg-channels-raw');
+                    if (rawChanInput) rawChanInput.value = activeChannels.join(', ');
+                    renderChannelChips();
+
+                    updateKeywordBadges(activeKeywords);
+                    renderKeywordChips();
+
+                    document.getElementById('config-modal').style.display = 'flex';
+                } else {
+                    alert('Failed to load search config: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error loading search configuration: ' + err.message);
+            }
+        }
+
+        function closeSearchConfigModal() {
+            document.getElementById('config-modal').style.display = 'none';
+        }
+
+        async function saveSearchConfigFromModal() {
+            if (activeChannels.length === 0) {
+                const valMsg = document.getElementById('channel-validation-msg');
+                if (valMsg) valMsg.style.display = 'inline';
+                alert('Please select at least one search channel (e.g. Indeed or Snagajob).');
+                return;
+            }
+
+            const payload = {
+                keywords: document.getElementById('cfg-keywords').value,
+                standard_keywords: document.getElementById('cfg-standard-keywords').value,
+                all_keywords: document.getElementById('cfg-all-keywords').value,
+                keyword_groups: keywordGroups,
+                channels: activeChannels,
+                location: document.getElementById('cfg-location').value,
+                radius: parseInt(document.getElementById('cfg-radius').value) || 15,
+                days_ago: parseInt(document.getElementById('cfg-days-ago').value) || 4,
+                max_pages: parseInt(document.getElementById('cfg-max-pages').value) || 3,
+                rejected_titles: document.getElementById('cfg-rejected-titles').value,
+                rejected_employers: document.getElementById('cfg-rejected-employers').value
+            };
+
+            try {
+                const btn = document.getElementById('btn-save-cfg');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                const res = await fetch('/api/search-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                btn.disabled = false;
+                btn.textContent = 'Save Parameters';
+
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    updateDashboardBanner(data.config);
+                    closeSearchConfigModal();
+                } else {
+                    alert('Error saving configuration: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error saving search config: ' + err.message);
+            }
+        }
+
+        // Candidate-Specific Drawer Functions
+        function openTargetedDrawer() {
+            document.getElementById('targeted-drawer-overlay').style.display = 'flex';
+        }
+
+        function closeTargetedDrawer() {
+            document.getElementById('targeted-drawer-overlay').style.display = 'none';
+        }
+
+        function applyPreset(terms, radius, bypass) {
+            document.getElementById('tgt-keywords').value = terms;
+            document.getElementById('tgt-radius').value = radius;
+            document.getElementById('tgt-bypass').value = bypass;
+        }
+
+        function submitTargetedSearch(event) {
+            event.preventDefault();
+            const payload = {
+                keywords: parseCommaList(document.getElementById('tgt-keywords').value),
+                location: document.getElementById('tgt-location').value.trim(),
+                radius: parseInt(document.getElementById('tgt-radius').value, 10),
+                bypass_terms: parseCommaList(document.getElementById('tgt-bypass').value)
+            };
+            closeTargetedDrawer();
+            runTask('/generate-targeted', JSON.stringify(payload));
+        }
+
+        // Initialize dashboard banner on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/search-config');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    currentConfig = data.config;
+                    updateDashboardBanner(data.config);
+                }
+            } catch (e) {
+                console.warn('Could not prefetch search config:', e);
+            }
+        });
+    </script>
+</body>
+
+</html>
