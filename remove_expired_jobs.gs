@@ -44,9 +44,23 @@ function checkExpiredJobs() {
   const lastRow = sheet.getLastRow();
   if (lastRow < CONFIG.startRow) return;
 
+  // Dynamically resolve URL and Job Title column indices from headers
+  const lastCol = sheet.getLastColumn();
+  const row1 = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const row2 = sheet.getRange(2, 1, 1, lastCol).getValues()[0];
+  const colMap = {};
+  for (let c = 0; c < lastCol; c++) {
+    const val1 = String(row1[c]).toLowerCase().trim();
+    const val2 = String(row2[c]).toLowerCase().trim();
+    if (val1) colMap[val1] = c + 1;
+    if (val2) colMap[val2] = c + 1;
+  }
+  const urlCol = colMap["job posting"] || colMap["job_url"] || colMap["job url"] || colMap["url"] || CONFIG.urlColumnIndex;
+  const titleCol = colMap["job title"] || colMap["job_title"] || colMap["title"] || CONFIG.jobTitleColumnIndex;
+
   for (let i = lastRow; i >= CONFIG.startRow; i--) {
-    const jobTitle = String(sheet.getRange(i, CONFIG.jobTitleColumnIndex).getValue()).trim();
-    const range = sheet.getRange(i, CONFIG.urlColumnIndex);
+    const jobTitle = String(sheet.getRange(i, titleCol).getValue()).trim();
+    const range = sheet.getRange(i, urlCol);
     let url = range.getValue();
     
     // 1. Check if it's a Rich Text link
@@ -325,12 +339,12 @@ function isExpiredMessageReal(cleanHtml, msg) {
 }
 
 /**
- * Automatically creates checkboxes in Column N for all job post rows.
+ * Automatically creates checkboxes for "Teen Friendly" and "Export?" columns.
  */
 function setupCheckboxes() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Redding Area Job Postings");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.sheetName || "Redding Area Job Postings");
   if (!sheet) {
-    SpreadsheetApp.getUi().alert("Sheet 'Redding Area Job Postings' not found.");
+    SpreadsheetApp.getUi().alert("Sheet '" + (CONFIG.sheetName || "Redding Area Job Postings") + "' not found.");
     return;
   }
   const lastRow = sheet.getLastRow();
@@ -339,16 +353,42 @@ function setupCheckboxes() {
     return;
   }
   
-  // Set the header in Column N
-  sheet.getRange("N1").setValue("Export?");
-  sheet.getRange("N1").setFontWeight("bold");
-  sheet.getRange("N1").setHorizontalAlignment("center");
+  // Scan headers dynamically (Row 1 and Row 2)
+  const lastCol = sheet.getLastColumn();
+  const row1 = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const row2 = sheet.getRange(2, 1, 1, lastCol).getValues()[0];
   
-  // Insert checkboxes in Column N (14) for all job rows
-  const checkboxRange = sheet.getRange(2, 14, lastRow - 1, 1);
-  checkboxRange.insertCheckboxes();
+  const colMap = {};
+  for (let i = 0; i < lastCol; i++) {
+    const val1 = String(row1[i]).toLowerCase().trim();
+    const val2 = String(row2[i]).toLowerCase().trim();
+    if (val1) colMap[val1] = i + 1;
+    if (val2) colMap[val2] = i + 1;
+  }
   
-  SpreadsheetApp.getUi().alert("Checkboxes have been successfully created/verified in Column N (Export?).");
+  // 1. Setup "Teen Friendly" checkboxes if column exists
+  const teenCol = colMap["teen friendly"] || colMap["teen_friendly"] || colMap["teen"];
+  if (teenCol) {
+    const teenStartRow = (row2[teenCol - 1] && typeof row2[teenCol - 1] === 'string' && row2[teenCol - 1].toLowerCase().includes("teen")) ? 3 : 2;
+    if (lastRow >= teenStartRow) {
+      sheet.getRange(teenStartRow, teenCol, lastRow - teenStartRow + 1, 1).insertCheckboxes();
+    }
+  }
+
+  // 2. Setup "Export?" checkboxes
+  let exportCol = colMap["export?"] || colMap["selected"] || colMap["export"];
+  if (!exportCol) {
+    exportCol = lastCol + 1;
+    sheet.getRange(1, exportCol).setValue("Export?");
+    sheet.getRange(1, exportCol).setFontWeight("bold");
+    sheet.getRange(1, exportCol).setHorizontalAlignment("center");
+  }
+  const exportStartRow = (row2[exportCol - 1] && typeof row2[exportCol - 1] === 'string' && row2[exportCol - 1].toLowerCase().includes("export")) ? 3 : 2;
+  if (lastRow >= exportStartRow) {
+    sheet.getRange(exportStartRow, exportCol, lastRow - exportStartRow + 1, 1).insertCheckboxes();
+  }
+  
+  SpreadsheetApp.getUi().alert("Checkboxes have been successfully created/verified" + (teenCol ? " for 'Teen Friendly' and 'Export?'" : " in Column " + exportCol + " (Export?)") + ".");
 }
 
 /**

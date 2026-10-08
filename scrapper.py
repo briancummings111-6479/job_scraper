@@ -119,7 +119,6 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\borthotist\b",
     r"\bdietitian\b",
     r"\bdietician\b",
-    r"\bmedical assistant\b",
     r"\bveterinarian\b",
     r"\bdvm\b",
     r"\blvn\b",
@@ -130,17 +129,54 @@ DEGREE_QUALIFICATION_REJECTIONS = [
     r"\bover[\s\-]the[\s\-]road\b",
     r"\bactive secret clearance\b",
     r"\btop secret clearance\b",
-    r"\b(?:[5-9]|\d{2,})\+?\s*years?(?:\s+of)?\s+experience\b",
     r"\brespiratory\s+(?:care\s+)?practitioner\b",
-    r"\brespiratory\s+therapist\b",
+    r"\b(?:must\s+be\s+a\s+|licensed\s+|certified\s+)(?:respiratory|physical|occupational)\s+therapist\b",
     r"\brrt\b",
     r"\bcrt\b",
-    r"\bphysical\s+therapist\b",
-    r"\boccupational\s+therapist\b",
     r"\bspeech\s+(?:language\s+)?pathologist\b",
     r"\bradiologic\s+technologist\b",
-    r"\bpharmacist\b",
+    r"\bct\s+tech(?:nologist)?\b",
+    r"\barrt(?:\s*\([a-z\s]+\))?\b",
+    r"\bepa\s+(?:universal|section\s+608|608)\b",
+    r"\b1099\s+(?:contractor|position|basis)\b",
+    r"\bindependent\s+contractor\b",
+    r"\bown\s+(?:tools|vehicle|equipment)\s+required\b",
+    r"\bmust\s+provide\s+own\s+tools\b",
+    r"\bmust\s+have\s+(?:own\s+)?tools\b",
+    r"\b(?:current\s+)?forklift\s+certif(?:ication|ied)\s+required\b",
+    r"\bmust\s+be\s+forklift\s+certified\b",
+    r"\bassociate\s+(?:ii|iii|iv|v)\b",
+    r"\blevel\s+(?:ii|iii|iv|v|2|3|4|5)\b",
+    r"\btier\s+(?:ii|iii|iv|v|2|3|4|5)\b",
+    r"\b(?:field|lead|master|heavy\s+equipment|diesel)\s+mechanic\b",
+    r"\b(?:experience|experienced)\s+only\b",
+    r"\b(?:must\s+be\s+willing\s+to\s+travel|extensive\s+travel\s+required)\b",
 ]
+
+def check_excessive_experience_requirement(text: str) -> tuple[bool, str]:
+    """
+    Evaluates whether candidate work experience prerequisites exceed entry-level ceilings (3+ years).
+    Explicitly filters out false positives from company history ('serving for 25 years')
+    and driver license duration ('licensed for 3 years').
+    """
+    if not text:
+        return False, ""
+    patterns = [
+        r'\b(?:minimum(?:\s+of)?|at\s+least|must\s+have|require[ds]?)\s+([3-9]|\d{2,})\+?\s*years?(?:\s+of)?(?:\s+[A-Za-z\/\-]{1,25}){0,3}\s+experience\b',
+        r'\b([3-9]|\d{2,})\+?\s*years?(?:\s+of)?(?:\s+[A-Za-z\/\-]{1,25}){0,4}\s+experience(?:\s+[A-Za-z\/\-]{1,25}){0,3}\s+(?:is\s+)?required\b',
+        r'\bminimum\s+(?:of\s+)?([3-9]|\d{2,})\+?\s*years\b',
+    ]
+    for pat in patterns:
+        for m in re.finditer(pat, text, re.IGNORECASE):
+            start = max(0, m.start() - 50)
+            end = min(len(text), m.end() + 50)
+            ctx = text[start:end].lower()
+            if any(h in ctx for h in ['in business', 'serving', 'founded', 'our company', 'we have', 'combined experience', 'years of excellence', 'years serving']):
+                continue
+            if 'driving' in ctx or "driver's license" in ctx or 'licensed driver' in ctx:
+                continue
+            return True, f"Requires 3+ years experience: '{m.group(0)}'"
+    return False, ""
 
 def is_expired_job_content(text: str) -> bool:
     if not text:
@@ -179,6 +215,98 @@ def clean_location_str(loc: str) -> str:
     # Standardize 'California' to 'CA'
     cleaned = re.sub(r'\bCalifornia\b', 'CA', cleaned, flags=re.IGNORECASE)
     return cleaned if cleaned else "Redding, CA"
+
+KNOWN_REDDING_ADDRESSES = {
+    "dick's sporting goods": "1030 Dana Dr, Redding, CA 96002",
+    "dicks sporting goods": "1030 Dana Dr, Redding, CA 96002",
+    "five below": "1476 Dana Dr, Redding, CA 96002",
+    "safeway": "1070 E Cypress Ave, Redding, CA 96002",
+    "safeway 1070": "1070 E Cypress Ave, Redding, CA 96002",
+    "safeway pine": "2275 Pine St, Redding, CA 96001",
+    "bechelli ampm": "2686 Bechelli Ln, Redding, CA 96002",
+    "ampm": "2686 Bechelli Ln, Redding, CA 96002",
+    "dabella": "3685 Caterpillar Rd, Redding, CA 96003",
+    "lkq": "3737 Mountain Lakes Blvd, Redding, CA 96003",
+    "lkq corporation": "3737 Mountain Lakes Blvd, Redding, CA 96003",
+    "jd residential": "1530 Victor Ave, Redding, CA 96003",
+    "jd residential services": "1530 Victor Ave, Redding, CA 96003",
+    "nafe": "Redding, CA 96002",
+    "winco": "1050 Old Alturas Rd, Redding, CA 96003",
+    "winco foods": "1050 Old Alturas Rd, Redding, CA 96003",
+    "walmart": "1515 Dana Dr, Redding, CA 96002",
+    "target": "1280 Dana Dr, Redding, CA 96002",
+    "home depot": "1201 Dana Dr, Redding, CA 96002",
+    "lowe's": "1800 Churn Creek Rd, Redding, CA 96002",
+    "lowes": "1800 Churn Creek Rd, Redding, CA 96002",
+    "in-n-out": "1275 Dana Dr, Redding, CA 96002",
+    "in n out": "1275 Dana Dr, Redding, CA 96002",
+    "costco": "1525 Dana Dr, Redding, CA 96002",
+    "ross": "1650 Hilltop Dr, Redding, CA 96002",
+    "tj maxx": "1235 Dana Dr, Redding, CA 96002",
+    "marshalls": "1235 Dana Dr, Redding, CA 96002",
+    "dollar tree": "2600 Churn Creek Rd, Redding, CA 96002",
+    "dollar general": "1940 Shasta St, Redding, CA 96001",
+    "autozone": "2280 Pine St, Redding, CA 96001",
+    "o'reilly": "2450 Athens Ave, Redding, CA 96001",
+    "oreilly": "2450 Athens Ave, Redding, CA 96001",
+    "hobby lobby": "945 Dana Dr, Redding, CA 96002",
+    "tractor supply": "2850 Churn Creek Rd, Redding, CA 96002",
+    "harbor freight": "1705 E Cypress Ave, Redding, CA 96002",
+    "dutch bros": "1980 E Cypress Ave, Redding, CA 96002",
+    "mcdonald's": "1245 Dana Dr, Redding, CA 96002",
+    "mcdonalds": "1245 Dana Dr, Redding, CA 96002",
+    "wendy's": "1210 Dana Dr, Redding, CA 96002",
+    "taco bell": "1225 Dana Dr, Redding, CA 96002",
+    "starbucks": "1520 Dana Dr, Redding, CA 96002",
+    "panda express": "1220 Dana Dr, Redding, CA 96002",
+    "chipotle": "1100 Dana Dr, Redding, CA 96002",
+    "mercy medical center": "2175 Rosaline Ave, Redding, CA 96001",
+    "shasta regional": "1100 Butte St, Redding, CA 96001",
+    "hilltop medical": "1093 Hilltop Dr, Redding, CA 96003",
+    "shasta community health": "1035 Placer St, Redding, CA 96001",
+    "fedex": "6310 Mountain Shadows Dr, Redding, CA 96003",
+    "ups": "4660 Mountain Lakes Blvd, Redding, CA 96003",
+    "usps": "1647 Court St, Redding, CA 96001",
+    "sierra pacific": "19794 Riverside Ave, Anderson, CA 96007",
+}
+
+def resolve_business_address(company: str = "", location: str = "", description: str = "", gemini_address: str = None) -> str:
+    """
+    Resolves the physical street address of the employer/worksite in the Redding/Shasta County area.
+    Crucial for workforce participants who rely on Redding Area Bus Authority (RABA) transit lines.
+    """
+    # 1. Use Gemini-resolved address if it includes a street number and valid locality
+    if gemini_address and str(gemini_address).strip() not in ["N/A", "None", "", "Unstated"]:
+        clean_g = clean_location_str(gemini_address)
+        if not any(bad in clean_g.lower() for bad in ["pound", "lb", "lift", "associate must", "year", "hour", "week"]):
+            if re.search(r'\d+', clean_g) and ("redding" in clean_g.lower() or "anderson" in clean_g.lower() or "shasta" in clean_g.lower() or "ca" in clean_g.lower()):
+                return clean_g
+
+    # 2. Check known employer physical directory
+    c_lower = str(company or "").lower().strip()
+    for known_name, addr in KNOWN_REDDING_ADDRESSES.items():
+        if known_name in c_lower or c_lower in known_name:
+            return addr
+
+    # 3. Search description text for street address patterns in Shasta County
+    if description:
+        m = re.search(
+            r'\b(\d{2,5}\s+(?:[A-Z0-9][a-zA-Z0-9\.]*\s+){1,4}\b(?:Street|St|Avenue|Ave|Boulevard|Blvd|Road|Rd|Drive|Dr|Way|Lane|Ln|Court|Ct|Parkway|Pkwy|Highway|Hwy)\b(?:,?\s*(?:Suite|Ste|Unit|#)\s*[A-Za-z0-9\-]+)?)(?:,?\s*([A-Za-z\s]+),?\s*(?:CA)?\s*(\d{5})?)?',
+            description,
+            re.IGNORECASE
+        )
+        if m:
+            street = m.group(1).strip()
+            # Discard false positives (e.g. "35 pounds... The associate must")
+            if not any(bad in street.lower() for bad in ["pound", "lb", "lift", "must", "hour", "year", "week", "month", "associate", "percent"]):
+                city = m.group(2).strip() if m.group(2) else "Redding"
+                if "redding" not in city.lower() and "anderson" not in city.lower():
+                    city = "Redding"
+                return clean_location_str(f"{street}, {city}, CA")
+
+    # 4. Fallback to cleaned location string or default Redding zip
+    return clean_location_str(location or "Redding, CA 96002")
+
 
 def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
     if not loc_str or str(loc_str).strip() in ["N/A", "None", ""]:
@@ -255,7 +383,10 @@ def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual
         if min(vals) >= max_annual:
             return True, f"Annual pay exceeds entry-level ceiling: ${min(vals):,.0f}"
 
-    is_annual = any(w in s for w in ["year", "yr", "annual", "annually"])
+    is_annual = any(w in s for w in ["year", "yr", "annual", "annually", "/yr", "per year"])
+    is_monthly = any(w in s for w in ["month", "mo", "monthly", "/mo", "per month"])
+    is_weekly = any(w in s for w in ["week", "wk", "weekly", "/wk", "per week"])
+    is_hourly = any(w in s for w in ["hour", "hr", "hourly", "/hr", "per hour"])
     
     # Extract numbers with optional decimals
     raw_nums = re.findall(r'\$(\d+(?:\.\d+)?)', s)
@@ -268,14 +399,35 @@ def is_pay_exceeding_ceiling(pay_text: str, max_hourly: float = 38.0, max_annual
             min_val = min(nums)
             max_val = max(nums)
 
-            if min_val >= 1000 or is_annual:
+            # Weekly pay ceiling: e.g. $2,616 per week -> exceeds $1,520/wk ($38/hr * 40h or $75k / 52)
+            if is_weekly:
+                max_weekly = max(max_hourly * 40.0, max_annual / 52.0)
+                if min_val >= max_weekly or min_val * 52 >= max_annual:
+                    return True, f"Weekly compensation exceeds entry-level ceiling: ${min_val:,.0f}/wk"
+                elif max_val >= max_weekly + 300.0:
+                    return True, f"Weekly compensation range exceeds entry-level ceiling: up to ${max_val:,.0f}/wk"
+
+            # Monthly pay ceiling: e.g. $6,500/month -> exceeds $6,250/mo ($75k / 12)
+            elif is_monthly:
+                max_monthly = max_annual / 12.0
+                if min_val >= max_monthly or min_val * 12 >= max_annual:
+                    return True, f"Monthly compensation exceeds entry-level ceiling: ${min_val:,.0f}/mo"
+                elif max_val >= max_monthly + 1000.0:
+                    return True, f"Monthly compensation range exceeds entry-level ceiling: up to ${max_val:,.0f}/mo"
+
+            # Annual pay ceiling: e.g. $80,000/yr or standalone >= $15,000
+            elif is_annual or min_val >= 15000:
                 if min_val >= max_annual:
                     return True, f"Annual compensation exceeds entry-level ceiling: ${min_val:,.0f}"
                 elif max_val >= max_annual + 15000:
                     return True, f"Annual compensation range exceeds entry-level ceiling: up to ${max_val:,.0f}"
+
+            # Hourly pay ceiling: e.g. $39/hr or standalone < 1000
             else:
-                if not is_annual and min_val >= max_hourly:
+                if min_val >= max_hourly:
                     return True, f"Hourly compensation exceeds entry-level ceiling: ${min_val:.2f}/hr"
+                elif max_val >= max_hourly + 10.0:
+                    return True, f"Hourly compensation range exceeds entry-level ceiling: up to ${max_val:.2f}/hr"
         except:
             pass
 
@@ -304,9 +456,14 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
 
     # Check pay ceiling
     if pay and pay != "N/A":
-        exceeds, reason = is_pay_exceeding_ceiling(pay)
-        if exceeds:
-            return True, reason
+        # Guard against known promotional / gig banner artifacts (e.g. DoorDash "$53.85/hr") on standard entry-level titles
+        is_standard_entry = any(k in t_lower for k in ["dish", "cook", "cashier", "server", "barista", "food service", "team member", "guest advocate", "attendant", "host", "custodian", "janitor", "cleaner", "laundry", "housekeeper", "stocker", "clerk", "retail", "laborer", "aide"])
+        if is_standard_entry and ("53.85" in str(pay) or "112,000" in str(pay)):
+            pass  # Ignore promotional banner artifact on entry-level titles
+        else:
+            exceeds, reason = is_pay_exceeding_ceiling(pay)
+            if exceeds:
+                return True, reason
 
     # Check rejected employers
     rejected_employers = config.get("rejected_employers", [])
@@ -325,8 +482,79 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
         if re.search(r'\b' + re.escape(r_t) + r'\b', t_lower):
             return True, f"Rejected title keyword: {rej_title}"
 
-    # Check degree & qualification rejections
+    # Check Remote / Work-from-home / Online survey or research panels
+    if re.search(r'\b(?:remote|work\s+from\s+home|wfh|out\s+of\s+office|telecommute|virtual)\b', t_lower):
+        return True, f"Remote / Work-from-home position: '{t_clean}'"
+    if re.search(r'\b(?:paid\s+research\s+panelist|focus\s+group\s+participant|paid\s+focus\s+group|paid\s+study\s+panelist|online\s+survey\s+taker|survey\s+panelist|research\s+study\s+panelist|research\s+panelist)\b', t_lower):
+        return True, f"Online survey / focus group panel position: '{t_clean}'"
+    if d_lower and re.search(r'\b(?:100%\s+remote|fully\s+remote|work\s+from\s+home\s+position|remote\s+paid\s+research|paid\s+research\s+panelist|paid\s+focus\s+group|focus\s+group\s+participant|online\s+survey\s+taker|survey\s+panelist|research\s+study\s+panelist)\b', d_lower):
+        return True, "Remote / Online survey or panel position in description"
+
+    # Check Travel Healthcare / Travel Contract positions
+    if re.search(r'\b(?:travel\s+ct|travel\s+tech|travel\s+technologist|travel\s+nurse|traveling\s+nurse|travel\s+contract|travel\s+assignment|allied\s+travel)\b', t_lower):
+        return True, f"Travel healthcare / contract assignment: '{t_clean}'"
+    if re.search(r'\bct\s+(?:tech|technologist)\b', t_lower):
+        return True, f"CT Technologist requires ARRT radiology credentials: '{t_clean}'"
+    if d_lower and re.search(r'\b(?:travel\s+assignment|travel\s+contract|allied\s+travel\s+careers|travel\s+healthcare)\b', d_lower):
+        return True, "Travel healthcare / non-local assignment in description"
+
+    # Check Surrogacy / Egg Donor / Plasma Donation / Clinical study positions
+    if re.search(r'\b(?:surrogate|surrogacy|egg\s+donor|sperm\s+donor|plasma\s+donor|plasma\s+donation|healthy\s+pregnancy)\b', t_lower):
+        return True, f"Surrogacy / Medical donor opportunity: '{t_clean}'"
+    is_care_role = any(k in t_lower for k in ["caregiver", "personal assistant", "babysitter", "childcare", "nanny", "child care", "hospitality aide", "senior care", "companion"])
+    if not is_care_role and d_lower and re.search(r'\b(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?\d+[\d,]*\s+as\s+a\s+surrogate|surrogacy\s+journey|egg\s+donation\s+program)\b', d_lower):
+        return True, "Surrogacy / Medical donor opportunity in description"
+
+    # Check Foreman / Supervisory
+    if re.search(r'\bforeman\b', t_lower):
+        return True, f"Supervisory role (Foreman): '{t_clean}'"
+
+    # Check Experienced trade prefix (e.g. Experienced Carpenter, Experienced Welder)
+    if re.search(r'\bexperienced\s+(?:carpenter|welder|technician|tech|plumber|electrician|installer|mechanic|driver|operator|laborer)\b', t_lower) or t_lower.startswith("experienced "):
+        return True, f"Non-entry-level: '{t_clean}' (requires experienced journeyman)"
+
+    # Check Professional planning roles
+    if re.search(r'\b(?:municipal|urban|city|regional|land\s+use|environmental)?\s*planner\b', t_lower):
+        return True, f"Professional planning role: '{t_clean}' (requires urban planning/public admin degree)"
+
+    # Check Senior tiers (Associate II, Associate III, Level II, Level III, Tier II, etc.)
+    if re.search(r'\b(?:associate|clerk|technician|assistant|operator|specialist|analyst|worker)\s+(?:ii|iii|iv|v|2|3|4|5)\b', t_lower) or re.search(r'\b(?:level|tier|grade)\s+(?:ii|iii|iv|v|2|3|4|5)\b', t_lower):
+        return True, f"Senior tier level: '{t_clean}'"
+
+    # Check Skilled trade installers (e.g. Acrylic Bath Installer)
+    if re.search(r'\b(?:acrylic\s+)?bath\s+installer\b', t_lower) or (re.search(r'\binstaller\b', t_lower) and any(w in t_lower for w in ["bath", "cabinet", "flooring", "granite", "roofing", "solar", "hvac"])):
+        return True, f"Skilled trade installer (not helper/apprentice): '{t_clean}'"
+
+    # Check HVAC technician unless accompanied by helper/assistant/apprentice/trainee
+    if re.search(r'\bhvac\s+(?:technician|tech|installer|mechanic)\b', t_lower):
+        if not any(w in t_lower for w in ["helper", "assistant", "apprentice", "trainee"]):
+            return True, f"HVAC technician requires trade certification (not helper/apprentice): '{t_clean}'"
+
+    # Check Lead / Master / Field / Heavy Equipment Mechanic & Trade Leadership
+    if re.search(r'\b(?:lead|master|chief|supervising)\s+(?:mechanic|carpenter|technician|tech|installer|electrician|plumber|painter|driver|operator|cook)\b', t_lower):
+        return True, f"Lead / Supervisory trade role: '{t_clean}'"
+    if re.search(r'\bfield\s+mechanic\b', t_lower):
+        return True, f"Field Mechanic requires journeyman diagnostic & field experience: '{t_clean}'"
+    if re.search(r'\b(?:heavy\s+equipment|diesel)\s+mechanic\b', t_lower) and not any(w in t_lower for w in ["helper", "assistant", "apprentice", "trainee"]):
+        return True, f"Heavy equipment / diesel mechanic requires journeyman skills: '{t_clean}'"
+    if re.search(r'\b(?:experience|experienced)\s+only\b', t_lower):
+        return True, f"Non-entry-level ('experience only' specified in title): '{t_clean}'"
+
+    # Check On-Call / IT Field Technician (1099 independent contractor)
+    if re.search(r'\b(?:on[\s\-]call\s+)?(?:it\s+)?field\s+technician\b', t_lower):
+        return True, f"Field technician / 1099 on-call tech role: '{t_clean}'"
+
+    # Check Out-of-area staffing syndication tags like (ONTB)
+    if re.search(r'\((?:ontb?|lax|chi|phx|dal|hou|dfw|atl)\)', t_lower):
+        return True, f"Out-of-area staffing syndication tag in title: '{t_clean}'"
+
+    # Check candidate excessive experience requirements (3+ years work experience)
     comb_text = f"{t_lower}\n{d_lower}"
+    is_exp_rej, exp_reason = check_excessive_experience_requirement(comb_text)
+    if is_exp_rej:
+        return True, exp_reason
+
+    # Check degree & qualification rejections
     for pat in DEGREE_QUALIFICATION_REJECTIONS:
         if re.search(pat, comb_text, re.IGNORECASE):
             return True, f"Non-entry-level requirement matched pattern: {pat}"
@@ -334,7 +562,7 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
     # Check pay ceiling from description if not passed explicitly
     if not pay and d_lower:
         desc_pay = extract_pay(description)
-        if desc_pay:
+        if desc_pay and not ("53.85" in desc_pay or "112,000" in desc_pay):
             exceeds, reason = is_pay_exceeding_ceiling(desc_pay)
             if exceeds:
                 return True, reason
@@ -373,6 +601,180 @@ def determine_industry(job_title, company, description=""):
                     
     return "Other"
 
+# ============================================================
+# TEEN-FRIENDLY QUALIFICATION & EMPLOYER REGISTRY
+# Grounded in Redding Area Employers database & known under-18 employers
+# ============================================================
+KNOWN_TEEN_EMPLOYERS = {
+    # Fast food & quick service (classic under-18 employers)
+    "mcdonald's", "mcdonalds",
+    "taco bell",
+    "chick-fil-a", "chick fil a", "bird hospitality",
+    "in-n-out burger", "in-n-out", "in n out",
+    "dutch bros coffee", "dutch bros",
+    "wendy's", "wendys",
+    "burger king", "bk",
+    "carl's jr.", "carl's jr", "carls jr",
+    "jack in the box",
+    "subway",
+    "panda express",
+    "dairy queen", "dq", "blue jay foods",
+    "sonic drive-in", "sonic drive in", "sonic",
+    "raising cane's", "raising canes",
+    "chipotle", "chipotle mexican grill",
+    "arby's", "arbys",
+    "little caesars", "little caesar",
+    "papa murphy's", "papa murphys",
+    "baskin-robbins", "baskin robbins",
+    "cold stone creamery", "cold stone",
+    "crumbl cookies", "crumbl",
+    "jamba", "jamba juice",
+    "auntie anne's", "auntie annes",
+    "wetzel's pretzels", "wetzels pretzels",
+    "panera bread", "panera",
+    "chuck e. cheese", "chuck e cheese",
+    "kfc", "kentucky fried chicken",
+    "popeyes", "popeyes louisiana kitchen",
+    "wingstop",
+    "wienerschnitzel",
+    "a&w", "a&w restaurant",
+    "starbucks", "starbucks coffee",
+
+    # Retail / entertainment employers officially hiring age 14-17 (from Redding Area Employers)
+    "ace hardware",
+    "american eagle outfitters", "american eagle",
+    "autozone",
+    "barnes & noble", "barnes and noble",
+    "best buy",
+    "buckle", "the buckle",
+    "cattlemans steakhouse", "cattlemans",
+    "cinemark", "cinemark theaters",
+    "claire's", "claires",
+    "cvs", "cvs pharmacy", "cvs health",
+    "five below",
+    "grocery outlet",
+    "home depot", "the home depot",
+    "hot topic",
+    "journey's", "journeys",
+    "logan's roadhouse", "logans roadhouse",
+    "michaels stores", "michaels",
+    "premier oil change",
+    "spencer gifts", "spencers",
+    "sprouts farmers market", "sprouts",
+    "target",
+    "tractor supply company", "tractor supply",
+    "regal cinemas", "regal",
+    "menchie's", "menchies",
+    "yogurtland",
+    "old navy",
+    "ross dress for less", "ross stores", "ross",
+    "kohl's", "kohls",
+    "jcpenney",
+}
+
+def normalize_company_for_matching(comp: str) -> str:
+    if not comp:
+        return ""
+    s = str(comp).lower()
+    s = re.sub(r'[\'\’\`]', '', s)
+    s = re.sub(r'[^a-z0-9\s]', ' ', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
+def is_known_teen_employer(comp: str) -> bool:
+    if not comp:
+        return False
+    norm = normalize_company_for_matching(comp)
+    if not norm:
+        return False
+    for known in KNOWN_TEEN_EMPLOYERS:
+        k_norm = normalize_company_for_matching(known)
+        if k_norm == norm:
+            return True
+        if f" {k_norm} " in f" {norm} " or norm.startswith(f"{k_norm} ") or norm.endswith(f" {k_norm}"):
+            return True
+    return False
+
+def is_teen_friendly(
+    title: str = "",
+    company: str = "",
+    text: str = "",
+    requirements: str = "",
+    job_dict: dict = None,
+    gemini_teen_friendly: bool = None
+) -> bool:
+    """
+    Evaluates whether a job posting is available to youth under 18 years of age (ages 14-17).
+    Rule: Do not check this box unless the employer is specifically known to hire under age 18
+    (like McDonald's or Taco Bell) or it is clearly stated in the job description.
+    """
+    if job_dict:
+        title = title or str(job_dict.get('job_title') or job_dict.get('title') or '')
+        company = company or str(job_dict.get('company') or '')
+        text = text or str(job_dict.get('description') or '')
+        requirements = requirements or str(job_dict.get('experience') or job_dict.get('requirements') or '')
+
+    combined_text = f"{title} {company} {text} {requirements}".lower()
+
+    # 1. HARD DISQUALIFICATIONS (Overrides everything - minors cannot do these or employers explicitly exclude them)
+    # A. Explicit 18+ requirement
+    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
+        return False
+    if re.search(r'\b18\s*\+\b', combined_text):
+        return False
+
+    # B. Explicit 21+ requirement (e.g. alcohol service, casino gaming)
+    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
+        return False
+    if re.search(r'\b21\s*\+\b', combined_text):
+        return False
+    if any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino", "gaming associate"]):
+        return False
+
+    # C. Commercial driving / vehicle route duties (restricted for minors under child labor laws)
+    if re.search(r'\b(?:cdl[\s\-]?a|cdl[\s\-]?b|class\s*[ab])\b', combined_text):
+        return False
+    if any(k in title.lower() for k in ["delivery driver", "route driver", "van driver", "courier", "truck driver", "shuttle driver"]):
+        return False
+
+    # D. Supervisory / Management roles (require adult legal responsibility)
+    supervisor_patterns = [
+        r'\b(?:general\s+manager|gm)\b',
+        r'\b(?:assistant\s+manager|asst\s+manager)\b',
+        r'\b(?:store\s+manager|branch\s+manager)\b',
+        r'\b(?:manager|director|executive|chief|coordinator)\b',
+        r'\b(?:shift\s+(?:manager|supervisor|lead))\b',
+        r'\b(?:team\s+lead|crew\s+lead|operations\s+lead|sales\s+lead|front\s+end\s+lead|dept\s+lead|department\s+lead)\b',
+        r'\b(?:lead\s+(?:person|hand|worker|tech|technician|operator))\b',
+        r'\b(?:supervisor|foreman|superintendent)\b',
+        r'\b(?:department\s+manager|dept\s+manager)\b',
+    ]
+    for sp in supervisor_patterns:
+        if re.search(sp, title.lower()):
+            return False
+
+    # 2. POSITIVE CRITERIA
+    # Criterion A: Clearly stated in the job description as available to minors / under 18
+    under_18_patterns = [
+        r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)1[4-7]\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?',
+        r'\b1[4-7]\s*\+\b',
+        r'\b(?:youth[\s\-]friendly|teen[\s\-]friendly|teens\s*welcome|minors\s*welcome|hire\s*minors|hiring\s*minors|under\s*18\s*welcome|under\s*18\s*eligible|high\s*school\s*students?|student\s*position|student\s*worker)\b',
+        r'\b(?:work\s*permit\s*(?:required|accepted)|with\s*valid\s*work\s*permit)\b',
+    ]
+    for pat in under_18_patterns:
+        if re.search(pat, combined_text):
+            return True
+
+    # Criterion B: Employer is specifically known to hire under age 18
+    if is_known_teen_employer(company):
+        return True
+
+    # Criterion C: Gemini structured parser verified under 18 suitability
+    if gemini_teen_friendly is True:
+        return True
+
+    return False
+
 def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
     """
     Extracts, summarizes, and structures key entry-level qualification requirements:
@@ -398,100 +800,220 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
 
     items = []
 
-    # 1. Experience & Training Level
-    if any(p in combined_text for p in ["no experience required", "no experience necessary", "no prior experience", "will train", "training provided", "paid training", "entry level", "entry-level"]):
-        items.append("Entry-level (no experience required; on-the-job training provided)")
-    else:
-        exp_m = re.search(r'\b([1-4])\+?\s*(?:to\s*[2-5])?\s*years?(?:\s+of)?\s+(?:relevant\s+|related\s+|prior\s+)?experience\b', combined_text)
-        if exp_m:
-            items.append(f"{exp_m.group(0).strip().capitalize()} preferred")
-        elif existing_exp and str(existing_exp).strip() not in ["N/A", "None", ""]:
-            clean_existing = str(existing_exp).strip()
-            if not any(bad in clean_existing for bad in ["00+", "40 years", "50+"]):
-                items.append(clean_existing)
-            else:
-                items.append("Entry-level / No prior experience required")
-        else:
-            items.append("Entry-level / No prior experience required")
+    # Process existing items first if provided
+    if existing_exp and str(existing_exp).strip() not in ["N/A", "None", "", "Entry-level / No prior experience required", "Entry-level (no experience required; on-the-job training provided)"]:
+        for part in str(existing_exp).split(";"):
+            p_clean = part.strip()
+            if p_clean and not any(bad in p_clean for bad in ["00+", "40 years", "50+"]):
+                # Avoid keeping generic 'Valid CA Driver License' if we can determine reliable vehicle / clean DMV
+                if "driver" in p_clean.lower() and "license" in p_clean.lower():
+                    continue
+                if p_clean not in items:
+                    items.append(p_clean)
 
-    # 2. Minimum Age & Youth (Strict regex to avoid matching numbers in pay rates like $16.70 or $21.00)
+    # 1. Concrete Experience / Training Requirements
+    exp_m = re.search(r'\b([1-3])\+?\s*(?:to\s*[2-4])?\s*years?(?:\s+of)?\s+(?:relevant\s+|related\s+|prior\s+)?experience\b', combined_text)
+    if exp_m:
+        exp_txt = f"{exp_m.group(0).strip().capitalize()} preferred"
+        if not any("experience" in it.lower() for it in items):
+            items.append(exp_txt)
+
+    # 2. Minimum Age & Youth
     has_21_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
-        or re.search(r'\b21\+\b', combined_text)
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
+        or re.search(r'\b21\s*\+', combined_text)
         or any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate"])
     )
     has_16_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
-        or re.search(r'\b16\+\b', combined_text)
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
+        or re.search(r'\b16\s*\+', combined_text)
         or any(w in combined_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"])
     )
     has_18_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', combined_text)
-        or re.search(r'\b18\+\b', combined_text)
+        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
+        or re.search(r'\b18\s*\+', combined_text)
     )
 
-    if has_21_plus:
+    if has_21_plus and not any("21+" in it for it in items):
         items.append("Must be 21+ years old")
-    elif has_16_plus:
+    elif has_16_plus and not any("16+" in it for it in items):
         items.append("Youth-friendly (Age 16+)")
-    elif has_18_plus:
+    elif has_18_plus and not any("18+" in it for it in items):
         items.append("Must be 18+ years old")
 
-    # 3. Driver's License & Transportation
+    # 3. Driver's License, Vehicle, & DMV Record
+    has_veh = bool(re.search(r'\b(?:reliable\s*(?:vehicle|transportation|auto|car)|personal\s*(?:vehicle|transportation|car)|insured\s*(?:vehicle|car|automobile))\b', combined_text))
+    has_dmv = bool(re.search(r'\b(?:clean\s*(?:driving\s*record|dmv|mvr)|clean\s*driving\s*history|good\s*driving\s*record)\b', combined_text))
+
     if re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', combined_text):
-        items.append("Commercial Driver's License (CDL-A) required")
+        if not any("cdl-a" in it.lower() for it in items):
+            items.append("Commercial Driver's License (CDL-A) required")
     elif re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text):
-        items.append("Commercial Driver's License (CDL-B) required")
+        if not any("cdl-b" in it.lower() for it in items):
+            items.append("Commercial Driver's License (CDL-B) required")
     elif re.search(r'\b(?:class\s*c|driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker", "transport"]):
-        items.append("Valid Driver's License (Class C) required")
-
-    # 4. Role-Specific Licenses / Certifications (strictly checked)
-    if "forklift" in combined_text:
-        items.append("Forklift certification preferred / training provided")
-    if any(k in combined_text for k in ["hair stylist", "barber", "cosmetolog"]):
-        items.append("Cosmetology or Barbering License required")
-    if any(k in combined_text for k in ["flagger", "traffic control"]):
-        items.append("Flagger certification required / provided")
-    if any(k in combined_text for k in ["cna", "certified nursing assistant"]):
-        items.append("Active CNA certification required")
-    if "dental assistant" in combined_text:
-        items.append("Dental Assistant training / RDA preferred")
-    if "welder" in combined_text or "welding" in combined_text:
-        items.append("Welding experience / certification preferred")
-    if any(k in combined_text for k in ["cpr", "first aid", "bls"]):
-        items.append("CPR / First Aid certification required/preferred")
-    if any(k in combined_text for k in ["food handler", "servsafe", "food safety cert"]):
-        items.append("Food Handler Card / ServSafe required")
-    if "guard card" in combined_text:
-        items.append("Security Guard Card required")
-
-    # 5. Education (Strict word boundaries to avoid matching substrings like 'packaged' or 'arranged')
-    if re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', combined_text):
-        if re.search(r'\b(?:no\s*diploma|no\s*degree)\b', combined_text):
-            items.append("No High School Diploma or Degree required")
-        elif "preferred" in combined_text and ("diploma" in combined_text or "ged" in combined_text):
-            items.append("High School Diploma or GED preferred")
+        if has_veh and has_dmv:
+            items.append("Valid Driver's License (Class C), reliable vehicle, and clean DMV record required")
+        elif has_veh:
+            items.append("Valid Driver's License (Class C) and reliable vehicle required")
+        elif has_dmv:
+            items.append("Valid Driver's License (Class C) and clean DMV record required")
         else:
-            items.append("High School Diploma or GED required")
+            items.append("Valid Driver's License (Class C) required")
+    elif has_veh and not any("reliable vehicle" in it.lower() or "reliable transportation" in it.lower() for it in items):
+        items.append("Reliable vehicle / personal transportation required")
 
-    # 6. Background Check & Drug Screening (Explicitly stated only)
+    # 4. Role-Specific Licenses / Certifications
+    has_chha = bool(re.search(r'\b(?:chha|hha|home\s*health\s*aide)\b', combined_text))
+    has_cna = bool(any(k in combined_text for k in ["cna", "certified nursing assistant"]))
+    if has_chha and has_cna and not any("chha" in it.lower() for it in items):
+        items.append("Active CHHA or CNA certification required")
+    elif has_chha and not any("chha" in it.lower() for it in items):
+        items.append("Active Home Health Aide (CHHA) certification required")
+    elif has_cna and not any("cna" in it.lower() for it in items):
+        items.append("Active CNA certification required")
+
+    if re.search(r'\b(?:paraprofessional|paraeducator|instructional\s*(?:aide|assistant)|teacher(?:\'s)?\s*aide|special\s*ed(?:ucation)?\s*aide)\b', combined_text):
+        if not any("paraprofessional" in it.lower() for it in items):
+            items.append("Paraprofessional assessment / 48 college units / Paraeducator credential required/preferred")
+
+    if "forklift" in combined_text and not any("forklift" in it.lower() for it in items):
+        items.append("Forklift certification preferred / training provided")
+    if any(k in combined_text for k in ["hair stylist", "barber", "cosmetolog"]) and not any("cosmetology" in it.lower() for it in items):
+        items.append("Cosmetology or Barbering License required")
+    if any(k in combined_text for k in ["flagger", "traffic control"]) and not any("flagger" in it.lower() for it in items):
+        items.append("Flagger certification required / provided")
+    if "dental assistant" in combined_text and not any("dental assistant" in it.lower() for it in items):
+        items.append("Dental Assistant training / RDA preferred")
+    if ("welder" in combined_text or "welding" in combined_text) and not any("welding" in it.lower() for it in items):
+        items.append("Welding experience / certification preferred")
+    if any(k in combined_text for k in ["cpr", "first aid", "bls", "basic life support"]) and not any("cpr" in it.lower() for it in items):
+        items.append("CPR / BLS / First Aid certification required/preferred")
+    if any(k in combined_text for k in ["food handler", "servsafe", "food safety cert"]) and not any("food handler" in it.lower() for it in items):
+        items.append("Food Handler Card / ServSafe required")
+    if "guard card" in combined_text and not any("guard card" in it.lower() for it in items):
+        items.append("Security Guard Card required")
+    if re.search(r'\b(?:phlebotom\w+|cpt[\s\-]?1)\b', combined_text) and not any("phlebotomy" in it.lower() for it in items):
+        items.append("Phlebotomy certification (CPT-1) required/preferred")
+    if re.search(r'\b(?:dsp[\s\-]?1|dsp[\s\-]?2|direct\s*support\s*professional)\b', combined_text) and not any("dsp" in it.lower() for it in items):
+        items.append("Direct Support Professional (DSP) training/certification preferred/provided")
+
+    # 5. Education
+    if re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', combined_text):
+        if not any("diploma" in it.lower() or "ged" in it.lower() for it in items):
+            if re.search(r'\b(?:no\s*diploma|no\s*degree)\b', combined_text):
+                items.append("No High School Diploma or Degree required")
+            elif "preferred" in combined_text and ("diploma" in combined_text or "ged" in combined_text):
+                items.append("High School Diploma or GED preferred")
+            else:
+                items.append("High School Diploma or GED required")
+
+    if re.search(r'\b(?:48\s*(?:semester\s*)?units|associate(?:\'s)?\s*degree)\b', combined_text) and not any("48" in it for it in items):
+        items.append("48+ college semester units or Associate's degree required/preferred")
+
+    # 6. Clearances & Screenings
     if re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', combined_text):
-        items.append("Drug screening required")
-    if re.search(r'\b(?:background\s*check|criminal\s*background|livescan|fingerprint)\b', combined_text):
-        items.append("Background check required")
+        if not any("drug" in it.lower() for it in items):
+            items.append("Drug screening required")
+    if re.search(r'\b(?:background\s*check|criminal\s*background|livescan|live\s*scan|fingerprint)\b', combined_text):
+        if not any("background" in it.lower() or "live scan" in it.lower() for it in items):
+            items.append("Background check / Live Scan required")
+    if re.search(r'\b(?:tb\s*(?:test|clearance|screen)|tuberculosis)\b', combined_text):
+        if not any("tb" in it.lower() for it in items):
+            items.append("TB (Tuberculosis) clearance required")
 
-    # 7. Physical Demands & Lifting (Explicitly stated only)
-    lift_m = re.search(r'\b(?:lift|lifting)\s*(?:up\s*to)?\s*(\d{2,3})\s*(?:lbs|pounds)\b', combined_text)
-    if lift_m:
-        items.append(f"Ability to lift up to {lift_m.group(1)} lbs")
+    # 7. Physical Demands & Lifting
+    lift_m = re.search(
+        r'\b(?:lift|lifting|carry|carrying|move|moving|push|pull|load|loading|unload|unloading)\b'
+        r'(?:[^\.\n;]{0,35}?\b(?:up\s*to|at\s*least|to|minimum\s+of|of)\b)?'
+        r'\s*(\d{2,3})(?:\s*(?:-|to)\s*(\d{2,3}))?\s*(?:\+\s*)?(?:lbs|pounds?)\b',
+        combined_text
+    )
+    if lift_m and not any(re.search(r'\b(?:ability\s+to\s+lift|lift\s*\d|lifting)\b', it.lower()) for it in items):
+        low, high = lift_m.group(1), lift_m.group(2)
+        if high:
+            items.append(f"Ability to lift {low}-{high} lbs")
+        else:
+            items.append(f"Ability to lift up to {low} lbs")
+
+    if re.search(r'\b(?:standing\s*for\s*extended\s*periods|stand\s*for\s*(?:long|extended)\s*periods|prolonged\s*standing)\b', combined_text):
+        if not any("stand" in it.lower() for it in items):
+            items.append("Ability to stand for extended periods")
+
+    # 8. Operational / Job Specifics
+    if re.search(r'\b(?:smart\s*phone|smartphone|mobile\s*app(?:lication)?|timekeeping\s*app)\b', combined_text):
+        if not any("smartphone" in it.lower() for it in items):
+            items.append("Smartphone required for timekeeping/apps")
+
+    if re.search(r'\b(?:weekends?|saturdays?|sundays?)\b', combined_text) and re.search(r'\b(?:ability|availability|available|required|schedule)\b', combined_text):
+        if not any("weekend" in it.lower() for it in items):
+            items.append("Weekend availability required")
+
+    # 9. Training or No Experience note
+    has_training = bool(any(p in combined_text for p in ["paid training", "training provided", "will train", "on-the-job training"]))
+    has_no_exp = bool(any(p in combined_text for p in ["no experience required", "no experience necessary", "no prior experience", "0 years experience", "zero experience"]))
+
+    if has_no_exp and not any("no experience" in it.lower() for it in items):
+        items.append("No experience required (On-the-job training provided)")
+    elif has_training and not any("training" in it.lower() for it in items):
+        items.append("On-the-job training provided")
+    elif not items:
+        items.append("No experience required (On-the-job training provided)")
 
     # Deduplicate and return
     deduped = []
+    has_cdl_a = any("cdl-a" in it.lower() or "class a" in it.lower() for it in items)
+    has_cdl_b = any("cdl-b" in it.lower() or "class b" in it.lower() for it in items)
     for it in items:
+        if (has_cdl_a or has_cdl_b) and ("class c" in it.lower() or "no driver license" in it.lower()):
+            continue
         if it not in deduped:
             deduped.append(it)
 
-    return "; ".join(deduped) if deduped else "Entry-level / Training provided"
+    final_str = "; ".join(deduped) if deduped else "No experience required (On-the-job training provided)"
+    return standardize_driver_license_requirement(final_str, text_context=combined_text)
+
+def standardize_driver_license_requirement(exp_str: str, text_context: str = "", gemini_license: str = None) -> str:
+    """
+    Ensures that Commercial Driver License (Class A or Class B) requirements are never missed or downgraded to Class C.
+    """
+    clean_exp = str(exp_str or "").strip()
+    comb = f"{clean_exp} {text_context}".lower()
+    
+    is_class_a = bool(
+        (gemini_license and "class a" in gemini_license.lower())
+        or re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', comb)
+    )
+    is_class_b = bool(
+        (gemini_license and "class b" in gemini_license.lower())
+        or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', comb)
+    )
+    
+    if is_class_a:
+        cdl_text = "Commercial Driver's License (CDL-A) required"
+        parts = [p.strip() for p in clean_exp.split(";") if p.strip()]
+        filtered = [p for p in parts if not ("class c" in p.lower() or "no driver license" in p.lower() or "cdl-b" in p.lower())]
+        if not any("cdl-a" in p.lower() or "class a" in p.lower() for p in filtered):
+            filtered.insert(0, cdl_text)
+        else:
+            for idx, p in enumerate(filtered):
+                if "cdl-a" in p.lower() or "class a" in p.lower():
+                    filtered[idx] = cdl_text
+        return "; ".join(filtered)
+        
+    elif is_class_b:
+        cdl_text = "Commercial Driver's License (CDL-B) required"
+        parts = [p.strip() for p in clean_exp.split(";") if p.strip()]
+        filtered = [p for p in parts if not ("class c" in p.lower() or "no driver license" in p.lower() or "cdl-a" in p.lower())]
+        if not any("cdl-b" in p.lower() or "class b" in p.lower() for p in filtered):
+            filtered.insert(0, cdl_text)
+        else:
+            for idx, p in enumerate(filtered):
+                if "cdl-b" in p.lower() or "class b" in p.lower():
+                    filtered[idx] = cdl_text
+        return "; ".join(filtered)
+        
+    return clean_exp
 
 def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
     """
@@ -594,10 +1116,10 @@ def extract_pay(text):
     text_clean = str(text).replace('\ufffd', ' ').replace('\u2013', '-').replace('\u2014', '-')
     
     pay_patterns = [
-        # Range with units: $16.50 - $19.00 per hour / /hr / hr / yr / annually
-        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?(?:\s*(?:per\s+hour|per\s+year|per\s+week|\/hr|\/yr|\/week|yr|hr|annually|hourly))?',
-        # Single value with units: $20.00 per hour / $23.53 / hr
-        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|per\s+week|\/hr|\/yr|\/week|yr|hr|annually|hourly)',
+        # Range with units: $16.50 - $19.00 per hour / /hr / hr / yr / annually / per week / per month
+        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:-|to)\s*\$\d+(?:,\d+)?(?:\.\d+)?(?:\s*(?:per\s+hour|per\s+year|per\s+week|per\s+month|\/hr|\/yr|\/week|\/mo|\/month|yr|hr|annually|hourly|monthly))?',
+        # Single value with units: $20.00 per hour / $23.53 / hr / $2,616 per week
+        r'\$\d+(?:,\d+)?(?:\.\d+)?\s*(?:per\s+hour|per\s+year|per\s+week|per\s+month|\/hr|\/yr|\/week|\/mo|\/month|yr|hr|annually|hourly|monthly)',
         # Range with k: $50k - $70k
         r'\$\d+k\s*(?:-|to)\s*\$\d+k',
         r'\b\d+k\s*(?:-|to)\s*\d+k\b',
@@ -2712,6 +3234,13 @@ class JobScraper:
                 "job_url": job["job_url"],
                 "industry": job["industry"],
             }
+            job_data["teen_friendly"] = is_teen_friendly(
+                title=job["job_title"],
+                company=job["company"],
+                text=desc_val,
+                requirements=exp_val,
+                job_dict=job_data
+            )
             
             if self.pdf_published_date:
                 try:
@@ -2842,19 +3371,83 @@ class JobScraper:
                                 job_data["date_posted"] = self.extract_date_posted(potential_date.text.replace("•", "").strip())
                             except: pass
 
-                        full_desc = ""
-                        # Try heading-based container extraction first (Snagajob Angular template)
+                        # Strip unwanted sidebars, recommendation carousels, promos, ads, and footers from Snagajob page
                         try:
-                            desc_headings = main_content.find_elements(By.XPATH, ".//h2[contains(text(), 'Job Description')] | .//h3[contains(text(), 'Job Description')] | .//div[contains(text(), 'About this job')]")
-                            for dh in desc_headings:
-                                parent_box = dh.find_element(By.XPATH, "..")
-                                d_text = parent_box.text.strip()
-                                d_text = re.sub(r'^(?:About this job\s*|Job Description\s*)+', '', d_text, flags=re.IGNORECASE).strip()
-                                if d_text and len(d_text) > 30:
-                                    full_desc = d_text
-                                    break
+                            self.driver.execute_script("""
+                                const junkSelectors = [
+                                    'job-card',
+                                    'aside',
+                                    'footer',
+                                    'nav',
+                                    '[data-snagtag="job-card"]',
+                                    '[data-snagtag*="recommend"]',
+                                    '[data-snagtag*="similar"]',
+                                    '[class*="similar"]',
+                                    '[class*="recommended"]',
+                                    '[class*="related"]',
+                                    '[class*="sponsored"]',
+                                    '[class*="advertisement"]',
+                                    '[class*="ad-container"]',
+                                    '[class*="promo"]',
+                                    '[id*="similar"]',
+                                    '[id*="recommended"]',
+                                    '[id*="sponsored"]'
+                                ];
+                                junkSelectors.forEach(sel => {
+                                    document.querySelectorAll(sel).forEach(el => el.remove());
+                                });
+                            """)
+                        except Exception:
+                            pass
+
+                        # Expand any collapsed description sections
+                        try:
+                            expand_buttons = main_content.find_elements(By.XPATH, ".//button[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'read more') or contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'show more') or contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'view more')]")
+                            for btn in expand_buttons:
+                                if btn.is_displayed():
+                                    self.driver.execute_script("arguments[0].click();", btn)
+                                    time.sleep(0.3)
                         except:
                             pass
+
+                        full_desc = ""
+                        desc_parts = []
+                        # 1. Try heading-based container extraction for all relevant sections (Snagajob Angular template)
+                        try:
+                            desc_headings = main_content.find_elements(By.XPATH, ".//h2[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')] | .//h3[contains(text(), 'Job Description') or contains(text(), 'About this job') or contains(text(), 'Requirements') or contains(text(), 'Qualifications') or contains(text(), 'Responsibilities')]")
+                            seen_parents = set()
+                            for dh in desc_headings:
+                                try:
+                                    parent_box = dh.find_element(By.XPATH, "..")
+                                    if parent_box not in seen_parents:
+                                        seen_parents.add(parent_box)
+                                        d_text = parent_box.text.strip()
+                                        d_text = re.sub(r'^(?:About this job\s*|Job Description\s*)+', '', d_text, flags=re.IGNORECASE).strip()
+                                        if d_text and len(d_text) > 20 and d_text not in desc_parts:
+                                            desc_parts.append(d_text)
+                                except:
+                                    continue
+                        except:
+                            pass
+
+                        if desc_parts:
+                            full_desc = "\n\n".join(desc_parts)
+
+                        # 2. Try Snagajob data-snagtag selectors
+                        if not full_desc or len(full_desc.strip()) < 100:
+                            snag_tags = ["job-details", "job-description", "job-requirements", "job-body", "job-content"]
+                            tag_parts = []
+                            for tag in snag_tags:
+                                try:
+                                    elems = main_content.find_elements(By.CSS_SELECTOR, f"[data-snagtag='{tag}']")
+                                    for el in elems:
+                                        t = el.text.strip()
+                                        if t and len(t) > 30 and t not in tag_parts:
+                                            tag_parts.append(t)
+                                except:
+                                    continue
+                            if tag_parts:
+                                full_desc = "\n\n".join(tag_parts)
 
                         if not full_desc:
                             desc_selectors = [
@@ -2888,20 +3481,41 @@ class JobScraper:
                             except:
                                 pass
 
+                        # 3. Check if description truncated before list items or requirements
+                        if full_desc and (full_desc.strip().endswith("Requirements:") or full_desc.strip().endswith("Requirements") or "What Were Looking For" in full_desc[-60:] or "What We're Looking For" in full_desc[-60:]):
+                            try:
+                                uls = main_content.find_elements(By.XPATH, ".//ul | .//ol")
+                                for ul in uls:
+                                    ul_text = ul.text.strip()
+                                    if ul_text and len(ul_text) > 15 and ul_text not in full_desc:
+                                        full_desc += "\n" + ul_text
+                            except:
+                                pass
+
                         if full_desc:
+                            # Strip any trailing similar jobs or recommendations text
+                            for split_pat in [
+                                r'\n+\s*(?:similar\s+jobs|recommended\s+jobs|people\s+also\s+viewed|jobs\s+you\s+might\s+like|other\s+jobs\s+at|browse\s+more\s+jobs|explore\s+more\s+jobs)\b',
+                                r'\n+\s*(?:become\s+a\s+surrogate|earn\s+up\s+to\s+\$?\d+[\d,]*\s+as\s+a\s+surrogate)\b',
+                            ]:
+                                full_desc = re.split(split_pat, full_desc, flags=re.IGNORECASE)[0].strip()
+
                             if is_expired_job_content(full_desc):
                                 print(f"    [SKIP] Description indicates expired: {url}")
                                 continue
                             job_data["description"] = full_desc
 
-                        # Prioritize pay from Job Description, then verified employer wage, else N/A
-                        desc_pay = extract_pay(full_desc) if full_desc else None
-                        if desc_pay:
-                            job_data["pay"] = desc_pay
-                        elif verified_pay:
+                        # Prioritize verified employer wage from Snagajob badge, else description pay
+                        if verified_pay:
                             job_data["pay"] = verified_pay
+                        elif full_desc:
+                            desc_pay = extract_pay(full_desc)
+                            if desc_pay and not ("53.85" in desc_pay or "112,000" in desc_pay):
+                                job_data["pay"] = desc_pay
+                            else:
+                                job_data["pay"] = "Unstated"
                         else:
-                            job_data["pay"] = "N/A"
+                            job_data["pay"] = "Unstated"
 
                         gemini_res = None
                         if full_desc and len(full_desc.strip()) > 30:
@@ -2924,10 +3538,14 @@ class JobScraper:
                                 print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
                                 continue
                             job_data["industry"] = gemini_res.sector
-                            if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and job_data.get("pay") == "N/A":
+                            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A", "Unstated"]:
                                 job_data["pay"] = gemini_res.pay_rate
-                            job_data["experience"] = gemini_res.experience_requirements
-                            job_data["requirements"] = gemini_res.experience_requirements
+                            job_data["experience"] = extract_key_requirements(
+                                text=full_desc,
+                                existing_exp=gemini_res.experience_requirements,
+                                job_dict=job_data
+                            )
+                            job_data["requirements"] = job_data["experience"]
                         else:
                             job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
 
@@ -2938,6 +3556,14 @@ class JobScraper:
                                 job_dict=job_data
                             )
                             job_data["requirements"] = job_data["experience"]
+
+                        driver_lic_type = getattr(gemini_res, "driver_license_type", None) if gemini_res else None
+                        job_data["experience"] = standardize_driver_license_requirement(
+                            job_data.get("experience", ""),
+                            text_context=f"{job_data.get('job_title', '')} {job_data.get('company', '')} {full_desc}",
+                            gemini_license=driver_lic_type
+                        )
+                        job_data["requirements"] = job_data["experience"]
 
                         # Ensure Column J has key job description information
                         if not job_data.get("description") or job_data["description"] == "N/A":
@@ -2951,6 +3577,16 @@ class JobScraper:
                                 pay=job_data.get("pay", "N/A"),
                                 requirements=job_data["experience"]
                             )
+
+                        gemini_tf = getattr(gemini_res, "is_teen_friendly", None) if gemini_res else None
+                        job_data["teen_friendly"] = is_teen_friendly(
+                            title=job_data.get("job_title", ""),
+                            company=job_data.get("company", ""),
+                            text=full_desc,
+                            requirements=job_data.get("experience", ""),
+                            job_dict=job_data,
+                            gemini_teen_friendly=gemini_tf
+                        )
 
                         is_rej, rej_reason = is_rejected_job(job_data["job_title"], job_data["company"], job_data.get("description", ""), pay=job_data.get("pay", ""), location=job_data.get("location", ""))
                         if is_rej:
@@ -3255,6 +3891,27 @@ class JobScraper:
                         print(f"  Found {total_cards} job listings on this page")
                         search_page_url = self.driver.current_url
 
+                        # Extract rich structured mosaic metadata directly from Indeed's page state
+                        mosaic_lookup = {}
+                        try:
+                            m_raw = self.driver.execute_script(
+                                """
+                                try {
+                                    if (window.mosaic && window.mosaic.providerData && window.mosaic.providerData['mosaic-provider-jobcards']) {
+                                        return window.mosaic.providerData['mosaic-provider-jobcards'].metaData.mosaicProviderJobCardsModel.results;
+                                    }
+                                } catch(e) {}
+                                return null;
+                                """
+                            )
+                            if m_raw and isinstance(m_raw, list):
+                                for mr in m_raw:
+                                    mjk = mr.get('jobkey')
+                                    if mjk:
+                                        mosaic_lookup[mjk] = mr
+                        except Exception:
+                            pass
+
                         for idx in range(total_cards):
                             navigated_away = False
                             try:
@@ -3274,7 +3931,6 @@ class JobScraper:
                                 # Re-fetch fresh live DOM cards on every iteration
                                 live_cards = self._get_indeed_cards()
                                 if idx >= len(live_cards):
-                                    # Attempt scrolling down to trigger lazy loading of additional cards
                                     try:
                                         self.driver.execute_script("window.scrollBy(0, 450);")
                                         self.random_delay(0.8, 1.2)
@@ -3287,8 +3943,26 @@ class JobScraper:
                                     continue
                                 card = live_cards[idx]
 
-                                # REPAIR FAILURE MODE 1 (None at None):
-                                # Extract baseline title, company, location, pay, and jk directly from the card element
+                                # Extract unique job key (jk) directly from card element or child link
+                                jk = card.get_attribute("data-jk")
+                                if not jk:
+                                    jk_elems = card.find_elements(By.CSS_SELECTOR, "[data-jk]")
+                                    for je in jk_elems:
+                                        val = je.get_attribute("data-jk")
+                                        if val:
+                                            jk = val
+                                            break
+                                if not jk:
+                                    href_elems = card.find_elements(By.CSS_SELECTOR, "a[href*='jk='], a[id^='job_']")
+                                    for he in href_elems:
+                                        h_val = he.get_attribute("href")
+                                        if h_val:
+                                            m = re.search(r'jk=([a-zA-Z0-9]+)', h_val)
+                                            if m:
+                                                jk = m.group(1)
+                                                break
+
+                                # Extract baseline title, company, location, pay, and date from the card element
                                 card_title = None
                                 for t_sel in ["a.jcs-JobTitle", "span[id^='jobTitle']", "h2.jobTitle", "h3.jobTitle", "h2 a", "h3 a", "[data-testid='jobsearch-JobInfoHeader-title']"]:
                                     try:
@@ -3322,7 +3996,7 @@ class JobScraper:
                                         continue
 
                                 card_pay = None
-                                for p_sel in ["div.metadata.salary-snippet-container", "div.salary-snippet-container", "div.estimated-salary", "[data-testid='attribute_snippet_testid']"]:
+                                for p_sel in ["div.metadata.salary-snippet-container", "div.salary-snippet-container", "div.estimated-salary", "[data-testid='attribute_snippet_testid']", "[data-testid*='salary']"]:
                                     try:
                                         p_elems = card.find_elements(By.CSS_SELECTOR, p_sel)
                                         if p_elems and p_elems[0].text.strip():
@@ -3332,24 +4006,53 @@ class JobScraper:
                                     except Exception:
                                         continue
 
-                                # Extract unique job key (jk) directly from card element or child link
-                                jk = card.get_attribute("data-jk")
-                                if not jk:
-                                    jk_elems = card.find_elements(By.CSS_SELECTOR, "[data-jk]")
-                                    for je in jk_elems:
-                                        val = je.get_attribute("data-jk")
-                                        if val:
-                                            jk = val
-                                            break
-                                if not jk:
-                                    href_elems = card.find_elements(By.CSS_SELECTOR, "a[href*='jk='], a[id^='job_']")
-                                    for he in href_elems:
-                                        h_val = he.get_attribute("href")
-                                        if h_val:
-                                            m = re.search(r'jk=([a-zA-Z0-9]+)', h_val)
-                                            if m:
-                                                jk = m.group(1)
+                                card_date = None
+                                for d_sel in ["[data-testid='myJobsStateDate']", "span.date", "span.css-10pe3me", "span.css-qs2091", "span[class*='date']"]:
+                                    try:
+                                        d_elems = card.find_elements(By.CSS_SELECTOR, d_sel)
+                                        if d_elems and d_elems[0].text.strip():
+                                            raw_d = d_elems[0].text.replace('Posted', '').strip()
+                                            parsed_d = self.extract_date_posted(raw_d)
+                                            if parsed_d:
+                                                card_date = parsed_d
                                                 break
+                                    except Exception:
+                                        continue
+
+                                # Integrate mosaic model metadata if available for this job key
+                                mosaic_item = mosaic_lookup.get(jk) if jk else None
+                                mosaic_date = None
+                                mosaic_pay = None
+                                mosaic_jtypes = []
+                                mosaic_shifts = []
+
+                                if mosaic_item:
+                                    if not card_title and mosaic_item.get('title'):
+                                        card_title = clean_job_title(mosaic_item.get('title'))
+                                    if not card_company and mosaic_item.get('company'):
+                                        card_company = mosaic_item.get('company')
+                                    if mosaic_item.get('pubDate'):
+                                        try:
+                                            mosaic_date = datetime.fromtimestamp(mosaic_item['pubDate'] / 1000.0).strftime('%Y-%m-%d')
+                                        except Exception:
+                                            pass
+                                    if not mosaic_date and mosaic_item.get('formattedRelativeTime'):
+                                        mosaic_date = self.extract_date_posted(mosaic_item['formattedRelativeTime'])
+                                    if mosaic_item.get('salarySnippet', {}).get('text'):
+                                        mosaic_pay = self.extract_pay(mosaic_item['salarySnippet']['text'])
+                                    if mosaic_item.get('jobTypes'):
+                                        mosaic_jtypes = mosaic_item.get('jobTypes', [])
+
+                                    for ta in mosaic_item.get('taxonomyAttributes', []):
+                                        t_lbl = ta.get('label', '')
+                                        if t_lbl in ['shifts', 'schedules']:
+                                            for a in ta.get('attributes', []):
+                                                if a.get('label'):
+                                                    mosaic_shifts.append(a.get('label'))
+                                        elif t_lbl in ['job-types', 'job-types-cc'] and not mosaic_jtypes:
+                                            for a in ta.get('attributes', []):
+                                                if a.get('label'):
+                                                    mosaic_jtypes.append(a.get('label'))
 
                                 # EARLY PRE-CLICK FILTERING:
                                 # 1. Detect non-job promotional banners, salary widgets, or search alert cards early
@@ -3362,13 +4065,16 @@ class JobScraper:
                                     print(f"    [SKIP] Bogus card title: '{card_title}' for job {idx + 1}")
                                     continue
 
+                                effective_pay = card_pay or mosaic_pay or ""
+                                effective_loc = card_location or location
+
                                 if card_title:
                                     is_rej, rej_reason = is_rejected_job(
                                         card_title, 
                                         card_company or "", 
                                         description="", 
-                                        pay=card_pay or "", 
-                                        location=card_location or location
+                                        pay=effective_pay, 
+                                        location=effective_loc
                                     )
                                     if is_rej:
                                         print(f"    [SKIP] Filtered non-entry-level / rejected: {card_title} ({rej_reason})")
@@ -3378,27 +4084,26 @@ class JobScraper:
                                         'source': 'Indeed',
                                         'job_title': card_title,
                                         'company': card_company or "Unknown Company",
-                                        'location': card_location or location,
-                                        'pay': card_pay,
+                                        'location': effective_loc,
+                                        'pay': effective_pay,
                                         'job_url': f"https://www.indeed.com/viewjob?jk={jk}" if jk else ""
                                     }
                                     if self.is_duplicate(candidate_card_job, mark_seen=False):
                                         print(f"    [WARN] Duplicate job skipped: {card_title} at {card_company or 'Unknown Company'}")
                                         continue
 
-                                # Locate interactive anchor, center-scroll, close popups, and use JavaScript click fallback
+                                # Target interactive anchor for clicking into the job preview pane
                                 click_target = None
-                                for sel in ["div.cardOutline", "div.job_seen_beacon", "span[id^='jobTitle']", "h2.jobTitle", "a.jcs-JobTitle", "a[data-jk]"]:
-                                    found = card.find_elements(By.CSS_SELECTOR, sel)
-                                    if found:
-                                        click_target = found[0]
-                                        break
-                                if not click_target:
-                                    click_target = card
+                                title_anchors = card.find_elements(By.CSS_SELECTOR, "a.jcs-JobTitle, a[data-jk], h2.jobTitle a, h3.jobTitle a, span[id^='jobTitle']")
+                                if title_anchors:
+                                    click_target = title_anchors[0]
+                                else:
+                                    beacons = card.find_elements(By.CSS_SELECTOR, "div.job_seen_beacon, td.resultContent")
+                                    click_target = beacons[0] if beacons else card
 
                                 try:
                                     self.driver.execute_script("arguments[0].scrollIntoView({block: 'center', inline: 'center'});", click_target)
-                                    self.random_delay(0.3, 0.6)
+                                    self.random_delay(0.2, 0.4)
                                 except Exception:
                                     pass
 
@@ -3413,22 +4118,26 @@ class JobScraper:
                                         live_cards = self._get_indeed_cards()
                                         if idx < len(live_cards):
                                             card = live_cards[idx]
-                                            self.driver.execute_script("arguments[0].click();", card)
+                                            c_anchors = card.find_elements(By.CSS_SELECTOR, "a.jcs-JobTitle, a[data-jk]")
+                                            tgt = c_anchors[0] if c_anchors else card
+                                            self.driver.execute_script("arguments[0].click();", tgt)
 
-                                self.random_delay(1.5, 2.5)
+                                # Wait for detail pane to update for this job
+                                start_pane_wait = time.time()
+                                while time.time() - start_pane_wait < 3.0:
+                                    pane_elems = self.driver.find_elements(By.CSS_SELECTOR, "#jobDescriptionText, div.jobsearch-jobDescriptionText")
+                                    if pane_elems and pane_elems[0].text.strip():
+                                        if jk and jk in self.driver.current_url:
+                                            break
+                                        p_heads = self.driver.find_elements(By.CSS_SELECTOR, "h2[data-testid='jobsearch-JobInfoHeader-title'], h1[data-testid='jobsearch-JobInfoHeader-title']")
+                                        if p_heads and card_title and card_title.lower()[:12] in p_heads[0].text.strip().lower():
+                                            break
+                                    time.sleep(0.3)
 
                                 # Check if click triggered navigation to /viewjob or external page
                                 cur_url = self.driver.current_url
                                 if "/viewjob" in cur_url or (search_page_url and "/jobs" in search_page_url and "/jobs" not in cur_url):
                                     navigated_away = True
-
-                                # Wait briefly for detail pane or viewjob container
-                                try:
-                                    self.short_wait.until(
-                                        lambda d: d.find_elements(By.CSS_SELECTOR, "#jobDescriptionText, [data-testid='jobsearch-JobInfoHeader-title'], div.jobsearch-jobDescriptionText")
-                                    )
-                                except Exception:
-                                    pass
 
                                 if not jk:
                                     vjk_match = re.search(r'[v]jk=([a-zA-Z0-9]+)', self.driver.current_url)
@@ -3436,35 +4145,18 @@ class JobScraper:
                                         jk = vjk_match.group(1)
 
                                 job_url = f"https://www.indeed.com/viewjob?jk={jk}" if jk else self.driver.current_url
-                                if jk:
-                                    try:
-                                        comp_link_selectors = [
-                                            "a[data-testid='company-name']",
-                                            "div.jobsearch-CompanyReview--heading a",
-                                            "div.icl-u-lg-mr--sm a"
-                                        ]
-                                        for c_sel in comp_link_selectors:
-                                            c_links = self.driver.find_elements(By.CSS_SELECTOR, c_sel)
-                                            if c_links:
-                                                c_href = c_links[0].get_attribute("href")
-                                                if c_href and "/cmp/" in c_href:
-                                                    base_c_url = c_href.split('?')[0].rstrip('/')
-                                                    job_url = f"{base_c_url}/jobs?jk={jk}"
-                                                    break
-                                    except Exception:
-                                        pass
 
                                 job_data = {
                                     'source': 'Indeed',
-                                    'job_title': None,
-                                    'company': None,
-                                    'location': card_location or location,
-                                    'pay': card_pay,
-                                    'job_type_extracted': None,
-                                    'shift_schedule': None,
+                                    'job_title': card_title,
+                                    'company': card_company or "Unknown Company",
+                                    'location': effective_loc,
+                                    'pay': card_pay or mosaic_pay,
+                                    'job_type_extracted': ", ".join(mosaic_jtypes) if mosaic_jtypes else None,
+                                    'shift_schedule': "; ".join(mosaic_shifts) if mosaic_shifts else None,
                                     'experience': None,
                                     'description': None,
-                                    'date_posted': None,
+                                    'date_posted': mosaic_date or card_date,
                                     'job_url': job_url,
                                     'scraped_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 }
@@ -3476,18 +4168,14 @@ class JobScraper:
                                 )
                                 search_scope = pane_containers[0] if (pane_containers and not navigated_away) else self.driver
 
-                                # Extract title from pane with fallback to card_title (NEVER use generic 'h1')
+                                # Extract title from pane with fallback to card_title
                                 pane_title = None
                                 title_selectors = [
                                     "h2[data-testid='jobsearch-JobInfoHeader-title']",
                                     "h1[data-testid='jobsearch-JobInfoHeader-title']",
                                     "h2.jobsearch-JobInfoHeader-title",
                                     "h1.jobsearch-JobInfoHeader-title",
-                                    "span.jobsearch-JobInfoHeader-title-container",
-                                    "h2.icl-u-xs-mb--xs",
-                                    "h1.icl-u-xs-mb--xs",
-                                    ".jobsearch-JobInfoHeader-title",
-                                    ".jobsearch-JobComponent-title"
+                                    "span.jobsearch-JobInfoHeader-title-container"
                                 ]
                                 for selector in title_selectors:
                                     try:
@@ -3501,48 +4189,26 @@ class JobScraper:
                                     except Exception:
                                         continue
 
-                                # Prefer valid pane_title, then card_title
                                 candidate_title = pane_title or card_title
                                 if not candidate_title or is_bogus_title(candidate_title):
                                     print(f"    [SKIP] Could not extract valid non-bogus job title for job {idx + 1}")
                                     continue
-
                                 job_data['job_title'] = candidate_title
 
-                                # Extract company from pane with fallback to card_company
-                                pane_company = None
-                                company_selectors = [
-                                    "[data-testid='inlineHeader-companyName']",
-                                    "[data-company-name='true']",
-                                    "div[data-testid='company-name']",
-                                    "a[data-testid='company-name']",
-                                    "span.companyName",
-                                    "div.icl-u-lg-mr--sm",
-                                    "div.jobsearch-CompanyReview--heading"
-                                ]
-                                for selector in company_selectors:
+                                # Extract company from pane with fallback
+                                for c_sel in ["[data-testid='inlineHeader-companyName']", "[data-company-name='true']", "div[data-testid='company-name']", "a[data-testid='company-name']", "span.companyName"]:
                                     try:
-                                        c_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
+                                        c_elems = search_scope.find_elements(By.CSS_SELECTOR, c_sel)
                                         if c_elems and c_elems[0].text.strip():
-                                            pane_company = c_elems[0].text.strip()
+                                            job_data['company'] = c_elems[0].text.strip()
                                             break
                                     except Exception:
                                         continue
 
-                                job_data['company'] = pane_company or card_company or "Unknown Company"
-
-                                # Extract location from pane with fallback to card_location
-                                location_selectors = [
-                                    "[data-testid='inlineHeader-companyLocation']",
-                                    "[data-testid='text-location']",
-                                    ".companyLocation",
-                                    "div[data-testid='text-location']",
-                                    "div.companyLocation",
-                                    "span.companyLocation"
-                                ]
-                                for selector in location_selectors:
+                                # Extract location from pane with fallback
+                                for l_sel in ["[data-testid='inlineHeader-companyLocation']", "[data-testid='text-location']", "div.companyLocation"]:
                                     try:
-                                        l_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
+                                        l_elems = search_scope.find_elements(By.CSS_SELECTOR, l_sel)
                                         if l_elems and l_elems[0].text.strip():
                                             spec_loc = clean_location_str(l_elems[0].text.strip())
                                             if spec_loc:
@@ -3551,26 +4217,21 @@ class JobScraper:
                                     except Exception:
                                         continue
 
-                                # Extract date posted
-                                date_selectors = [
-                                    "span.date",
-                                    "span.myJobsStateDate",
-                                    "[data-testid='myJobsStateDate']",
-                                    "span.css-qs2091",
-                                    "span.css-10pe3me",
-                                    "span.css-10pe3me.eu4oa1w0"
-                                ]
-                                for selector in date_selectors:
-                                    try:
-                                        d_elems = search_scope.find_elements(By.CSS_SELECTOR, selector)
-                                        if d_elems and d_elems[0].text.strip():
-                                            raw_date = d_elems[0].text.replace('Posted', '').strip()
-                                            job_data['date_posted'] = self.extract_date_posted(raw_date)
-                                            break
-                                    except Exception:
-                                        continue
+                                # Extract date posted from pane if not already captured
+                                if not job_data['date_posted']:
+                                    for d_sel in ["span.date", "div.jobsearch-JobMetadataFooter", "[data-testid='myJobsStateDate']", "span.css-10pe3me", "span.css-qs2091"]:
+                                        try:
+                                            d_elems = search_scope.find_elements(By.CSS_SELECTOR, d_sel)
+                                            if d_elems and d_elems[0].text.strip():
+                                                raw_date = d_elems[0].text.replace('Posted', '').strip()
+                                                parsed_d = self.extract_date_posted(raw_date)
+                                                if parsed_d:
+                                                    job_data['date_posted'] = parsed_d
+                                                    break
+                                        except Exception:
+                                            continue
 
-                                # Extract description
+                                # Extract FULL description text from Indeed pane
                                 desc_selectors = [
                                     "#jobDescriptionText",
                                     "div.jobsearch-jobDescriptionText",
@@ -3587,6 +4248,40 @@ class JobScraper:
                                     except Exception:
                                         continue
 
+                                # Async fallback fetch via browser session if pane was empty
+                                if not description and jk:
+                                    try:
+                                        fetched_html = self.driver.execute_async_script(
+                                            """
+                                            var jk = arguments[0];
+                                            var callback = arguments[arguments.length - 1];
+                                            fetch('/viewjob?jk=' + jk)
+                                                .then(function(res) { return res.text(); })
+                                                .then(function(html) { callback(html); })
+                                                .catch(function(err) { callback(''); });
+                                            """,
+                                            jk
+                                        )
+                                        if fetched_html and len(fetched_html) > 200:
+                                            from bs4 import BeautifulSoup as BS
+                                            f_soup = BS(fetched_html, "html.parser")
+                                            f_desc = f_soup.select("#jobDescriptionText, div.jobsearch-jobDescriptionText")
+                                            if f_desc:
+                                                description = f_desc[0].get_text(separator="\n").strip()
+                                            f_scripts = f_soup.find_all("script", {"type": "application/ld+json"})
+                                            for fs in f_scripts:
+                                                try:
+                                                    f_json = json.loads(fs.string)
+                                                    if isinstance(f_json, dict) and f_json.get("@type") == "JobPosting":
+                                                        if not description and f_json.get("description"):
+                                                            description = BS(f_json.get("description"), "html.parser").get_text(separator="\n").strip()
+                                                        if not job_data.get('date_posted') and f_json.get("datePosted"):
+                                                            job_data['date_posted'] = f_json.get("datePosted")[:10]
+                                                except Exception:
+                                                    pass
+                                    except Exception:
+                                        pass
+
                                 # Check for expired job banner in pane wrapper or description
                                 pane_text = ""
                                 for pane_sel in ["#jobsearch-ViewjobPaneWrapper", "div.jobsearch-JobComponent", "#viewJobSSRRoot"]:
@@ -3602,14 +4297,17 @@ class JobScraper:
                                     print(f"    [SKIP] Expired job on Indeed: {job_data['job_title']} ({job_data['job_url']})")
                                     continue
 
+                                # Extract pay and schedule pills from #salaryInfoAndJobType
                                 try:
-                                    metadata_elems = search_scope.find_elements(By.CSS_SELECTOR, "div#salaryInfoAndJobType")
+                                    metadata_elems = search_scope.find_elements(By.CSS_SELECTOR, "div#salaryInfoAndJobType, [data-testid='jobsearch-JobInfoHeader-salaryInfo']")
                                     if metadata_elems and metadata_elems[0].text.strip():
                                         metadata_text = metadata_elems[0].text.strip()
                                         if not job_data['pay']:
                                             job_data['pay'] = self.extract_pay(metadata_text)
-                                        job_data['job_type_extracted'] = self.extract_job_type(metadata_text)
-                                        job_data['shift_schedule'] = self.extract_shift(metadata_text)
+                                        if not job_data['job_type_extracted']:
+                                            job_data['job_type_extracted'] = self.extract_job_type(metadata_text)
+                                        if not job_data['shift_schedule']:
+                                            job_data['shift_schedule'] = self.extract_shift(metadata_text)
                                 except Exception:
                                     pass
 
@@ -3631,6 +4329,7 @@ class JobScraper:
                                     if not job_data['shift_schedule']:
                                         job_data['shift_schedule'] = self.extract_shift(description)
 
+                                # Gemini flash extraction for classification, requirements, pay, and address
                                 gemini_res = None
                                 if description and len(description.strip()) > 30:
                                     try:
@@ -3640,9 +4339,9 @@ class JobScraper:
                                             company=job_data["company"],
                                             location=job_data["location"],
                                             description_text=description,
-                                            raw_pay=job_data.get("pay") or "N/A",
-                                            raw_type=job_data.get("job_type_extracted") or "N/A",
-                                            raw_schedule=job_data.get("shift_schedule") or "N/A"
+                                            raw_pay=job_data.get("pay") or "Unstated",
+                                            raw_type=job_data.get("job_type_extracted") or "Unstated",
+                                            raw_schedule=job_data.get("shift_schedule") or "Unstated"
                                         )
                                     except Exception:
                                         gemini_res = None
@@ -3652,10 +4351,18 @@ class JobScraper:
                                         print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
                                         continue
                                     job_data['industry'] = gemini_res.sector
-                                    if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and not job_data.get('pay'):
+                                    if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A", "Unstated"]:
                                         job_data['pay'] = gemini_res.pay_rate
-                                    job_data['experience'] = gemini_res.experience_requirements
-                                    job_data['requirements'] = gemini_res.experience_requirements
+                                    if gemini_res.job_type and gemini_res.job_type not in ["N/A", "Unstated"]:
+                                        job_data['job_type_extracted'] = gemini_res.job_type
+                                    if gemini_res.schedule and gemini_res.schedule not in ["N/A", "Unstated"]:
+                                        job_data['shift_schedule'] = gemini_res.schedule
+                                    job_data['experience'] = extract_key_requirements(
+                                        text=full_context,
+                                        existing_exp=gemini_res.experience_requirements,
+                                        job_dict=job_data
+                                    )
+                                    job_data['requirements'] = job_data['experience']
                                 else:
                                     job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
                                     job_data['experience'] = extract_key_requirements(
@@ -3665,17 +4372,60 @@ class JobScraper:
                                     )
                                     job_data['requirements'] = job_data['experience']
 
-                                if not job_data.get('description') or job_data['description'] == 'N/A':
+                                driver_lic_type = getattr(gemini_res, "driver_license_type", None) if gemini_res else None
+                                job_data['experience'] = standardize_driver_license_requirement(
+                                    job_data.get('experience', ''),
+                                    text_context=f"{job_data.get('job_title', '')} {job_data.get('company', '')} {full_context}",
+                                    gemini_license=driver_lic_type
+                                )
+                                job_data['requirements'] = job_data['experience']
+
+                                # Ensure pay rate is never left empty
+                                if not job_data.get('pay') or job_data['pay'] in ["N/A", "None", ""]:
+                                    job_data['pay'] = "Unstated"
+
+                                # Ensure job type (Full / Part Time) is captured
+                                if not job_data.get('job_type_extracted') or job_data['job_type_extracted'] in ["N/A", "None", ""]:
+                                    job_data['job_type_extracted'] = "Part-time" if jt == "parttime" else "Full-time" if jt == "fulltime" else "Unstated"
+
+                                # Ensure schedule / shift is never left empty
+                                if not job_data.get('shift_schedule') or job_data['shift_schedule'] in ["N/A", "None", ""]:
+                                    job_data['shift_schedule'] = "Unstated"
+
+                                # Ensure Date Posted is never left empty
+                                if not job_data.get('date_posted') or job_data['date_posted'] in ["N/A", "None", ""]:
+                                    job_data['date_posted'] = datetime.now().strftime('%Y-%m-%d')
+
+                                # Resolve physical business address for RABA bus line feasibility
+                                job_data['location'] = resolve_business_address(
+                                    company=job_data['company'],
+                                    location=job_data.get('location', 'Redding, CA 96002'),
+                                    description=description,
+                                    gemini_address=gemini_res.business_address if gemini_res else None
+                                )
+
+                                # Preserve actual job description
+                                if not job_data.get('description') or job_data['description'] in ['N/A', '']:
                                     job_data['description'] = generate_key_description(
                                         title=job_data['job_title'],
                                         company=job_data['company'],
                                         location=job_data['location'],
                                         sector=job_data['industry'],
-                                        job_type=job_data.get('job_type_extracted', 'N/A'),
-                                        schedule=job_data.get('shift_schedule', 'N/A'),
-                                        pay=job_data.get('pay', 'N/A'),
+                                        job_type=job_data.get('job_type_extracted', 'Unstated'),
+                                        schedule=job_data.get('shift_schedule', 'Unstated'),
+                                        pay=job_data.get('pay', 'Unstated'),
                                         requirements=job_data['experience']
                                     )
+
+                                gemini_tf = getattr(gemini_res, "is_teen_friendly", None) if gemini_res else None
+                                job_data['teen_friendly'] = is_teen_friendly(
+                                    title=job_data.get('job_title', ''),
+                                    company=job_data.get('company', ''),
+                                    text=full_context,
+                                    requirements=job_data.get('experience', ''),
+                                    job_dict=job_data,
+                                    gemini_teen_friendly=gemini_tf
+                                )
 
                                 is_rej, rej_reason = is_rejected_job(job_data['job_title'], job_data['company'], job_data.get('description', ''), pay=job_data.get('pay', ''), location=job_data.get('location', ''))
                                 if is_rej:
@@ -3690,6 +4440,9 @@ class JobScraper:
                                 print(f"    [OK] Extracted: {job_data['job_title']} at {job_data['company']}")
                                 if job_data['pay']: print(f"      (Pay) Pay: {job_data['pay']}")
                                 if job_data['job_type_extracted']: print(f"      (Type) Type: {job_data['job_type_extracted']}")
+                                if job_data['shift_schedule']: print(f"      (Shift) Shift: {job_data['shift_schedule']}")
+                                if job_data['date_posted']: print(f"      (Date) Date: {job_data['date_posted']}")
+                                if job_data['location']: print(f"      (Address) Address: {job_data['location']}")
 
                             except Exception as e:
                                 print(f"    [X] Error processing job: {str(e)}")
@@ -3799,24 +4552,53 @@ class JobScraper:
                 except:
                     pass
             
-            job['location'] = clean_location_str(job.get('location', 'Redding, CA'))
-            job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'), job.get('description', ''))
-            job['experience'] = extract_key_requirements(
-                text=job.get('description', ''),
-                existing_exp=job.get('experience', ''),
-                job_dict=job
+            job['location'] = resolve_business_address(
+                company=job.get('company', ''),
+                location=job.get('location', 'Redding, CA'),
+                description=job.get('description', '')
             )
-            if not job.get('description') or job['description'] == 'N/A':
+            if not job.get('industry') or job['industry'] in ['Other', 'N/A', '']:
+                job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'), job.get('description', ''))
+            
+            if not job.get('experience') or job['experience'] in ['N/A', 'None', '', 'Entry-level / No prior experience required']:
+                job['experience'] = extract_key_requirements(
+                    text=job.get('description', ''),
+                    existing_exp='',
+                    job_dict=job
+                )
+
+            if not job.get('pay') or job['pay'] in ['N/A', 'None', '']:
+                job['pay'] = 'Unstated'
+
+            if not job.get('job_type_extracted') or job['job_type_extracted'] in ['N/A', 'None', '']:
+                job['job_type_extracted'] = 'Unstated'
+
+            if not job.get('shift_schedule') or job['shift_schedule'] in ['N/A', 'None', '']:
+                job['shift_schedule'] = 'Unstated'
+
+            if not job.get('date_posted') or job['date_posted'] in ['N/A', 'None', '']:
+                job['date_posted'] = datetime.now().strftime('%Y-%m-%d')
+
+            if not job.get('description') or job['description'] in ['N/A', '']:
                 job['description'] = generate_key_description(
                     title=job.get('job_title', ''),
                     company=job.get('company', ''),
                     location=job.get('location', 'Redding, CA'),
                     sector=job['industry'],
-                    job_type=job.get('job_type_extracted', 'N/A'),
-                    schedule=job.get('shift_schedule', 'N/A'),
-                    pay=job.get('pay', 'N/A'),
+                    job_type=job.get('job_type_extracted', 'Unstated'),
+                    schedule=job.get('shift_schedule', 'Unstated'),
+                    pay=job.get('pay', 'Unstated'),
                     requirements=job['experience']
                 )
+            
+            job['teen_friendly'] = is_teen_friendly(
+                title=job.get('job_title', ''),
+                company=job.get('company', ''),
+                text=job.get('description', ''),
+                requirements=job.get('experience', ''),
+                job_dict=job,
+                gemini_teen_friendly=job.get('teen_friendly')
+            )
             
             t = str(job.get('job_title', '')).lower().strip()
             c = str(job.get('company', '')).lower().strip()
@@ -3845,7 +4627,8 @@ class JobScraper:
         column_order = [
             'source', 'job_title', 'company', 'location', 'pay', 
             'job_type_extracted', 'shift_schedule', 'experience', 
-            'description', 'date_posted', 'job_url', 'industry', 'last_updated'
+            'teen_friendly', 'description', 'date_posted', 'job_url', 
+            'industry', 'last_updated'
         ]
         for col in column_order:
             if col not in df.columns:
@@ -3863,6 +4646,7 @@ class JobScraper:
             'job_type_extracted': 'Full / Part Time',
             'shift_schedule': 'Schedule / Shift',
             'experience': 'Experience / Requirements',
+            'teen_friendly': 'Teen Friendly',
             'description': 'Job Description Summary',
             'date_posted': 'Date Posted',
             'job_url': 'Job Posting',
@@ -3909,16 +4693,23 @@ class JobScraper:
                         if col == 'Job Posting' and val_str.startswith(('http://', 'https://')):
                             cell.hyperlink = val_str
                             cell.font = Font(name='Calibri', size=10, color='2563EB', underline='single')
+                        elif col == 'Teen Friendly':
+                            cell.font = Font(name='Calibri', size=10)
+                            cell.alignment = Alignment(horizontal='center', vertical='center')
                         else:
                             cell.font = Font(name='Calibri', size=10)
 
                         cell.border = thin_border
-                        cell.alignment = Alignment(vertical='center')
+                        if col != 'Teen Friendly':
+                            cell.alignment = Alignment(vertical='center')
 
                         if len(val_str) > max_len:
                             max_len = len(val_str)
 
-                    ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
+                    if col == 'Teen Friendly':
+                        ws.column_dimensions[col_letter].width = 15
+                    else:
+                        ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
 
             # Export CSV alongside Excel with matching columns
             csv_path = os.path.splitext(filename)[0] + ".csv"

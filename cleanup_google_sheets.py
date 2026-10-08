@@ -5,7 +5,7 @@ import pandas as pd
 import gspread
 import sheets_sync
 import firestore_sync
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay, is_teen_friendly
 
 SHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
 
@@ -83,6 +83,15 @@ def cleanup_sheets(dry_run=True):
             requirements=exp_req
         )
 
+        is_teen = is_teen_friendly(
+            title=cleaned_t,
+            company=company,
+            text=true_desc,
+            requirements=exp_req,
+            job_dict=j,
+            gemini_teen_friendly=j.get("isTeenFriendly") or j.get("is_teen_friendly") or j.get("teenFriendly")
+        )
+
         fresh_auto_rows.append({
             "Source": j.get("source") or "Direct",
             "Job Title": cleaned_t,
@@ -92,6 +101,7 @@ def cleanup_sheets(dry_run=True):
             "Full / Part Time": job_type,
             "Schedule / Shift": schedule,
             "Experience / Requirements": exp_req,
+            "Teen Friendly": is_teen,
             "Job Description Summary": final_desc,
             "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
             "Job Posting": j.get("jobUrl") or j.get("url") or "",
@@ -173,6 +183,35 @@ def cleanup_sheets(dry_run=True):
         print("Updating 'Automated_Posts' tab...")
         ws_auto.clear()
         ws_auto.update(values=[df_auto.columns.values.tolist()] + df_auto.values.tolist(), range_name="A1")
+        try:
+            col_names = df_auto.columns.values.tolist()
+            if "Teen Friendly" in col_names and len(df_auto) > 0:
+                teen_col_idx = col_names.index("Teen Friendly")
+                body = {
+                    "requests": [
+                        {
+                            "setDataValidation": {
+                                "range": {
+                                    "sheetId": ws_auto.id,
+                                    "startRowIndex": 1,
+                                    "endRowIndex": len(df_auto) + 1,
+                                    "startColumnIndex": teen_col_idx,
+                                    "endColumnIndex": teen_col_idx + 1
+                                },
+                                "rule": {
+                                    "condition": {
+                                        "type": "BOOLEAN"
+                                    },
+                                    "showCustomUi": True
+                                }
+                            }
+                        }
+                    ]
+                }
+                spreadsheet.batch_update(body)
+                print(f"Applied native checkbox validation to column '{teen_col_idx + 1}' (Teen Friendly).")
+        except Exception as cb_err:
+            print(f"[WARN] Could not set checkbox validation on Automated_Posts: {cb_err}")
         print(f"Successfully updated 'Automated_Posts' with {len(df_auto)} verified listings.")
 
     # 2. Update Redding Area Job Postings

@@ -6,8 +6,12 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, resolve_business_address, standardize_driver_license_requirement, is_teen_friendly
 except ImportError:
+    def is_teen_friendly(title: str = "", company: str = "", text: str = "", requirements: str = "", job_dict: dict = None, gemini_teen_friendly: bool = None) -> bool:
+        return bool(gemini_teen_friendly)
+    def standardize_driver_license_requirement(exp_str: str, text_context: str = "", gemini_license: str = None) -> str:
+        return exp_str
     def clean_job_title(title: str) -> str:
         if not title: return ""
         return re.sub(r'[\r\n\s]*-?\s*job post.*$', '', str(title), flags=re.IGNORECASE).strip()
@@ -17,12 +21,14 @@ except ImportError:
         return False, ""
     def clean_location_str(loc: str) -> str:
         return str(loc or "Redding, CA").strip()
+    def resolve_business_address(company: str = "", location: str = "", description: str = "", gemini_address: str = None) -> str:
+        return str(location or "Redding, CA").strip()
     def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
         return True, str(loc_str or "Redding, CA").strip()
     def determine_industry(job_title: str, company: str = "", description: str = "") -> str:
         return "Other"
     def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
-        return existing_exp if existing_exp and existing_exp != "N/A" else "Entry-level / No experience required"
+        return existing_exp if existing_exp and existing_exp != "N/A" else "No experience required (On-the-job training provided)"
     def generate_key_description(title: str, company: str = "", location: str = "Redding, CA", sector: str = "Other", job_type: str = "N/A", schedule: str = "N/A", pay: str = "N/A", requirements: str = "") -> str:
         return f"{title} position at {company} in {location}."
 
@@ -76,7 +82,11 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             continue
 
         raw_loc = j.get("location", "Redding, CA")
-        cleaned_loc = clean_location_str(raw_loc)
+        cleaned_loc = resolve_business_address(
+            company=j.get("company", ""),
+            location=raw_loc,
+            description=j.get("description", "")
+        )
         is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
         if not is_shasta:
             continue
@@ -96,13 +106,20 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             continue
 
         sector = j.get("industry")
-        if not sector or sector == "Other":
+        if not sector or sector in ["Other", "N/A", ""]:
             sector = determine_industry(clean_title, j.get("company", ""), raw_desc)
 
+        exp_req = j.get("experience") or j.get("requirements")
         exp_req = extract_key_requirements(
             text=raw_desc,
-            existing_exp=j.get("experience") or j.get("requirements"),
+            existing_exp=exp_req or "",
             job_dict=j
+        )
+
+        exp_req = standardize_driver_license_requirement(
+            exp_req,
+            text_context=f"{clean_title} {j.get('company', '')} {raw_desc}",
+            gemini_license=j.get("driverLicenseType") or j.get("driver_license_type")
         )
 
         final_desc = raw_desc
@@ -112,21 +129,31 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
                 company=j.get("company", ""),
                 location=cleaned_loc,
                 sector=sector,
-                job_type=j.get("job_type_extracted") or "N/A",
-                schedule=j.get("shift_schedule") or "N/A",
-                pay=j.get("pay") or "N/A",
+                job_type=j.get("job_type_extracted") or "Unstated",
+                schedule=j.get("shift_schedule") or "Unstated",
+                pay=j.get("pay") or "Unstated",
                 requirements=exp_req
             )
+
+        is_teen = is_teen_friendly(
+            title=clean_title,
+            company=j.get("company", ""),
+            text=raw_desc,
+            requirements=exp_req,
+            job_dict=j,
+            gemini_teen_friendly=j.get("isTeenFriendly") or j.get("is_teen_friendly") or j.get("teen_friendly")
+        )
 
         rows.append({
             "Source": j.get("source") or "Direct",
             "Job Title": clean_title,
             "Company": j.get("company", ""),
             "Location": cleaned_loc,
-            "Pay Rate": j.get("pay") or "N/A",
-            "Full / Part Time": j.get("job_type_extracted") or "N/A",
-            "Schedule / Shift": j.get("shift_schedule") or "N/A",
+            "Pay Rate": j.get("pay") if j.get("pay") and str(j.get("pay")).strip() not in ["N/A", "None", ""] else "Unstated",
+            "Full / Part Time": j.get("job_type_extracted") if j.get("job_type_extracted") and str(j.get("job_type_extracted")).strip() not in ["N/A", "None", ""] else "Unstated",
+            "Schedule / Shift": j.get("shift_schedule") if j.get("shift_schedule") and str(j.get("shift_schedule")).strip() not in ["N/A", "None", ""] else "Unstated",
             "Experience / Requirements": exp_req,
+            "Teen Friendly": is_teen,
             "Job Description Summary": final_desc,
             "Date Posted": posted_date,
             "Job Posting": j.get("job_url") or "",
@@ -157,4 +184,36 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
 
     worksheet.clear()
     worksheet.update(values=[df.columns.values.tolist()] + df.values.tolist(), range_name="A1")
+
+    # Apply native Google Sheets checkbox data validation to the "Teen Friendly" column
+    try:
+        col_names = df.columns.values.tolist()
+        if "Teen Friendly" in col_names and len(df) > 0:
+            teen_col_idx = col_names.index("Teen Friendly") # 0-indexed column
+            body = {
+                "requests": [
+                    {
+                        "setDataValidation": {
+                            "range": {
+                                "sheetId": worksheet.id,
+                                "startRowIndex": 1,
+                                "endRowIndex": len(df) + 1,
+                                "startColumnIndex": teen_col_idx,
+                                "endColumnIndex": teen_col_idx + 1
+                            },
+                            "rule": {
+                                "condition": {
+                                    "type": "BOOLEAN"
+                                },
+                                "showCustomUi": True
+                            }
+                        }
+                    }
+                ]
+            }
+            spreadsheet.batch_update(body)
+            print(f"[SHEETS] Applied native checkbox validation to column '{teen_col_idx + 1}' (Teen Friendly).")
+    except Exception as cb_err:
+        print(f"[WARN] Could not set checkbox validation on Google Sheet: {cb_err}")
+
     print(f"[SHEETS] Synchronized {len(df)} active listings to tab '{worksheet.title}'.")

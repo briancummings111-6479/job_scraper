@@ -6,8 +6,12 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, is_bogus_title
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, is_bogus_title, resolve_business_address, standardize_driver_license_requirement, is_teen_friendly
 except ImportError:
+    def is_teen_friendly(title: str = "", company: str = "", text: str = "", requirements: str = "", job_dict: dict = None, gemini_teen_friendly: bool = None) -> bool:
+        return bool(gemini_teen_friendly)
+    def standardize_driver_license_requirement(exp_str: str, text_context: str = "", gemini_license: str = None) -> str:
+        return exp_str
     def is_bogus_title(title: str) -> bool:
         return False
 
@@ -30,6 +34,9 @@ except ImportError:
 
     def clean_location_str(loc: str) -> str:
         return str(loc or "Redding, CA").strip()
+
+    def resolve_business_address(company: str = "", location: str = "", description: str = "", gemini_address: str = None) -> str:
+        return str(location or "Redding, CA").strip()
 
     def is_shasta_county_location(loc_str: str, text_context: str = "") -> tuple:
         return True, str(loc_str or "Redding, CA").strip()
@@ -295,7 +302,11 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             continue
 
         raw_loc = job.get("location", "Redding, CA")
-        cleaned_loc = clean_location_str(raw_loc)
+        cleaned_loc = resolve_business_address(
+            company=job.get("company", ""),
+            location=raw_loc,
+            description=job.get("description", "")
+        )
         is_shasta, loc_reason = is_shasta_county_location(cleaned_loc)
         if not is_shasta:
             print(f"[FIRESTORE] Skipping out-of-county job: {clean_title} ({loc_reason})")
@@ -354,7 +365,11 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             sector = gemini_res.sector
             if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and (not job.get("pay") or job.get("pay") == "N/A"):
                 job["pay"] = gemini_res.pay_rate
-            exp_req = gemini_res.experience_requirements
+            exp_req = extract_key_requirements(
+                text=true_desc,
+                existing_exp=gemini_res.experience_requirements,
+                job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
+            )
             final_desc = gemini_res.job_description_summary if (not true_desc or len(true_desc) < 30) else true_desc
             parsed_attrs["requiresDrugTest"] = gemini_res.requires_drug_test
             parsed_attrs["requiresBackgroundCheck"] = gemini_res.requires_background_check
@@ -363,6 +378,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             parsed_attrs["requiresHsDiplomaOrGed"] = gemini_res.requires_hs_ged
             parsed_attrs["minAge"] = gemini_res.min_age
             parsed_attrs["isYouthFriendly"] = gemini_res.is_youth_friendly
+            parsed_attrs["isTeenFriendly"] = gemini_res.is_teen_friendly
         else:
             sector = job.get("industry")
             if not sector or sector == "Other":
@@ -387,6 +403,22 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
                     requirements=exp_req
                 )
 
+        exp_req = standardize_driver_license_requirement(
+            exp_req,
+            text_context=f"{clean_title} {job.get('company', '')} {true_desc}",
+            gemini_license=getattr(gemini_res, "driver_license_type", None) if gemini_res else None
+        )
+
+        gemini_tf = getattr(gemini_res, "is_teen_friendly", None) if gemini_res else None
+        teen_friendly = is_teen_friendly(
+            title=clean_title,
+            company=job.get("company", ""),
+            text=true_desc,
+            requirements=exp_req,
+            job_dict=job,
+            gemini_teen_friendly=gemini_tf
+        )
+
         payload = {
             "title": clean_title,
             "company": job.get("company", "").strip(),
@@ -410,7 +442,9 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             "driverLicenseType": parsed_attrs.get("driverLicenseType"),
             "requiresHsDiplomaOrGed": parsed_attrs.get("requiresHsDiplomaOrGed"),
             "minAge": parsed_attrs.get("minAge"),
-            "isYouthFriendly": parsed_attrs.get("isYouthFriendly"),
+            "isYouthFriendly": teen_friendly,
+            "isTeenFriendly": teen_friendly,
+            "teenFriendly": teen_friendly,
             "neighborhood": parsed_attrs.get("neighborhood"),
             "transitAccessible": parsed_attrs.get("transitAccessible", False),
             "transitStopName": parsed_attrs.get("transitStopName"),
