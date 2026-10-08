@@ -722,24 +722,20 @@ def is_teen_friendly(
     combined_text = f"{title} {company} {text} {requirements}".lower()
 
     # 1. HARD DISQUALIFICATIONS (Overrides everything - minors cannot do these or employers explicitly exclude them)
-    # A. Explicit 18+ requirement
-    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
+    # A. Explicit adult age requirement (18+, 21+, 22+, 25+, etc.)
+    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)(?:1[89]|[2-6]\d)\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
         return False
-    if re.search(r'\b18\s*\+\b', combined_text):
+    if re.search(r'\b(?:1[89]|[2-6]\d)\s*\+\b', combined_text):
         return False
-
-    # B. Explicit 21+ requirement (e.g. alcohol service, casino gaming)
-    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
-        return False
-    if re.search(r'\b21\s*\+\b', combined_text):
+    if re.search(r'\b(?:1[89]|[2-6]\d)\s*years?(?:\s*old)?\b(?!\s*(?:of\s+)?experience)', combined_text):
         return False
     if any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino", "gaming associate"]):
         return False
 
-    # C. Commercial driving / vehicle route duties (restricted for minors under child labor laws)
+    # B. Commercial driving / vehicle route duties (restricted for minors under child labor laws)
     if re.search(r'\b(?:cdl[\s\-]?a|cdl[\s\-]?b|class\s*[ab])\b', combined_text):
         return False
-    if any(k in title.lower() for k in ["delivery driver", "route driver", "van driver", "courier", "truck driver", "shuttle driver"]):
+    if any(k in title.lower() for k in ["delivery driver", "route driver", "van driver", "courier", "truck driver", "shuttle driver", "bus driver", "medical transportation"]):
         return False
 
     # D. Supervisory / Management roles (require adult legal responsibility)
@@ -824,36 +820,46 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
             items.append(exp_txt)
 
     # 2. Minimum Age & Youth
-    has_21_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
-        or re.search(r'\b21\s*\+', combined_text)
-        or any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate"])
-    )
-    has_16_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
-        or re.search(r'\b16\s*\+', combined_text)
+    explicit_age_m = re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)(\d{2})\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
+    plus_age_m = re.search(r'\b(1[89]|2\d)\s*\+', combined_text)
+    bare_age_m = re.search(r'\b(1[89]|2\d)\s*years?(?:\s*old)?\b(?!\s*(?:of\s+)?experience)', combined_text)
+
+    found_age = None
+    if explicit_age_m and 16 <= int(explicit_age_m.group(1)) <= 65:
+        found_age = int(explicit_age_m.group(1))
+    elif plus_age_m and 16 <= int(plus_age_m.group(1)) <= 65:
+        found_age = int(plus_age_m.group(1))
+    elif bare_age_m and 16 <= int(bare_age_m.group(1)) <= 65:
+        found_age = int(bare_age_m.group(1))
+
+    # Alcohol, gaming, commercial transit role age floors
+    if any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate", "bus driver", "school bus"]):
+        found_age = max(found_age or 18, 21)
+
+    has_16_youth = bool(
+        found_age == 16
         or any(w in combined_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"])
     )
-    has_18_plus = bool(
-        re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
-        or re.search(r'\b18\s*\+', combined_text)
-    )
 
-    if has_21_plus and not any("21+" in it for it in items):
-        items.append("Must be 21+ years old")
-    elif has_16_plus and not any("16+" in it for it in items):
+    if found_age and found_age >= 18:
+        if not any(f"{found_age}+" in it for it in items):
+            items.append(f"Must be {found_age}+ years old")
+    elif has_16_youth and not any("16+" in it for it in items):
         items.append("Youth-friendly (Age 16+)")
-    elif has_18_plus and not any("18+" in it for it in items):
-        items.append("Must be 18+ years old")
+    elif not found_age and re.search(r'\b18\b', combined_text):
+        if not any("18+" in it for it in items):
+            items.append("Must be 18+ years old")
 
     # 3. Driver's License, Vehicle, & DMV Record
     has_veh = bool(re.search(r'\b(?:reliable\s*(?:vehicle|transportation|auto|car)|personal\s*(?:vehicle|transportation|car)|insured\s*(?:vehicle|car|automobile))\b', combined_text))
     has_dmv = bool(re.search(r'\b(?:clean\s*(?:driving\s*record|dmv|mvr)|clean\s*driving\s*history|good\s*driving\s*record)\b', combined_text))
 
+    is_bus_driver = any(k in title.lower() for k in ["bus driver", "school bus", "transit bus", "coach driver"])
+
     if re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', combined_text):
         if not any("cdl-a" in it.lower() for it in items):
             items.append("Commercial Driver's License (CDL-A) required")
-    elif re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text):
+    elif is_bus_driver or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text):
         if not any("cdl-b" in it.lower() for it in items):
             items.append("Commercial Driver's License (CDL-B) required")
     elif re.search(r'\b(?:class\s*c|driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker", "transport"]):
@@ -992,6 +998,7 @@ def standardize_driver_license_requirement(exp_str: str, text_context: str = "",
     is_class_b = bool(
         (gemini_license and "class b" in gemini_license.lower())
         or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', comb)
+        or any(b in comb for b in ["bus driver", "school bus", "transit bus", "coach driver", "passenger bus"])
     )
     
     if is_class_a:
@@ -4314,6 +4321,37 @@ class JobScraper:
                                             break
                                     except Exception:
                                         continue
+
+                                # Fallback 1: Search top-level driver document
+                                if not description and search_scope != self.driver:
+                                    for selector in desc_selectors:
+                                        try:
+                                            desc_elems = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                                            if desc_elems and desc_elems[0].text.strip():
+                                                description = desc_elems[0].text.strip()
+                                                break
+                                        except Exception:
+                                            continue
+
+                                # Fallback 2: Check embedded detail iframe (vjs-container)
+                                if not description:
+                                    try:
+                                        vjs_frames = self.driver.find_elements(By.CSS_SELECTOR, "iframe#vjs-container-iframe, iframe[title*='Job'], iframe[id*='vjs']")
+                                        for frame in vjs_frames:
+                                            try:
+                                                self.driver.switch_to.frame(frame)
+                                                f_elems = self.driver.find_elements(By.CSS_SELECTOR, "#jobDescriptionText, div.jobsearch-jobDescriptionText, [data-testid='job-description'], body")
+                                                if f_elems and f_elems[0].text.strip():
+                                                    f_txt = f_elems[0].text.strip()
+                                                    if len(f_txt) > 50:
+                                                        description = f_txt
+                                                        self.driver.switch_to.default_content()
+                                                        break
+                                                self.driver.switch_to.default_content()
+                                            except Exception:
+                                                self.driver.switch_to.default_content()
+                                    except Exception:
+                                        pass
 
                                 # Async fallback fetch via browser session if pane was empty
                                 if not description and jk:
