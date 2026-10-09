@@ -153,12 +153,12 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "Full / Part Time": j.get("job_type_extracted") if j.get("job_type_extracted") and str(j.get("job_type_extracted")).strip() not in ["N/A", "None", ""] else "Unstated",
             "Schedule / Shift": j.get("shift_schedule") if j.get("shift_schedule") and str(j.get("shift_schedule")).strip() not in ["N/A", "None", ""] else "Unstated",
             "Experience / Requirements": exp_req,
-            "Teen Friendly": is_teen,
             "Job Description Summary": final_desc,
             "Date Posted": posted_date,
             "Job Posting": j.get("job_url") or "",
             "Industry Sector": sector,
-            "Last Updated": today_str
+            "Last Updated": today_str,
+            "Teen Friendly": is_teen
         })
 
     if not rows:

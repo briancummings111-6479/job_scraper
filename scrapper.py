@@ -200,11 +200,14 @@ SHASTA_ZIPS = [
 def clean_location_str(loc: str) -> str:
     if not loc:
         return "Redding, CA"
-    # Remove UI artifacts from web scrapers like 'open_in_new'
-    cleaned = re.sub(r'open_in_new|open in new', '', str(loc), flags=re.IGNORECASE)
+    # Remove UI artifacts from web scrapers like 'open_in_new' or wage text
+    cleaned = re.sub(r'open_in_new|open in new|Starting Pay, CA|Starting Pay', '', str(loc), flags=re.IGNORECASE)
     # Replace newlines with comma-space
     cleaned = re.sub(r'[\r\n]+', ', ', cleaned)
     cleaned = re.sub(r'\s*,\s*', ', ', cleaned)
+    # Deduplicate repeated Redding, CA segments
+    cleaned = re.sub(r'Redding,\s*CA,\s*Redding,\s*CA', 'Redding, CA', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'Redding,\s*CA\s+96002,\s*Redding,\s*CA', 'Redding, CA 96002', cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r'\s+', ' ', cleaned).strip(' ,')
     # Standardize 'California' to 'CA'
     cleaned = re.sub(r'\bCalifornia\b', 'CA', cleaned, flags=re.IGNORECASE)
@@ -486,13 +489,21 @@ def is_rejected_job(title: str, company: str = "", description: str = "", config
         if re.search(r'\b' + re.escape(r_t) + r'\b', t_lower):
             return True, f"Rejected title keyword: {rej_title}"
 
-    # Check Remote / Work-from-home / Online survey or research panels
-    if re.search(r'\b(?:remote|work\s+from\s+home|wfh|out\s+of\s+office|telecommute|virtual)\b', t_lower):
-        return True, f"Remote / Work-from-home position: '{t_clean}'"
+    # Check Remote / Work-from-home / Online survey or research panels / Telehealth
+    if re.search(r'\b(?:remote|work\s+from\s+home|wfh|out\s+of\s+office|telecommute|virtual|telehealth)\b', t_lower):
+        return True, f"Remote / Work-from-home / Telehealth position: '{t_clean}'"
     if re.search(r'\b(?:paid\s+research\s+panelist|focus\s+group\s+participant|paid\s+focus\s+group|paid\s+study\s+panelist|online\s+survey\s+taker|survey\s+panelist|research\s+study\s+panelist|research\s+panelist)\b', t_lower):
         return True, f"Online survey / focus group panel position: '{t_clean}'"
     if d_lower and re.search(r'\b(?:100%\s+remote|fully\s+remote|work\s+from\s+home\s+position|remote\s+paid\s+research|paid\s+research\s+panelist|paid\s+focus\s+group|focus\s+group\s+participant|online\s+survey\s+taker|survey\s+panelist|research\s+study\s+panelist)\b', d_lower):
         return True, "Remote / Online survey or panel position in description"
+
+    # Check Specialized Medical Physician / Oncologist / Locums
+    if re.search(r'\b(?:oncologist|hematologist|physician|surgeon|locums|hospitalist|pediatrician|cardiologist|anesthesiologist)\b', t_lower):
+        return True, f"Specialized medical physician/doctor role: '{t_clean}'"
+
+    # Check Commercial CDL Trucking / Long-Haul
+    if re.search(r'\b(?:class\s*a\b|cdl[\s\-]a\b|cdl\s*required|inexperienced\s+drivers|owner\s*operator|otr\b|long\s*haul)', t_lower):
+        return True, f"Commercial CDL trucking / OTR driver role: '{t_clean}'"
 
     # Check Travel Healthcare / Travel Contract / Radiologic Technologist positions
     if re.search(r'\b(?:travel\s+ct|travel\s+tech|travel\s+technologist|travel\s+nurse|traveling\s+nurse|travel\s+contract|travel\s+assignment|allied\s+travel)\b', t_lower):
@@ -3562,17 +3573,24 @@ class JobScraper:
                                 continue
                             job_data["description"] = full_desc
 
-                        # Prioritize verified employer wage from Snagajob badge, else description pay
-                        if verified_pay:
+                        # Clean pay: Extract real wage from text; avoid Snagajob algorithmic estimates ($18.00, $48.08)
+                        desc_pay = extract_pay(full_desc) if full_desc else None
+                        if desc_pay and any(art in desc_pay.lower() for art in ["53.85", "112,000", "115,000", "100,000", "48.08", "55.29"]):
+                            desc_pay = None
+
+                        if desc_pay:
+                            job_data["pay"] = desc_pay
+                        elif verified_pay and verified_pay not in ["$18.00", "$48.08"]:
                             job_data["pay"] = verified_pay
-                        elif full_desc:
-                            desc_pay = extract_pay(full_desc)
-                            if desc_pay and not any(art in desc_pay.lower() for art in ["53.85", "112,000", "115,000", "100,000", "48.08", "55.29"]):
-                                job_data["pay"] = desc_pay
+                        else:
+                            # Check explicit hourly wage ranges in text
+                            wage_matches = re.findall(r'\$\d+(?:\.\d{2})?\s*(?:-|to)\s*\$\d+(?:\.\d{2})?(?:\s*(?:per\s+hour|\/hr|hr))?', full_desc) if full_desc else []
+                            if wage_matches:
+                                job_data["pay"] = wage_matches[0]
+                            elif verified_pay and verified_pay == "$18.00" and ("$18" in (full_desc or "")):
+                                job_data["pay"] = verified_pay
                             else:
                                 job_data["pay"] = "Unstated"
-                        else:
-                            job_data["pay"] = "Unstated"
 
                         gemini_res = None
                         if full_desc and len(full_desc.strip()) > 30:
@@ -4684,18 +4702,6 @@ class JobScraper:
             if not job.get('date_posted') or job['date_posted'] in ['N/A', 'None', '']:
                 job['date_posted'] = datetime.now().strftime('%Y-%m-%d')
 
-            if not job.get('description') or job['description'] in ['N/A', '']:
-                job['description'] = generate_key_description(
-                    title=job.get('job_title', ''),
-                    company=job.get('company', ''),
-                    location=job.get('location', 'Redding, CA'),
-                    sector=job['industry'],
-                    job_type=job.get('job_type_extracted', 'Unstated'),
-                    schedule=job.get('shift_schedule', 'Unstated'),
-                    pay=job.get('pay', 'Unstated'),
-                    requirements=job['experience']
-                )
-            
             job['teen_friendly'] = is_teen_friendly(
                 title=job.get('job_title', ''),
                 company=job.get('company', ''),
@@ -4703,6 +4709,24 @@ class JobScraper:
                 requirements=job.get('experience', ''),
                 job_dict=job,
                 gemini_teen_friendly=job.get('teen_friendly')
+            )
+
+            # Standardize requirements with semicolons to eliminate CSV comma delimiter bleed
+            if job.get('experience'):
+                clean_exp = str(job['experience']).replace(",", ";")
+                clean_exp = re.sub(r';\s*;', ';', clean_exp)
+                job['experience'] = re.sub(r'\s*;\s*', '; ', clean_exp).strip('; ')
+
+            # Generate concise 2-sentence duties summary for "Job Description Summary"
+            job['description'] = generate_key_description(
+                title=job.get('job_title', ''),
+                company=job.get('company', ''),
+                location=job.get('location', 'Redding, CA'),
+                sector=job['industry'],
+                job_type=job.get('job_type_extracted', 'Unstated'),
+                schedule=job.get('shift_schedule', 'Unstated'),
+                pay=job.get('pay', 'Unstated'),
+                requirements=job.get('experience', '')
             )
             
             t = str(job.get('job_title', '')).lower().strip()
@@ -4732,8 +4756,8 @@ class JobScraper:
         column_order = [
             'source', 'job_title', 'company', 'location', 'pay', 
             'job_type_extracted', 'shift_schedule', 'experience', 
-            'teen_friendly', 'description', 'date_posted', 'job_url', 
-            'industry', 'last_updated'
+            'description', 'date_posted', 'job_url', 
+            'industry', 'last_updated', 'teen_friendly'
         ]
         for col in column_order:
             if col not in df.columns:
@@ -4751,12 +4775,12 @@ class JobScraper:
             'job_type_extracted': 'Full / Part Time',
             'shift_schedule': 'Schedule / Shift',
             'experience': 'Experience / Requirements',
-            'teen_friendly': 'Teen Friendly',
             'description': 'Job Description Summary',
             'date_posted': 'Date Posted',
             'job_url': 'Job Posting',
             'industry': 'Industry Sector',
-            'last_updated': 'Last Updated'
+            'last_updated': 'Last Updated',
+            'teen_friendly': 'Teen Friendly'
         }
         df.rename(columns=display_headers, inplace=True)
 
@@ -4817,8 +4841,9 @@ class JobScraper:
                         ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
 
             # Export CSV alongside Excel with matching columns
+            import csv
             csv_path = os.path.splitext(filename)[0] + ".csv"
-            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig', quoting=csv.QUOTE_MINIMAL)
             print(f"\n{'='*60}")
             print(f"  [OK] Excel saved: {filename}")
             print(f"  [OK] CSV exported: {csv_path}")
@@ -4828,8 +4853,9 @@ class JobScraper:
         except Exception as e:
             print(f"[ERROR] Could not save styled Excel: {e}")
             df.to_excel(filename, index=False)
+            import csv
             csv_path = os.path.splitext(filename)[0] + ".csv"
-            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig', quoting=csv.QUOTE_MINIMAL)
             print(f"  [OK] CSV fallback exported: {csv_path}")
 
     def close(self):
