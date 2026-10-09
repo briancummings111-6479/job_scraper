@@ -4756,8 +4756,8 @@ class JobScraper:
         column_order = [
             'source', 'job_title', 'company', 'location', 'pay', 
             'job_type_extracted', 'shift_schedule', 'experience', 
-            'description', 'date_posted', 'job_url', 
-            'industry', 'last_updated', 'teen_friendly'
+            'teen_friendly', 'description', 'date_posted', 'job_url', 
+            'industry', 'last_updated'
         ]
         for col in column_order:
             if col not in df.columns:
@@ -4775,12 +4775,12 @@ class JobScraper:
             'job_type_extracted': 'Full / Part Time',
             'shift_schedule': 'Schedule / Shift',
             'experience': 'Experience / Requirements',
+            'teen_friendly': 'Teen Friendly',
             'description': 'Job Description Summary',
             'date_posted': 'Date Posted',
             'job_url': 'Job Posting',
             'industry': 'Industry Sector',
-            'last_updated': 'Last Updated',
-            'teen_friendly': 'Teen Friendly'
+            'last_updated': 'Last Updated'
         }
         df.rename(columns=display_headers, inplace=True)
 

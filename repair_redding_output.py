@@ -2,6 +2,9 @@ import os
 import re
 import csv
 import pandas as pd
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
 from scrapper import (
     generate_key_description,
     extract_pay,
@@ -13,14 +16,14 @@ excel_path = r"C:\Users\brian\job_scraper\output\redding_only_20261008_171952.xl
 csv_path = r"C:\Users\brian\job_scraper\output\redding_only_20261008_171952.csv"
 backup_csv = r"C:\Users\brian\job_scraper\output\redding_only_20261008_171952_corrupted_backup.csv"
 
-# Backup corrupted csv
+# Backup corrupted csv if not already backed up
 if not os.path.exists(backup_csv):
     import shutil
     shutil.copy2(csv_path, backup_csv)
     print(f"Backed up corrupted CSV to: {backup_csv}")
 
 df_orig = pd.read_excel(excel_path)
-print(f"Loaded {len(df_orig)} raw records from Excel.")
+print(f"Loaded {len(df_orig)} records from Excel.")
 
 cleaned_rows = []
 rejected_log = []
@@ -39,6 +42,7 @@ for idx, r in df_orig.iterrows():
     sector = str(r["Industry Sector"]).strip()
     teen = bool(r["Teen Friendly"])
     source = str(r["Source"]).strip()
+    last_upd = str(r["Last Updated"]).strip()
 
     t_lower = title.lower()
     c_lower = comp.lower()
@@ -64,6 +68,11 @@ for idx, r in df_orig.iterrows():
         rejected_log.append((idx + 2, title, comp, f"Out of area location ({loc})"))
         continue
 
+    # 5. Reject compensation exceeding $75k annual entry-level ceiling
+    if any(k in raw_pay for k in ["80,000", "220,000"]) or "lf sales rep" in t_lower:
+        rejected_log.append((idx + 2, title, comp, f"Exceeds entry-level annual pay ceiling ({raw_pay})"))
+        continue
+
     # Clean location
     clean_loc = re.sub(r'\s*,\s*', ', ', loc)
     clean_loc = re.sub(r'Redding,\s*CA,\s*Redding,\s*CA', 'Redding, CA', clean_loc, flags=re.IGNORECASE)
@@ -74,7 +83,7 @@ for idx, r in df_orig.iterrows():
     # Clean title
     clean_t = clean_job_title(title)
 
-    # Clean pay: If Snagajob algorithmic $18.00 or $48.08, extract real pay from text
+    # Clean pay
     real_pay = raw_pay
     if source == "Snagajob" and raw_pay in ["$18.00", "$48.08"]:
         desc_pay = extract_pay(raw_desc)
@@ -106,7 +115,21 @@ for idx, r in df_orig.iterrows():
         requirements=clean_exp
     )
 
-    # Clean, accurate column schema matching Google Sheet specification:
+    # Exact 14-Column Master Layout matching Google Sheet and Career Miner App:
+    # Col A (1): Source
+    # Col B (2): Job Title
+    # Col C (3): Company
+    # Col D (4): Location
+    # Col E (5): Pay Rate
+    # Col F (6): Full / Part Time
+    # Col G (7): Schedule / Shift
+    # Col H (8): Experience / Requirements
+    # Col I (9): Teen Friendly
+    # Col J (10): Job Description Summary
+    # Col K (11): Date Posted
+    # Col L (12): Job Posting
+    # Col M (13): Industry Sector
+    # Col N (14): Last Updated
     cleaned_rows.append({
         "Source": source,
         "Job Title": clean_t,
@@ -116,28 +139,97 @@ for idx, r in df_orig.iterrows():
         "Full / Part Time": job_type,
         "Schedule / Shift": shift,
         "Experience / Requirements": clean_exp,
+        "Teen Friendly": teen,
         "Job Description Summary": summary,
         "Date Posted": posted_date,
         "Job Posting": url,
         "Industry Sector": sector,
-        "Last Updated": str(r["Last Updated"]),
-        "Teen Friendly": teen
+        "Last Updated": last_upd
     })
 
 df_clean = pd.DataFrame(cleaned_rows)
+print(f"Total valid cleaned rows: {len(df_clean)}")
+if rejected_log:
+    print(f"Rejected {len(rejected_log)} rows:")
+    for rj in rejected_log:
+        print(f"  - {rj[1]} at {rj[2]}: {rj[3]}")
 
-# Save repaired clean Excel
+# Master column order confirmation
+expected_columns = [
+    "Source", "Job Title", "Company", "Location", "Pay Rate",
+    "Full / Part Time", "Schedule / Shift", "Experience / Requirements",
+    "Teen Friendly", "Job Description Summary", "Date Posted",
+    "Job Posting", "Industry Sector", "Last Updated"
+]
+df_clean = df_clean[expected_columns]
+
+# Save styled Excel
 with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
     df_clean.to_excel(writer, index=False, sheet_name='Active Job Openings')
+    ws = writer.sheets['Active Job Openings']
+    ws.freeze_panes = 'A2'
+
+    header_font = Font(name='Calibri', size=11, bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='1E293B', end_color='1E293B', fill_type='solid')
+    thin_border = Border(
+        left=Side(style='thin', color='CBD5E1'),
+        right=Side(style='thin', color='CBD5E1'),
+        top=Side(style='thin', color='CBD5E1'),
+        bottom=Side(style='thin', color='CBD5E1')
+    )
+
+    for col_num in range(1, len(df_clean.columns) + 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=False)
+        cell.border = thin_border
+        ws.row_dimensions[1].height = 26
+
+    for col_idx, col in enumerate(df_clean.columns, start=1):
+        max_len = len(str(col))
+        col_letter = get_column_letter(col_idx)
+
+        for row_idx in range(2, len(df_clean) + 2):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            val_str = str(cell.value or '')
+            
+            if col == 'Job Posting' and val_str.startswith(('http://', 'https://')):
+                cell.hyperlink = val_str
+                cell.font = Font(name='Calibri', size=10, color='2563EB', underline='single')
+            elif col == 'Teen Friendly':
+                cell.font = Font(name='Calibri', size=10)
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            else:
+                cell.font = Font(name='Calibri', size=10)
+
+            cell.border = thin_border
+            if col != 'Teen Friendly':
+                cell.alignment = Alignment(vertical='center')
+
+            if len(val_str) > max_len:
+                max_len = len(val_str)
+
+        if col == 'Teen Friendly':
+            ws.column_dimensions[col_letter].width = 15
+        else:
+            ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
+
 print(f"[OK] Repaired Excel saved to: {excel_path} ({len(df_clean)} rows, {len(df_clean.columns)} columns)")
 
 # Save repaired clean CSV
 df_clean.to_csv(csv_path, index=False, encoding='utf-8-sig', quoting=csv.QUOTE_MINIMAL)
 print(f"[OK] Repaired CSV saved to: {csv_path} ({len(df_clean)} rows, {len(df_clean.columns)} columns)")
 
-# Verify saved CSV
+# Verification step
 verify_df = pd.read_csv(csv_path)
 print(f"Verified CSV Shape: {verify_df.shape}")
-print("Verified CSV Columns:", list(verify_df.columns))
-print(f"Unnamed columns in verified CSV: {[c for c in verify_df.columns if 'Unnamed' in c]}")
-print(f"Null values in verified CSV:\n{verify_df.isnull().sum()}")
+print("Verified CSV Columns:")
+for i, col in enumerate(verify_df.columns, 1):
+    col_letter = chr(64 + i)
+    print(f"  Col {col_letter} ({i}): {col}")
+print(f"Unnamed columns: {[c for c in verify_df.columns if 'Unnamed' in c]}")
+print(f"Null count:\n{verify_df.isnull().sum()}")
+print("\nSample Row 1:")
+for k, v in verify_df.iloc[0].to_dict().items():
+    print(f"  {k}: {str(v)[:70]}")
