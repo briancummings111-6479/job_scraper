@@ -621,72 +621,94 @@ def determine_industry(job_title, company, description=""):
 # TEEN-FRIENDLY QUALIFICATION & EMPLOYER REGISTRY
 # Grounded in Redding Area Employers database & known under-18 employers
 # ============================================================
-KNOWN_TEEN_EMPLOYERS = {
-    # Fast food & quick service (classic under-18 employers)
-    "mcdonald's", "mcdonalds",
-    "taco bell",
-    "chick-fil-a", "chick fil a", "bird hospitality",
-    "in-n-out burger", "in-n-out", "in n out",
-    "dutch bros coffee", "dutch bros",
-    "wendy's", "wendys",
-    "burger king", "bk",
-    "carl's jr.", "carl's jr", "carls jr",
-    "jack in the box",
-    "subway",
-    "panda express",
-    "dairy queen", "dq", "blue jay foods",
-    "sonic drive-in", "sonic drive in", "sonic",
-    "raising cane's", "raising canes",
-    "chipotle", "chipotle mexican grill",
-    "arby's", "arbys",
-    "little caesars", "little caesar",
-    "papa murphy's", "papa murphys",
-    "baskin-robbins", "baskin robbins",
-    "cold stone creamery", "cold stone",
-    "crumbl cookies", "crumbl",
-    "jamba", "jamba juice",
-    "auntie anne's", "auntie annes",
-    "wetzel's pretzels", "wetzels pretzels",
-    "panera bread", "panera",
-    "chuck e. cheese", "chuck e cheese",
-    "kfc", "kentucky fried chicken",
-    "popeyes", "popeyes louisiana kitchen",
-    "wingstop",
-    "wienerschnitzel",
-    "a&w", "a&w restaurant",
-    "starbucks", "starbucks coffee",
-
-    # Retail / entertainment employers officially hiring age 14-17 (from Redding Area Employers)
-    "ace hardware",
-    "american eagle outfitters", "american eagle",
-    "autozone",
-    "barnes & noble", "barnes and noble",
-    "best buy",
-    "buckle", "the buckle",
-    "cattlemans steakhouse", "cattlemans",
-    "cinemark", "cinemark theaters",
-    "claire's", "claires",
-    "cvs", "cvs pharmacy", "cvs health",
-    "five below",
-    "grocery outlet",
-    "home depot", "the home depot",
-    "hot topic",
-    "journey's", "journeys",
-    "logan's roadhouse", "logans roadhouse",
-    "michaels stores", "michaels",
-    "premier oil change",
-    "spencer gifts", "spencers",
-    "sprouts farmers market", "sprouts",
-    "target",
-    "tractor supply company", "tractor supply",
-    "regal cinemas", "regal",
-    "menchie's", "menchies",
-    "yogurtland",
-    "old navy",
-    "ross dress for less", "ross stores", "ross",
-    "kohl's", "kohls",
-    "jcpenney",
+# ============================================================
+# H.S. OK (HIGH SCHOOL STUDENT SUITABILITY) REGISTRY & EVALUATION
+# Identifies positions suitable for current high school students:
+# - After school / weekend hours (not strict full-time, NOC/graveyard, or weekday daytime)
+# - No required GED or High School Diploma
+# - Less than 2 years experience (fails if 2+ years required)
+# Returns:
+#   '✅' (Bold green checkmark) if H.S. OK
+#   '❌' (Bold red X) if fails H.S. OK
+#   ''   (Blank) if unknown / unverified
+# ============================================================
+DEFAULT_HS_OK_EMPLOYERS = {
+    # Fast food & quick service (classic high school employers)
+    "mcdonald's", "mcdonalds", "taco bell", "chick-fil-a", "chick fil a",
+    "in-n-out burger", "in-n-out", "in n out", "dutch bros coffee", "dutch bros",
+    "wendy's", "wendys", "burger king", "bk", "carl's jr.", "carl's jr", "carls jr",
+    "jack in the box", "subway", "panda express", "dairy queen", "dq", "blue jay foods",
+    "sonic drive-in", "sonic drive in", "sonic", "raising cane's", "raising canes",
+    "chipotle", "chipotle mexican grill", "arby's", "arbys", "little caesars", "little caesar",
+    "papa murphy's", "papa murphys", "baskin-robbins", "baskin robbins",
+    "cold stone creamery", "cold stone", "crumbl cookies", "crumbl",
+    "jamba", "jamba juice", "auntie anne's", "auntie annes", "wetzel's pretzels", "wetzels pretzels",
+    "panera bread", "panera", "chuck e. cheese", "chuck e cheese", "kfc", "kentucky fried chicken",
+    "popeyes", "popeyes louisiana kitchen", "wingstop", "wienerschnitzel", "a&w", "a&w restaurant",
+    "starbucks", "starbucks coffee", "culver's", "culvers", "menchie's", "menchies", "yogurtland",
+    
+    # Retail & entertainment known to hire high school students
+    "journey's", "journeys", "five below", "below 5", "target", "walmart",
+    "burlington", "burlington coat factory", "ross", "ross dress for less", "ross stores",
+    "tj maxx", "t.j. maxx", "marshalls", "dollar tree", "dollar general", "grocery outlet",
+    "winco foods", "winco", "safeway", "raley's", "raleys", "american eagle outfitters", "american eagle",
+    "old navy", "claire's", "claires", "hot topic", "spencer gifts", "spencers",
+    "michaels stores", "michaels", "barnes & noble", "barnes and noble",
+    "cinemark", "cinemark theaters", "regal cinemas", "regal", "amc theatres",
+    "oasis fun center", "quick quack", "quick quack car wash"
 }
+
+KNOWN_TEEN_EMPLOYERS = DEFAULT_HS_OK_EMPLOYERS
+
+def load_hs_ok_employers() -> set:
+    """Loads list of employers known to hire high school students from config or defaults."""
+    employers = set(DEFAULT_HS_OK_EMPLOYERS)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Check hs_ok_employers.json
+    hs_json_path = os.path.join(base_dir, "hs_ok_employers.json")
+    if os.path.exists(hs_json_path):
+        try:
+            with open(hs_json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    employers.update(e.lower().strip() for e in data if e)
+        except Exception:
+            pass
+
+    # Check search_config.json
+    cfg_path = os.path.join(base_dir, "search_config.json")
+    if os.path.exists(cfg_path):
+        try:
+            with open(cfg_path, 'r', encoding='utf-8') as f:
+                cfg = json.load(f)
+                hs_list = cfg.get("hs_ok_employers", [])
+                if isinstance(hs_list, list):
+                    employers.update(e.lower().strip() for e in hs_list if e)
+        except Exception:
+            pass
+
+    # Check redding_area_employers.json (from 'Redding Area Employers' Google Sheet)
+    rae_path = os.path.join(base_dir, "redding_area_employers.json")
+    if os.path.exists(rae_path):
+        try:
+            with open(rae_path, 'r', encoding='utf-8') as f:
+                rae_data = json.load(f)
+                if isinstance(rae_data, list):
+                    for emp in rae_data:
+                        comp_name = emp.get("company", "").strip().lower()
+                        min_age = str(emp.get("min_age", "")).strip()
+                        hs_ged = str(emp.get("hs_ged_required", "")).strip().lower()
+                        work_exp = str(emp.get("work_experience_required", "")).strip().lower()
+                        
+                        if min_age in ['14', '14-15', '14-16', '15', '15-1/2', '16', '16-18', '17']:
+                            employers.add(comp_name)
+                        elif hs_ged in ['no', 'false'] and work_exp in ['no', 'false'] and min_age not in ['18', '21']:
+                            employers.add(comp_name)
+        except Exception:
+            pass
+
+    return employers
 
 def normalize_company_for_matching(comp: str) -> str:
     if not comp:
@@ -697,13 +719,42 @@ def normalize_company_for_matching(comp: str) -> str:
     s = re.sub(r'\s+', ' ', s).strip()
     return s
 
-def is_known_teen_employer(comp: str) -> bool:
+def check_redding_employer_restrictions(comp: str) -> tuple:
+    """
+    Checks if an employer in the Redding Area Employers registry explicitly
+    requires 18+, a High School Diploma/GED, or prior work experience.
+    Returns: (is_disqualified: bool, reason: str)
+    """
+    if not comp:
+        return False, ""
+    norm = normalize_company_for_matching(comp)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rae_path = os.path.join(base_dir, "redding_area_employers.json")
+    if os.path.exists(rae_path):
+        try:
+            with open(rae_path, 'r', encoding='utf-8') as f:
+                rae_data = json.load(f)
+                for emp in rae_data:
+                    e_norm = normalize_company_for_matching(emp.get("company", ""))
+                    if e_norm and (e_norm == norm or f" {e_norm} " in f" {norm} " or norm.startswith(f"{e_norm} ") or norm.endswith(f" {e_norm}")):
+                        min_age = str(emp.get("min_age", "")).strip()
+                        hs_ged = str(emp.get("hs_ged_required", "")).strip().lower()
+                        if min_age in ['18', '21']:
+                            return True, f"Employer requires age {min_age}+ per Redding Area Employers database"
+                        if hs_ged in ['yes', 'true']:
+                            return True, "Employer requires HS Diploma / GED per Redding Area Employers database"
+        except Exception:
+            pass
+    return False, ""
+
+def is_known_hs_employer(comp: str) -> bool:
     if not comp:
         return False
     norm = normalize_company_for_matching(comp)
     if not norm:
         return False
-    for known in KNOWN_TEEN_EMPLOYERS:
+    known_set = load_hs_ok_employers()
+    for known in known_set:
         k_norm = normalize_company_for_matching(known)
         if k_norm == norm:
             return True
@@ -711,45 +762,97 @@ def is_known_teen_employer(comp: str) -> bool:
             return True
     return False
 
-def is_teen_friendly(
+def is_known_teen_employer(comp: str) -> bool:
+    return is_known_hs_employer(comp)
+
+def evaluate_hs_ok(
     title: str = "",
     company: str = "",
     text: str = "",
     requirements: str = "",
+    job_type: str = "",
+    shift: str = "",
     job_dict: dict = None,
     gemini_teen_friendly: bool = None
-) -> bool:
+) -> str:
     """
-    Evaluates whether a job posting is available to youth under 18 years of age (ages 14-17).
-    Rule: Do not check this box unless the employer is specifically known to hire under age 18
-    (like McDonald's or Taco Bell) or it is clearly stated in the job description.
+    Evaluates whether a job posting is H.S. OK (suitable for high school students).
+    Returns:
+        '✅' : Suitable for high school students.
+        '❌' : Disqualified by exceptions (fails test).
+        ''   : Unknown / unverified (blank).
     """
     if job_dict:
         title = title or str(job_dict.get('job_title') or job_dict.get('title') or '')
         company = company or str(job_dict.get('company') or '')
         text = text or str(job_dict.get('description') or '')
         requirements = requirements or str(job_dict.get('experience') or job_dict.get('requirements') or '')
+        job_type = job_type or str(job_dict.get('job_type_extracted') or '')
+        shift = shift or str(job_dict.get('shift_schedule') or '')
 
-    combined_text = f"{title} {company} {text} {requirements}".lower()
+    combined_text = f"{title} {company} {text} {requirements} {job_type} {shift}".lower()
+    t_lower = str(title or '').lower()
+    jt_lower = str(job_type or '').lower()
+    shift_lower = str(shift or '').lower()
 
-    # 1. HARD DISQUALIFICATIONS (Overrides everything - minors cannot do these or employers explicitly exclude them)
-    # A. Explicit adult age requirement (18+, 21+, 22+, 25+, etc.)
-    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)(?:1[89]|[2-6]\d)\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text):
-        return False
-    if re.search(r'\b(?:1[89]|[2-6]\d)\s*\+\b', combined_text):
-        return False
-    if re.search(r'\b(?:1[89]|[2-6]\d)\s*years?(?:\s*old)?\b(?!\s*(?:of\s+)?experience)', combined_text):
-        return False
-    if any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino", "gaming associate"]):
-        return False
+    # ============================================================
+    # 1. DISQUALIFYING EXCEPTIONS (Fail test -> '❌')
+    # ============================================================
 
-    # B. Commercial driving / vehicle route duties (restricted for minors under child labor laws)
-    if re.search(r'\b(?:cdl[\s\-]?a|cdl[\s\-]?b|class\s*[ab])\b', combined_text):
-        return False
-    if any(k in title.lower() for k in ["delivery driver", "route driver", "van driver", "courier", "truck driver", "shuttle driver", "bus driver", "medical transportation"]):
-        return False
+    # Check Redding Area Employers database for verified company restrictions
+    is_disq, _ = check_redding_employer_restrictions(company)
+    if is_disq:
+        return "❌"
 
-    # D. Supervisory / Management roles (require adult legal responsibility)
+    # Exception 1: Schedule Conflict
+    # A. Strictly full-time (without part-time / flexible option)
+    if ("full-time" in jt_lower or "full time" in jt_lower) and not ("part-time" in jt_lower or "part time" in jt_lower or "flexible" in jt_lower):
+        return "❌"
+    if re.search(r'\b(?:40\s*hours?(?:\s*a|\s*per)?\s*week|full[\s\-]time\s*only)\b', combined_text):
+        return "❌"
+
+    # B. NOC, graveyard, overnight, or 3rd shift (CA labor law prohibits minors working late school nights)
+    if any(k in shift_lower for k in ["graveyard", "noc", "overnight", "night shift", "3rd shift", "third shift"]) or any(k in t_lower for k in ["noc", "graveyard", "overnight", "night shift"]):
+        return "❌"
+    if re.search(r'\b(?:graveyard|noc\b|overnight\s*shift|3rd\s*shift|third\s*shift)\b', combined_text):
+        return "❌"
+
+    # C. Daytime weekday school hours (e.g. M-F 8am-5pm)
+    if re.search(r'\b(?:day\s*shift\s*monday\s*to\s*friday|monday\s*through\s*friday\s*8|monday\s*to\s*friday\s*8|8\s*am\s*-\s*5\s*pm|8:00\s*am\s*-\s*4:30\s*pm|weekday\s*daytime)\b', shift_lower + " " + text.lower()):
+        return "❌"
+
+    # Exception 2: Requires High School Diploma or GED (or higher degree)
+    if re.search(r'\b(?:high\s*school\s*diploma|hs\s*diploma|ged)\b[^\.\n]*(?:required|mandatory|minimum|must\s*have|must\s*possess)', combined_text) or \
+       re.search(r'(?:requires?|must\s*have|must\s*possess|minimum\s*of)\s*(?:a\s*)?(?:high\s*school\s*diploma|hs\s*diploma|ged)', combined_text) or \
+       re.search(r'\b(?:diploma\s*or\s*ged\s*required|high\s*school\s*diploma\s*or\s*(?:equivalent|ged)\s*required)\b', combined_text) or \
+       re.search(r'\b(?:bachelor|associate\s*degree|b\.s\.|b\.a\.|master\'?s?|college\s*degree)\b', combined_text):
+        return "❌"
+    # Also check if requirements column explicitly mentions HS diploma/GED without "no"
+    if re.search(r'\b(?:high\s*school\s*diploma|hs\s*diploma|ged)\b', requirements.lower()) and not re.search(r'\bno\s*(?:high\s*school\s*diploma|ged|diploma)\b', requirements.lower()):
+        return "❌"
+
+    # Exception 3: 2 or more years of working experience required
+    if re.search(r'\b(?:[2-9]|\d{2,})\s*(?:\+|\s*or\s*more)?\s*years?(?:\s*of)?\s*(?:work(?:ing)?\s*)?experience\b', combined_text) or \
+       re.search(r'\b(?:two|three|four|five)\s*(?:\(\d\)\s*)?years?(?:\s*of)?\s*(?:work(?:ing)?\s*)?experience\b', combined_text) or \
+       re.search(r'\b(?:minimum|at\s*least)\s*(?:of\s*)?(?:[2-9]|two|three)\s*years?\b', combined_text):
+        return "❌"
+
+    # Exception 4: Adult legal age floors & prohibited roles
+    # Explicit 18+ or 21+ age floor
+    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)(?:1[89]|[2-6]\d)\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text) or \
+       re.search(r'\b(?:1[89]|[2-6]\d)\s*\+\b', combined_text) or \
+       re.search(r'\b(?:1[89]|[2-6]\d)\s*years?(?:\s*old)?\b(?!\s*(?:of\s+)?experience)', combined_text):
+        return "❌"
+
+    # Alcohol, gaming, security, hazardous equipment
+    if any(k in t_lower for k in ["bartender", "bar tender", "cocktail server", "casino", "gaming associate", "security guard", "guard card", "heavy equipment", "forklift operator"]):
+        return "❌"
+
+    # Commercial driving / route delivery
+    if any(k in t_lower for k in ["delivery driver", "route driver", "van driver", "courier", "truck driver", "shuttle driver", "bus driver", "hub driver"]) or "cdl" in combined_text:
+        return "❌"
+
+    # Supervisory / management roles
     supervisor_patterns = [
         r'\b(?:general\s+manager|gm)\b',
         r'\b(?:assistant\s+manager|asst\s+manager)\b',
@@ -762,30 +865,51 @@ def is_teen_friendly(
         r'\b(?:department\s+manager|dept\s+manager)\b',
     ]
     for sp in supervisor_patterns:
-        if re.search(sp, title.lower()):
-            return False
+        if re.search(sp, t_lower):
+            return "❌"
 
-    # 2. POSITIVE CRITERIA
-    # Criterion A: Clearly stated in the job description as available to minors / under 18
+    # ============================================================
+    # 2. POSITIVE CRITERIA (H.S. OK -> '✅')
+    # ============================================================
+
+    # Criterion A: Known high school student employer list
+    if is_known_hs_employer(company):
+        return "✅"
+
+    # Criterion B: Explicit youth / student / minor / teen friendly text
     under_18_patterns = [
         r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)1[4-7]\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?',
         r'\b1[4-7]\s*\+\b',
-        r'\b(?:youth[\s\-]friendly|teen[\s\-]friendly|teens\s*welcome|minors\s*welcome|hire\s*minors|hiring\s*minors|under\s*18\s*welcome|under\s*18\s*eligible|high\s*school\s*students?|student\s*position|student\s*worker)\b',
+        r'\b(?:youth[\s\-]friendly|teen[\s\-]friendly|teens\s*welcome|minors\s*welcome|hire\s*minors|hiring\s*minors|under\s*18\s*welcome|under\s*18\s*eligible|high\s*school\s*students?|student\s*position|student\s*worker|after\s*school)\b',
         r'\b(?:work\s*permit\s*(?:required|accepted)|with\s*valid\s*work\s*permit)\b',
     ]
     for pat in under_18_patterns:
         if re.search(pat, combined_text):
-            return True
-
-    # Criterion B: Employer is specifically known to hire under age 18
-    if is_known_teen_employer(company):
-        return True
+            return "✅"
 
     # Criterion C: Gemini structured parser verified under 18 suitability
     if gemini_teen_friendly is True:
-        return True
+        return "✅"
 
-    return False
+    # ============================================================
+    # 3. UNKNOWN / UNVERIFIED (Leave blank -> '')
+    # ============================================================
+    return ""
+
+def is_teen_friendly(
+    title: str = "",
+    company: str = "",
+    text: str = "",
+    requirements: str = "",
+    job_dict: dict = None,
+    gemini_teen_friendly: bool = None
+) -> bool:
+    """Backward compatibility wrapper returning bool for evaluate_hs_ok == '✅'."""
+    res = evaluate_hs_ok(
+        title=title, company=company, text=text, requirements=requirements,
+        job_dict=job_dict, gemini_teen_friendly=gemini_teen_friendly
+    )
+    return res == "✅"
 
 def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
     """
@@ -4690,8 +4814,8 @@ class JobScraper:
                     job_dict=job
                 )
 
-            if not job.get('pay') or job['pay'] in ['N/A', 'None', '']:
-                job['pay'] = 'Unstated'
+            if not job.get('pay') or str(job.get('pay', '')).strip().lower() in ['n/a', 'none', '', 'unstated']:
+                job['pay'] = ''
 
             if not job.get('job_type_extracted') or job['job_type_extracted'] in ['N/A', 'None', '']:
                 job['job_type_extracted'] = 'Unstated'
@@ -4702,11 +4826,13 @@ class JobScraper:
             if not job.get('date_posted') or job['date_posted'] in ['N/A', 'None', '']:
                 job['date_posted'] = datetime.now().strftime('%Y-%m-%d')
 
-            job['teen_friendly'] = is_teen_friendly(
+            job['hs_ok'] = evaluate_hs_ok(
                 title=job.get('job_title', ''),
                 company=job.get('company', ''),
                 text=job.get('description', ''),
                 requirements=job.get('experience', ''),
+                job_type=job.get('job_type_extracted', ''),
+                shift=job.get('shift_schedule', ''),
                 job_dict=job,
                 gemini_teen_friendly=job.get('teen_friendly')
             )
@@ -4725,7 +4851,7 @@ class JobScraper:
                 sector=job['industry'],
                 job_type=job.get('job_type_extracted', 'Unstated'),
                 schedule=job.get('shift_schedule', 'Unstated'),
-                pay=job.get('pay', 'Unstated'),
+                pay=job.get('pay', '') if job.get('pay') else 'Unstated',
                 requirements=job.get('experience', '')
             )
             
@@ -4756,7 +4882,7 @@ class JobScraper:
         column_order = [
             'source', 'job_title', 'company', 'location', 'pay', 
             'job_type_extracted', 'shift_schedule', 'experience', 
-            'teen_friendly', 'description', 'date_posted', 'job_url', 
+            'hs_ok', 'description', 'date_posted', 'job_url', 
             'industry', 'last_updated'
         ]
         for col in column_order:
@@ -4775,7 +4901,7 @@ class JobScraper:
             'job_type_extracted': 'Full / Part Time',
             'shift_schedule': 'Schedule / Shift',
             'experience': 'Experience / Requirements',
-            'teen_friendly': 'Teen Friendly',
+            'hs_ok': 'H.S. OK',
             'description': 'Job Description Summary',
             'date_posted': 'Date Posted',
             'job_url': 'Job Posting',
@@ -4822,21 +4948,26 @@ class JobScraper:
                         if col == 'Job Posting' and val_str.startswith(('http://', 'https://')):
                             cell.hyperlink = val_str
                             cell.font = Font(name='Calibri', size=10, color='2563EB', underline='single')
-                        elif col == 'Teen Friendly':
-                            cell.font = Font(name='Calibri', size=10)
+                        elif col == 'H.S. OK':
                             cell.alignment = Alignment(horizontal='center', vertical='center')
+                            if val_str == '✅':
+                                cell.font = Font(name='Segoe UI Emoji', size=11, bold=True, color='16A34A')
+                            elif val_str == '❌':
+                                cell.font = Font(name='Segoe UI Emoji', size=11, bold=True, color='DC2626')
+                            else:
+                                cell.font = Font(name='Calibri', size=10)
                         else:
                             cell.font = Font(name='Calibri', size=10)
 
                         cell.border = thin_border
-                        if col != 'Teen Friendly':
+                        if col != 'H.S. OK':
                             cell.alignment = Alignment(vertical='center')
 
                         if len(val_str) > max_len:
                             max_len = len(val_str)
 
-                    if col == 'Teen Friendly':
-                        ws.column_dimensions[col_letter].width = 15
+                    if col == 'H.S. OK':
+                        ws.column_dimensions[col_letter].width = 12
                     else:
                         ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
 

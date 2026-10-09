@@ -6,8 +6,10 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 
 try:
-    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, resolve_business_address, standardize_driver_license_requirement, is_teen_friendly
+    from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, determine_industry, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, resolve_business_address, standardize_driver_license_requirement, evaluate_hs_ok, is_teen_friendly
 except ImportError:
+    def evaluate_hs_ok(title: str = "", company: str = "", text: str = "", requirements: str = "", job_type: str = "", shift: str = "", job_dict: dict = None, gemini_teen_friendly: bool = None) -> str:
+        return ""
     def is_teen_friendly(title: str = "", company: str = "", text: str = "", requirements: str = "", job_dict: dict = None, gemini_teen_friendly: bool = None) -> bool:
         return bool(gemini_teen_friendly)
     def standardize_driver_license_requirement(exp_str: str, text_context: str = "", gemini_license: str = None) -> str:
@@ -135,11 +137,16 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
                 requirements=exp_req
             )
 
-        is_teen = is_teen_friendly(
+        raw_pay = j.get("pay")
+        clean_pay = str(raw_pay).strip() if raw_pay and str(raw_pay).strip().lower() not in ["n/a", "none", "", "unstated", "nan"] else ""
+
+        hs_ok_val = evaluate_hs_ok(
             title=clean_title,
             company=j.get("company", ""),
             text=raw_desc,
             requirements=exp_req,
+            job_type=j.get("job_type_extracted") or "",
+            shift=j.get("shift_schedule") or "",
             job_dict=j,
             gemini_teen_friendly=j.get("isTeenFriendly") or j.get("is_teen_friendly") or j.get("teen_friendly")
         )
@@ -149,11 +156,11 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "Job Title": clean_title,
             "Company": j.get("company", ""),
             "Location": cleaned_loc,
-            "Pay Rate": j.get("pay") if j.get("pay") and str(j.get("pay")).strip() not in ["N/A", "None", ""] else "Unstated",
-            "Full / Part Time": j.get("job_type_extracted") if j.get("job_type_extracted") and str(j.get("job_type_extracted")).strip() not in ["N/A", "None", ""] else "Unstated",
-            "Schedule / Shift": j.get("shift_schedule") if j.get("shift_schedule") and str(j.get("shift_schedule")).strip() not in ["N/A", "None", ""] else "Unstated",
+            "Pay Rate": clean_pay,
+            "Full / Part Time": j.get("job_type_extracted") if j.get("job_type_extracted") and str(j.get("job_type_extracted")).strip() not in ["N/A", "None", "", "nan"] else "Unstated",
+            "Schedule / Shift": j.get("shift_schedule") if j.get("shift_schedule") and str(j.get("shift_schedule")).strip() not in ["N/A", "None", "", "nan"] else "Unstated",
             "Experience / Requirements": exp_req,
-            "Teen Friendly": is_teen,
+            "H.S. OK": hs_ok_val,
             "Job Description Summary": final_desc,
             "Date Posted": posted_date,
             "Job Posting": j.get("job_url") or "",
@@ -166,7 +173,7 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         return
 
     df = pd.DataFrame(rows)
-    df.fillna("N/A", inplace=True)
+    df.fillna("", inplace=True)
     df.sort_values(by="Date Posted", ascending=False, inplace=True)
 
     client = get_gspread_client()
@@ -185,35 +192,88 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
     worksheet.clear()
     worksheet.update(values=[df.columns.values.tolist()] + df.values.tolist(), range_name="A1")
 
-    # Apply native Google Sheets checkbox data validation to the "Teen Friendly" column
+    # Clear legacy boolean checkbox validation on H.S. OK column to allow emoji and blank values
     try:
         col_names = df.columns.values.tolist()
-        if "Teen Friendly" in col_names and len(df) > 0:
-            teen_col_idx = col_names.index("Teen Friendly") # 0-indexed column
-            body = {
-                "requests": [
-                    {
-                        "setDataValidation": {
-                            "range": {
-                                "sheetId": worksheet.id,
-                                "startRowIndex": 1,
-                                "endRowIndex": len(df) + 1,
-                                "startColumnIndex": teen_col_idx,
-                                "endColumnIndex": teen_col_idx + 1
-                            },
-                            "rule": {
-                                "condition": {
-                                    "type": "BOOLEAN"
+        for target_col in ["H.S. OK", "Teen Friendly"]:
+            if target_col in col_names and len(df) > 0:
+                c_idx = col_names.index(target_col)
+                body = {
+                    "requests": [
+                        {
+                            "setDataValidation": {
+                                "range": {
+                                    "sheetId": worksheet.id,
+                                    "startRowIndex": 1,
+                                    "endRowIndex": len(df) + 1,
+                                    "startColumnIndex": c_idx,
+                                    "endColumnIndex": c_idx + 1
                                 },
-                                "showCustomUi": True
+                                "rule": None
                             }
                         }
-                    }
-                ]
-            }
-            spreadsheet.batch_update(body)
-            print(f"[SHEETS] Applied native checkbox validation to column '{teen_col_idx + 1}' (Teen Friendly).")
+                    ]
+                }
+                spreadsheet.batch_update(body)
     except Exception as cb_err:
-        print(f"[WARN] Could not set checkbox validation on Google Sheet: {cb_err}")
+        pass
 
     print(f"[SHEETS] Synchronized {len(df)} active listings to tab '{worksheet.title}'.")
+
+def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU", output_json: str = None) -> list:
+    """
+    Reads the 'Redding Area Employers' tab from the Google Sheet and updates the local
+    cache file redding_area_employers.json.
+    """
+    if not output_json:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_json = os.path.join(base_dir, "redding_area_employers.json")
+
+    client = get_gspread_client()
+    spreadsheet = client.open_by_key(sheet_id)
+    try:
+        ws = spreadsheet.worksheet("Redding Area Employers")
+    except Exception as e:
+        print(f"[WARN] Worksheet 'Redding Area Employers' not found: {e}")
+        return []
+
+    all_rows = ws.get_all_values()
+    if len(all_rows) < 3:
+        print("[WARN] Insufficient data in 'Redding Area Employers' tab.")
+        return []
+
+    employers_data = []
+    for r in all_rows[2:]:
+        comp = r[0].strip() if len(r) > 0 else ""
+        if not comp:
+            continue
+        addr = r[1].strip() if len(r) > 1 else ""
+        min_age = r[2].strip() if len(r) > 2 else ""
+        hs_ged = r[4].strip() if len(r) > 4 else ""
+        dl = r[5].strip() if len(r) > 5 else ""
+        clean_rec = r[6].strip() if len(r) > 6 else ""
+        work_exp = r[7].strip() if len(r) > 7 else ""
+        wage = r[8].strip() if len(r) > 8 else ""
+        career_url = r[9].strip() if len(r) > 9 else ""
+        indeed_url = r[10].strip() if len(r) > 10 else ""
+        notes = r[11].strip() if len(r) > 11 else ""
+
+        employers_data.append({
+            "company": comp,
+            "address": addr,
+            "min_age": min_age,
+            "hs_ged_required": hs_ged,
+            "drivers_license_required": dl,
+            "clean_record_required": clean_rec,
+            "work_experience_required": work_exp,
+            "wage": wage,
+            "career_url": career_url,
+            "indeed_url": indeed_url,
+            "notes": notes
+        })
+
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(employers_data, f, indent=2)
+
+    print(f"[SHEETS] Cached {len(employers_data)} employers from 'Redding Area Employers' to {output_json}")
+    return employers_data

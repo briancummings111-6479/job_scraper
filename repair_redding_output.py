@@ -1,15 +1,19 @@
 import os
 import re
 import csv
+import sys
 import pandas as pd
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 from scrapper import (
     generate_key_description,
     extract_pay,
     clean_job_title,
-    clean_location_str
+    clean_location_str,
+    evaluate_hs_ok
 )
 
 excel_path = r"C:\Users\brian\job_scraper\output\redding_only_20261008_171952.xlsx"
@@ -40,7 +44,7 @@ for idx, r in df_orig.iterrows():
     posted_date = str(r["Date Posted"]).strip()
     url = str(r["Job Posting"]).strip()
     sector = str(r["Industry Sector"]).strip()
-    teen = bool(r["Teen Friendly"])
+    raw_hs_ok = str(r.get("H.S. OK", r.get("Teen Friendly", ""))).strip()
     source = str(r["Source"]).strip()
     last_upd = str(r["Last Updated"]).strip()
 
@@ -83,7 +87,7 @@ for idx, r in df_orig.iterrows():
     # Clean title
     clean_t = clean_job_title(title)
 
-    # Clean pay
+    # Clean pay: leave blank if unstated
     real_pay = raw_pay
     if source == "Snagajob" and raw_pay in ["$18.00", "$48.08"]:
         desc_pay = extract_pay(raw_desc)
@@ -96,12 +100,25 @@ for idx, r in df_orig.iterrows():
             if wage_matches:
                 real_pay = wage_matches[0]
             else:
-                real_pay = "Unstated"
+                real_pay = ""
+
+    if not real_pay or str(real_pay).strip().lower() in ['n/a', 'none', '', 'unstated', 'nan']:
+        real_pay = ""
 
     # Clean Requirements: Semicolons only, clean spacing
     clean_exp = exp.replace(",", ";")
     clean_exp = re.sub(r';\s*;', ';', clean_exp)
     clean_exp = re.sub(r'\s*;\s*', '; ', clean_exp).strip('; ')
+
+    # Evaluate H.S. OK ('✅' for pass, '❌' for fail, '' for unknown)
+    hs_ok = evaluate_hs_ok(
+        title=clean_t,
+        company=comp,
+        text=raw_desc,
+        requirements=clean_exp,
+        job_type=job_type,
+        shift=shift
+    )
 
     # Clean Summary: generate concise 2-sentence summary
     summary = generate_key_description(
@@ -111,7 +128,7 @@ for idx, r in df_orig.iterrows():
         sector=sector,
         job_type=job_type,
         schedule=shift,
-        pay=real_pay,
+        pay=real_pay if real_pay else "Unstated",
         requirements=clean_exp
     )
 
@@ -120,11 +137,11 @@ for idx, r in df_orig.iterrows():
     # Col B (2): Job Title
     # Col C (3): Company
     # Col D (4): Location
-    # Col E (5): Pay Rate
+    # Col E (5): Pay Rate (blank if unstated)
     # Col F (6): Full / Part Time
     # Col G (7): Schedule / Shift
     # Col H (8): Experience / Requirements
-    # Col I (9): Teen Friendly
+    # Col I (9): H.S. OK (✅, ❌, or blank)
     # Col J (10): Job Description Summary
     # Col K (11): Date Posted
     # Col L (12): Job Posting
@@ -139,7 +156,7 @@ for idx, r in df_orig.iterrows():
         "Full / Part Time": job_type,
         "Schedule / Shift": shift,
         "Experience / Requirements": clean_exp,
-        "Teen Friendly": teen,
+        "H.S. OK": hs_ok,
         "Job Description Summary": summary,
         "Date Posted": posted_date,
         "Job Posting": url,
@@ -158,7 +175,7 @@ if rejected_log:
 expected_columns = [
     "Source", "Job Title", "Company", "Location", "Pay Rate",
     "Full / Part Time", "Schedule / Shift", "Experience / Requirements",
-    "Teen Friendly", "Job Description Summary", "Date Posted",
+    "H.S. OK", "Job Description Summary", "Date Posted",
     "Job Posting", "Industry Sector", "Last Updated"
 ]
 df_clean = df_clean[expected_columns]
@@ -197,21 +214,26 @@ with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
             if col == 'Job Posting' and val_str.startswith(('http://', 'https://')):
                 cell.hyperlink = val_str
                 cell.font = Font(name='Calibri', size=10, color='2563EB', underline='single')
-            elif col == 'Teen Friendly':
-                cell.font = Font(name='Calibri', size=10)
+            elif col == 'H.S. OK':
                 cell.alignment = Alignment(horizontal='center', vertical='center')
+                if val_str == '✅':
+                    cell.font = Font(name='Segoe UI Emoji', size=11, bold=True, color='16A34A')
+                elif val_str == '❌':
+                    cell.font = Font(name='Segoe UI Emoji', size=11, bold=True, color='DC2626')
+                else:
+                    cell.font = Font(name='Calibri', size=10)
             else:
                 cell.font = Font(name='Calibri', size=10)
 
             cell.border = thin_border
-            if col != 'Teen Friendly':
+            if col != 'H.S. OK':
                 cell.alignment = Alignment(vertical='center')
 
             if len(val_str) > max_len:
                 max_len = len(val_str)
 
-        if col == 'Teen Friendly':
-            ws.column_dimensions[col_letter].width = 15
+        if col == 'H.S. OK':
+            ws.column_dimensions[col_letter].width = 12
         else:
             ws.column_dimensions[col_letter].width = max(12, min(max_len + 3, 45))
 
