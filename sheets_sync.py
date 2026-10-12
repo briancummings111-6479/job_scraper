@@ -222,8 +222,8 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
 
 def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU", output_json: str = None) -> list:
     """
-    Reads the 'Redding Area Employers' tab from the Google Sheet and updates the local
-    cache file redding_area_employers.json.
+    Reads the 'Area Employers' (or legacy 'Redding Area Employers' / 'Burney Area Employers (draft)') tab,
+    dynamically maps columns, and syncs into the local SQLite employers.db and fast JSON cache.
     """
     if not output_json:
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -231,49 +231,328 @@ def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6
 
     client = get_gspread_client()
     spreadsheet = client.open_by_key(sheet_id)
-    try:
-        ws = spreadsheet.worksheet("Redding Area Employers")
-    except Exception as e:
-        print(f"[WARN] Worksheet 'Redding Area Employers' not found: {e}")
-        return []
 
-    all_rows = ws.get_all_values()
-    if len(all_rows) < 3:
-        print("[WARN] Insufficient data in 'Redding Area Employers' tab.")
-        return []
+    tab_names = [ws.title for ws in spreadsheet.worksheets()]
+    if "Area Employers" in tab_names:
+        tabs_to_scan = ["Area Employers"]
+    else:
+        tabs_to_scan = [t for t in ["Redding Area Employers", "Burney Area Employers (draft)"] if t in tab_names]
 
-    employers_data = []
-    for r in all_rows[2:]:
-        comp = r[0].strip() if len(r) > 0 else ""
-        if not comp:
+    all_combined_records = []
+    structured_employers = {}
+
+    for tab_name in tabs_to_scan:
+        try:
+            ws = spreadsheet.worksheet(tab_name)
+        except Exception:
             continue
-        addr = r[1].strip() if len(r) > 1 else ""
-        min_age = r[2].strip() if len(r) > 2 else ""
-        hs_ged = r[4].strip() if len(r) > 4 else ""
-        dl = r[5].strip() if len(r) > 5 else ""
-        clean_rec = r[6].strip() if len(r) > 6 else ""
-        work_exp = r[7].strip() if len(r) > 7 else ""
-        wage = r[8].strip() if len(r) > 8 else ""
-        career_url = r[9].strip() if len(r) > 9 else ""
-        indeed_url = r[10].strip() if len(r) > 10 else ""
-        notes = r[11].strip() if len(r) > 11 else ""
 
-        employers_data.append({
-            "company": comp,
-            "address": addr,
-            "min_age": min_age,
-            "hs_ged_required": hs_ged,
-            "drivers_license_required": dl,
-            "clean_record_required": clean_rec,
-            "work_experience_required": work_exp,
-            "wage": wage,
-            "career_url": career_url,
-            "indeed_url": indeed_url,
-            "notes": notes
-        })
+        all_rows = ws.get_all_values()
+        if len(all_rows) < 2:
+            continue
 
+        row1 = all_rows[0]
+        row1_lower = [h.strip().lower() for h in row1]
+        is_area_employers_layout = (
+            any("street address" in h for h in row1_lower)
+            or any("branch" in h for h in row1_lower)
+            or any("brand name" in h for h in row1_lower)
+            or tab_name == "Area Employers"
+        )
+
+        if is_area_employers_layout:
+            col_map = {h: idx for idx, h in enumerate(row1_lower)}
+            for r in all_rows[1:]:
+                if not any(r):
+                    continue
+
+                def get_c(pattern, default=""):
+                    for h, idx in col_map.items():
+                        if pattern in h and idx < len(r):
+                            return r[idx].strip()
+                    return default
+
+                comp = get_c("brand name") or get_c("employer name") or get_c("company")
+                if not comp:
+                    continue
+
+                corp = get_c("corporate")
+                branch = get_c("branch")
+                street = get_c("street address") or get_c("address")
+                city = get_c("city", "Redding")
+                state = get_c("state", "CA")
+                zip_code = get_c("zip")
+                phone = get_c("phone")
+                manager = get_c("manager") or get_c("contact")
+                sector = get_c("sector") or get_c("industry")
+                min_age = get_c("age", "18")
+                fair_chance = get_c("fair chance") or get_c("felon")
+                drug_testing = get_c("drug")
+                bg_check = get_c("background") or get_c("clean record")
+                dl = get_c("driver") or get_c("dl")
+                hs_ged = get_c("high school") or get_c("hs dip") or get_c("ged")
+                wage = get_c("wage") or get_c("pay")
+                entry_roles = get_c("roles") or get_c("entry")
+                career_url = get_c("career") or get_c("website")
+                notes = get_c("note") or get_c("barrier")
+                is_prim_str = get_c("primary", "yes").lower()
+                is_primary = 1 if is_prim_str in ["yes", "true", "1"] else 0
+
+                loc_item = {
+                    "location_name": branch,
+                    "street_address": street,
+                    "city": city if city else "Redding",
+                    "state": state if state else "CA",
+                    "zip_code": zip_code,
+                    "phone": phone,
+                    "manager_name": manager,
+                    "is_primary": is_primary,
+                    "notes": notes
+                }
+
+                if comp not in structured_employers:
+                    aliases = [corp] if corp and corp.lower() != comp.lower() else []
+                    structured_employers[comp] = {
+                        "name": comp,
+                        "company": comp,
+                        "aliases": aliases,
+                        "industry_sector": sector,
+                        "min_age": min_age,
+                        "min_age_baseline": min_age,
+                        "fair_chance": fair_chance,
+                        "felon_friendly": fair_chance,
+                        "drug_testing": drug_testing,
+                        "background_check": bg_check,
+                        "clean_record_required": bg_check,
+                        "drivers_license_required": dl,
+                        "drivers_license": dl,
+                        "hs_ged_required": hs_ged,
+                        "hs_ged_baseline": hs_ged,
+                        "wage": wage,
+                        "starting_wage": wage,
+                        "typical_entry_roles": entry_roles,
+                        "career_url": career_url,
+                        "notes": notes,
+                        "locations": [loc_item]
+                    }
+                else:
+                    structured_employers[comp]["locations"].append(loc_item)
+
+                all_combined_records.append({
+                    "company": comp,
+                    "address": f"{street}, {city}, {state} {zip_code}".strip(", "),
+                    "min_age": min_age,
+                    "hs_ged_required": hs_ged,
+                    "drivers_license_required": dl,
+                    "clean_record_required": bg_check,
+                    "work_experience_required": "None",
+                    "wage": wage,
+                    "career_url": career_url,
+                    "indeed_url": "",
+                    "phone": phone,
+                    "manager_name": manager,
+                    "felon_friendly": fair_chance,
+                    "drug_testing": drug_testing,
+                    "industry_sector": sector,
+                    "notes": notes
+                })
+
+        else:
+            # Legacy 2-header layout
+            if len(all_rows) < 3:
+                continue
+            row2 = all_rows[1]
+            col_map = {}
+            max_cols = max(len(row1), len(row2))
+
+            for col_idx in range(max_cols):
+                h1 = row1[col_idx].strip() if col_idx < len(row1) else ""
+                h2 = row2[col_idx].strip() if col_idx < len(row2) else ""
+                combined_h = f"{h1} {h2}".lower().strip()
+
+                if any(k in combined_h for k in ["company", "employer"]):
+                    col_map["company"] = col_idx
+                elif any(k in combined_h for k in ["address", "locations"]):
+                    col_map["address"] = col_idx
+                elif "age" in combined_h:
+                    col_map["min_age"] = col_idx
+                elif any(k in combined_h for k in ["hs dip", "ged", "high school"]):
+                    col_map["hs_ged"] = col_idx
+                elif combined_h.startswith("dl") or "driver" in combined_h:
+                    col_map["dl"] = col_idx
+                elif any(k in combined_h for k in ["clean record", "background"]):
+                    col_map["clean_record"] = col_idx
+                elif any(k in combined_h for k in ["work exp", "experience"]):
+                    col_map["work_exp"] = col_idx
+                elif any(k in combined_h for k in ["wage", "pay"]):
+                    col_map["wage"] = col_idx
+                elif "career" in combined_h:
+                    col_map["career_url"] = col_idx
+                elif "indeed" in combined_h:
+                    col_map["indeed_url"] = col_idx
+                elif "phone" in combined_h:
+                    col_map["phone"] = col_idx
+                elif "manager" in combined_h:
+                    col_map["manager"] = col_idx
+                elif any(k in combined_h for k in ["felon", "fair chance"]):
+                    col_map["felon_friendly"] = col_idx
+                elif "drug" in combined_h:
+                    col_map["drug_testing"] = col_idx
+                elif any(k in combined_h for k in ["sector", "industry"]):
+                    col_map["industry"] = col_idx
+                elif "note" in combined_h:
+                    col_map["notes"] = col_idx
+
+            if "company" not in col_map: col_map["company"] = 0
+            if "address" not in col_map: col_map["address"] = 1
+            if "min_age" not in col_map: col_map["min_age"] = 2
+            if "hs_ged" not in col_map: col_map["hs_ged"] = 4
+            if "dl" not in col_map: col_map["dl"] = 5
+            if "clean_record" not in col_map: col_map["clean_record"] = 6
+            if "work_exp" not in col_map: col_map["work_exp"] = 7
+            if "wage" not in col_map: col_map["wage"] = 8
+            if "career_url" not in col_map: col_map["career_url"] = 9
+            if "indeed_url" not in col_map: col_map["indeed_url"] = 10
+            if "notes" not in col_map: col_map["notes"] = 11
+
+            for r in all_rows[2:]:
+                comp = r[col_map["company"]].strip() if col_map["company"] < len(r) else ""
+                if not comp or comp.startswith("http"):
+                    continue
+
+                addr = r[col_map["address"]].strip() if col_map["address"] < len(r) else ""
+                min_age = r[col_map["min_age"]].strip() if col_map["min_age"] < len(r) else ""
+                hs_ged = r[col_map["hs_ged"]].strip() if col_map["hs_ged"] < len(r) else ""
+                dl = r[col_map["dl"]].strip() if col_map["dl"] < len(r) else ""
+                clean_rec = r[col_map["clean_record"]].strip() if col_map["clean_record"] < len(r) else ""
+                work_exp = r[col_map["work_exp"]].strip() if col_map["work_exp"] < len(r) else ""
+                wage = r[col_map["wage"]].strip() if col_map["wage"] < len(r) else ""
+                career_url = r[col_map["career_url"]].strip() if col_map["career_url"] < len(r) else ""
+                indeed_url = r[col_map["indeed_url"]].strip() if col_map["indeed_url"] < len(r) else ""
+                notes = r[col_map["notes"]].strip() if col_map["notes"] < len(r) else ""
+                phone = r[col_map["phone"]].strip() if "phone" in col_map and col_map["phone"] < len(r) else ""
+                manager = r[col_map["manager"]].strip() if "manager" in col_map and col_map["manager"] < len(r) else ""
+                felon_friendly = r[col_map["felon_friendly"]].strip() if "felon_friendly" in col_map and col_map["felon_friendly"] < len(r) else ""
+                drug_testing = r[col_map["drug_testing"]].strip() if "drug_testing" in col_map and col_map["drug_testing"] < len(r) else ""
+                industry = r[col_map["industry"]].strip() if "industry" in col_map and col_map["industry"] < len(r) else ""
+
+                all_combined_records.append({
+                    "company": comp,
+                    "address": addr,
+                    "min_age": min_age,
+                    "hs_ged_required": hs_ged,
+                    "drivers_license_required": dl,
+                    "clean_record_required": clean_rec,
+                    "work_experience_required": work_exp,
+                    "wage": wage,
+                    "career_url": career_url,
+                    "indeed_url": indeed_url,
+                    "phone": phone,
+                    "manager_name": manager,
+                    "felon_friendly": felon_friendly,
+                    "drug_testing": drug_testing,
+                    "industry_sector": industry,
+                    "notes": notes
+                })
+
+    # Save to legacy json
     with open(output_json, "w", encoding="utf-8") as f:
-        json.dump(employers_data, f, indent=2)
+        json.dump(all_combined_records, f, indent=2)
 
-    print(f"[SHEETS] Cached {len(employers_data)} employers from 'Redding Area Employers' to {output_json}")
-    return employers_data
+    # Ingest into SQLite employers.db and fast cache
+    try:
+        import employer_db
+        if structured_employers:
+            count = employer_db.import_from_records(list(structured_employers.values()))
+        else:
+            count = employer_db.import_from_records(all_combined_records)
+        print(f"[SHEETS] Ingested {count} employers into employers.db & employers_registry.json")
+    except Exception as e:
+        print(f"[SHEETS] Error ingesting to employer_db: {e}")
+
+    print(f"[SHEETS] Cached {len(all_combined_records)} employers from Google Sheets to {output_json}")
+    return all_combined_records
+
+sync_area_employers = sync_redding_area_employers
+
+def export_employers_to_google_sheet(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU") -> int:
+    """
+    Exports the verified employers from local SQLite employers.db back to the
+    'Area Employers' Google Sheet tab, including multi-location and contact data.
+    """
+    try:
+        import employer_db
+        employers = employer_db.get_all_employers()
+        if not employers:
+            return 0
+
+        client = get_gspread_client()
+        spreadsheet = client.open_by_key(sheet_id)
+        
+        tab_name = "Area Employers"
+        try:
+            ws = spreadsheet.worksheet(tab_name)
+        except Exception:
+            try:
+                ws = spreadsheet.worksheet("Redding Area Employers")
+            except Exception:
+                ws = spreadsheet.add_worksheet(title="Area Employers", rows=500, cols=25)
+
+        headers = [
+            "Employer Name", "Corporate / Parent Entity", "Branch / Location Name",
+            "Worksite Street Address", "City", "State", "Zip Code", "Phone Number",
+            "Manager / Contact", "Industry Sector", "Min Hiring Age", "Fair Chance / Felon Friendly",
+            "Drug Screen Required", "Background Check Required", "Driver License Required",
+            "High School / GED Required", "Starting Wage / Range", "Typical Entry Roles",
+            "Careers / Application URL", "Custom Notes / Barrier Fit", "Multi-Location Flag", "Is Primary Branch"
+        ]
+
+        rows = [headers]
+        for emp in employers:
+            locations = emp.get("locations", [])
+            corp = emp.get("aliases", [emp.get("name", "")])[0] if emp.get("aliases") else emp.get("name", "")
+            is_multi = "Yes" if len(locations) > 1 else "No"
+            
+            if not locations:
+                rows.append([
+                    emp.get("name", ""), corp, "Main Location", "Redding, CA", "Redding", "CA", "96001",
+                    "", "", emp.get("industry_sector", ""), str(emp.get("min_age_baseline", "18")),
+                    emp.get("felon_friendly", ""), emp.get("drug_testing", ""), emp.get("background_check", ""),
+                    emp.get("drivers_license", ""), emp.get("hs_ged_baseline", ""), emp.get("starting_wage", ""),
+                    "", emp.get("career_url", ""), emp.get("notes", ""), "No", "Yes"
+                ])
+            else:
+                for idx, loc in enumerate(locations):
+                    is_prim = "Yes" if loc.get("is_primary") or idx == 0 else "No"
+                    rows.append([
+                        emp.get("name", ""),
+                        corp,
+                        loc.get("location_name", ""),
+                        loc.get("street_address", ""),
+                        loc.get("city", "Redding"),
+                        loc.get("state", "CA"),
+                        loc.get("zip_code", ""),
+                        loc.get("phone", ""),
+                        loc.get("manager_name", ""),
+                        emp.get("industry_sector", ""),
+                        str(emp.get("min_age_baseline", "18")),
+                        emp.get("felon_friendly", ""),
+                        emp.get("drug_testing", ""),
+                        emp.get("background_check", ""),
+                        emp.get("drivers_license", ""),
+                        emp.get("hs_ged_baseline", ""),
+                        emp.get("starting_wage", ""),
+                        "",
+                        emp.get("career_url", ""),
+                        loc.get("notes") or emp.get("notes", ""),
+                        is_multi,
+                        is_prim
+                    ])
+
+        ws.clear()
+        ws.update(values=rows, range_name="A1")
+        print(f"[SHEETS] Exported {len(rows)-1} worksite rows for {len(employers)} employers to tab '{ws.title}'.")
+        return len(employers)
+    except Exception as e:
+        print(f"[SHEETS] Error exporting employers to Google Sheet: {e}")
+        return 0

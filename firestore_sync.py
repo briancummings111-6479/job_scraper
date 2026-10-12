@@ -341,19 +341,52 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower())
         true_desc = "" if is_boilerplate else raw_desc
 
+        # Check Employer Database for verified company baseline & branch location
+        emp_match, loc_match = None, None
+        try:
+            from employer_db import match_employer
+            emp_match, loc_match = match_employer(
+                company_name=job.get("company", ""),
+                location_hint=f"{cleaned_loc} {true_desc}"
+            )
+        except Exception:
+            emp_match, loc_match = None, None
+
+        if emp_match:
+            job_copy["company"] = emp_match["name"]
+            if loc_match and loc_match.get("street_address") and loc_match["street_address"] not in ["Redding, CA", ""]:
+                cleaned_loc = loc_match["street_address"]
+                job_copy["location"] = cleaned_loc
+
         gemini_res = None
         if true_desc and len(true_desc) > 30:
             try:
-                from gemini_parser import analyze_job_with_gemini
-                gemini_res = analyze_job_with_gemini(
-                    title=clean_title,
-                    company=job.get("company", ""),
-                    location=cleaned_loc,
-                    description_text=true_desc,
-                    raw_pay=job.get("pay") or "N/A",
-                    raw_type=job.get("job_type_extracted") or "N/A",
-                    raw_schedule=job.get("shift_schedule") or "N/A"
-                )
+                if emp_match:
+                    from gemini_parser import compare_job_with_employer_baseline
+                    gemini_res = compare_job_with_employer_baseline(
+                        title=clean_title,
+                        company=emp_match["name"],
+                        location=cleaned_loc,
+                        description_text=true_desc,
+                        employer_baseline={
+                            **emp_match,
+                            "street_address": cleaned_loc
+                        },
+                        raw_pay=job.get("pay") or "N/A",
+                        raw_type=job.get("job_type_extracted") or "N/A",
+                        raw_schedule=job.get("shift_schedule") or "N/A"
+                    )
+                else:
+                    from gemini_parser import analyze_job_with_gemini
+                    gemini_res = analyze_job_with_gemini(
+                        title=clean_title,
+                        company=job.get("company", ""),
+                        location=cleaned_loc,
+                        description_text=true_desc,
+                        raw_pay=job.get("pay") or "N/A",
+                        raw_type=job.get("job_type_extracted") or "N/A",
+                        raw_schedule=job.get("shift_schedule") or "N/A"
+                    )
             except Exception:
                 gemini_res = None
 

@@ -242,3 +242,116 @@ CRITICAL EVALUATION RULES:
             continue
 
     return None
+
+def compare_job_with_employer_baseline(
+    title: str,
+    company: str,
+    location: str,
+    description_text: str,
+    employer_baseline: dict,
+    raw_pay: str = "N/A",
+    raw_type: str = "N/A",
+    raw_schedule: str = "N/A"
+) -> Optional[JobAnalysisResult]:
+    """
+    Evaluates a job posting by comparing it against verified employer baseline policies.
+    Identifies role-unique requirements (such as CNA, CDL, lifted lifting requirements, or 21+ age for machinery)
+    while preserving verified employer policies (fair-chance, baseline age, drug test, address, sector).
+    """
+    client = get_gemini_client()
+
+    base_sector = employer_baseline.get("industry_sector") or "Other"
+    base_addr = employer_baseline.get("street_address") or location or "Redding, CA 96002"
+    base_min_age = employer_baseline.get("min_age_baseline", 18)
+    base_hs = employer_baseline.get("hs_ged_baseline", "")
+    base_felon = employer_baseline.get("felon_friendly", "Unknown")
+    base_bg = employer_baseline.get("background_check", "Unknown")
+    base_drug = employer_baseline.get("drug_testing", "Unknown")
+    base_dl = employer_baseline.get("drivers_license", "None")
+
+    prompt = f"""
+You are an expert workforce development analyst for Shasta County, California.
+Evaluate the following job posting against our VERIFIED EMPLOYER BASELINE for this company.
+
+VERIFIED EMPLOYER BASELINE:
+- Employer Name: {company}
+- Sector: {base_sector}
+- Physical Worksite / Branch Address: {base_addr}
+- Baseline Minimum Hiring Age: {base_min_age}
+- Baseline High School / GED Required: {base_hs}
+- Baseline Felon-Friendly / Fair-Chance: {base_felon}
+- Baseline Background Check Policy: {base_bg}
+- Baseline Drug Testing Policy: {base_drug}
+- Baseline Driver's License Policy: {base_dl}
+
+JOB POSTING TO ANALYZE:
+- Scraped Title: {title}
+- Stated Pay: {raw_pay}
+- Stated Job Type: {raw_type}
+- Stated Schedule: {raw_schedule}
+- Scraped Location: {location}
+
+FULL JOB POSTING TEXT:
+\"\"\"
+{description_text}
+\"\"\"
+
+COMPARISON & EXTRACTION RULES:
+1. ENTRY-LEVEL SUITABILITY:
+   Evaluate if this specific role is entry-level (0-2 yrs) in Shasta County. Reject remote, travel contracts, supervisory/lead, journeyman trade, or pay > $75k/yr.
+2. CLEAN TITLE: Concisely clean scraper noise, emojis, or marketing fluff from title.
+3. SECTOR: Use the verified sector '{base_sector}' unless this specific job posting unambiguously belongs to another specialized sector.
+4. BUSINESS ADDRESS: Use the verified worksite address '{base_addr}'.
+5. STATED PAY: Extract exact compensation range if stated in the text, or use 'Unstated'. Never estimate.
+6. STATED SCHEDULE: Scan for shift hours (e.g. Day shift, 8 hour shift, Monday to Friday) or 'Unstated'.
+7. ROLE-SPECIFIC REQUIREMENTS COMPARISON:
+   - Compare the specific posting text against the employer baseline:
+     * If the posting explicitly elevates requirements for this role (e.g. requires Class A CDL or Class C DL for driving duties, requires 21+ for equipment operation, requires CNA/CPR/food handler cert, lift 50 lbs), accurately record those role-specific requirements in experience_requirements and flags.
+     * If the posting is silent or does not mention driver's license, background check, drug test, or high school diploma, PRESERVE and adhere to the employer's verified baseline.
+8. JOB DESCRIPTION SUMMARY: 2-3 crisp sentences summarizing the role's essential daily duties and tasks.
+9. TEEN FRIENDLY:
+   Set True only if min_age is under 18 (14-17) and the posting does not require adult status (18+, 21+), driving, or night graveyard shifts.
+"""
+
+    models_to_try = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-3.8-flash", "gemini-3.5-flash"]
+    if client:
+        for model_name in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": JobAnalysisResult,
+                        "temperature": 0.1,
+                    }
+                )
+                if response and response.text:
+                    data = json.loads(response.text)
+                    return JobAnalysisResult(**data)
+            except Exception:
+                continue
+
+    # Fallback to local heuristic baseline if Gemini client unavailable
+    is_teen = int(base_min_age) < 18 if str(base_min_age).isdigit() else False
+    return JobAnalysisResult(
+        is_entry_level=True,
+        rejection_reason=None,
+        clean_title=title,
+        sector=base_sector,
+        business_address=base_addr,
+        pay_rate=raw_pay if raw_pay not in ["N/A", "nan"] else "Unstated",
+        job_type=raw_type if raw_type not in ["N/A", "nan"] else "Unstated",
+        schedule=raw_schedule if raw_schedule not in ["N/A", "nan"] else "Unstated",
+        experience_requirements=f"Minimum age {base_min_age}; On-the-job training provided",
+        job_description_summary=f"{title} position at {company} in {base_addr}.",
+        min_age=int(base_min_age) if str(base_min_age).isdigit() else 18,
+        is_youth_friendly=is_teen,
+        is_teen_friendly=is_teen,
+        requires_driver_license=bool("required" in str(base_dl).lower()),
+        driver_license_type="Class C (Standard)" if "class c" in str(base_dl).lower() else ("Commercial Class A (CDL-A)" if "class a" in str(base_dl).lower() else "None"),
+        requires_hs_ged=bool("yes" in str(base_hs).lower()),
+        requires_drug_test=bool("none" not in str(base_drug).lower() and str(base_drug).strip() not in ["", "Unknown"]),
+        requires_background_check=bool("none" not in str(base_bg).lower() and str(base_bg).strip() not in ["", "Unknown"])
+    )
+

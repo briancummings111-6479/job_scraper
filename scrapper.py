@@ -272,6 +272,16 @@ def resolve_business_address(company: str = "", location: str = "", description:
     Resolves the physical street address of the employer/worksite in the Redding/Shasta County area.
     Crucial for workforce participants who rely on Redding Area Bus Authority (RABA) transit lines.
     """
+    # 0. Check verified Employer Database registry
+    if company:
+        try:
+            from employer_db import match_employer
+            emp_m, loc_m = match_employer(company, location_hint=f"{location} {description}")
+            if loc_m and loc_m.get("street_address") and loc_m["street_address"] not in ["Redding, CA", "Area Operations", ""]:
+                return clean_location_str(loc_m["street_address"])
+        except Exception:
+            pass
+
     # 1. Use Gemini-resolved address if it includes a street number and valid locality
     if gemini_address and str(gemini_address).strip() not in ["N/A", "None", "", "Unstated"]:
         clean_g = clean_location_str(gemini_address)
@@ -740,9 +750,9 @@ def check_redding_employer_restrictions(comp: str) -> tuple:
                         min_age = str(emp.get("min_age", "")).strip()
                         hs_ged = str(emp.get("hs_ged_required", "")).strip().lower()
                         if min_age in ['18', '21']:
-                            return True, f"Employer requires age {min_age}+ per Redding Area Employers database"
+                            return True, f"Employer requires age {min_age}+ per Area Employers database"
                         if hs_ged in ['yes', 'true']:
-                            return True, "Employer requires HS Diploma / GED per Redding Area Employers database"
+                            return True, "Employer requires HS Diploma / GED per Area Employers database"
         except Exception:
             pass
     return False, ""
@@ -3716,19 +3726,64 @@ class JobScraper:
                             else:
                                 job_data["pay"] = "Unstated"
 
+                        # 1. Query Employer Database for verified company baseline & branch location
+                        emp_match, loc_match = None, None
+                        try:
+                            from employer_db import match_employer, log_unregistered_employer
+                            emp_match, loc_match = match_employer(
+                                company_name=job_data.get("company", ""),
+                                location_hint=f"{job_data.get('location', '')} {full_desc}"
+                            )
+                        except Exception:
+                            emp_match, loc_match = None, None
+
+                        if emp_match:
+                            job_data["company"] = emp_match["name"]
+                            job_data["industry"] = emp_match["industry_sector"]
+                            if loc_match and loc_match.get("street_address") and loc_match["street_address"] not in ["Redding, CA", ""]:
+                                job_data["location"] = loc_match["street_address"]
+                            job_data["phone"] = loc_match.get("phone", "") if loc_match else ""
+                            job_data["manager_name"] = loc_match.get("manager_name", "") if loc_match else ""
+                            job_data["felon_friendly"] = emp_match.get("felon_friendly", "Unknown")
+                            job_data["drug_testing"] = emp_match.get("drug_testing", "Unknown")
+                            job_data["background_check"] = emp_match.get("background_check", "Unknown")
+                            job_data["min_age_baseline"] = emp_match.get("min_age_baseline", 18)
+                            job_data["hs_ged_baseline"] = emp_match.get("hs_ged_baseline", "")
+
                         gemini_res = None
                         if full_desc and len(full_desc.strip()) > 30:
                             try:
-                                from gemini_parser import analyze_job_with_gemini
-                                gemini_res = analyze_job_with_gemini(
-                                    title=job_data["job_title"],
-                                    company=job_data["company"],
-                                    location=job_data["location"],
-                                    description_text=full_desc,
-                                    raw_pay=job_data.get("pay", "N/A"),
-                                    raw_type=job_data.get("job_type_extracted", "N/A"),
-                                    raw_schedule=job_data.get("shift_schedule", "N/A")
-                                )
+                                if emp_match:
+                                    from gemini_parser import compare_job_with_employer_baseline
+                                    gemini_res = compare_job_with_employer_baseline(
+                                        title=job_data["job_title"],
+                                        company=emp_match["name"],
+                                        location=job_data.get("location", "Redding, CA"),
+                                        description_text=full_desc,
+                                        employer_baseline={
+                                            **emp_match,
+                                            "street_address": job_data.get("location", "Redding, CA")
+                                        },
+                                        raw_pay=job_data.get("pay", "N/A"),
+                                        raw_type=job_data.get("job_type_extracted", "N/A"),
+                                        raw_schedule=job_data.get("shift_schedule", "N/A")
+                                    )
+                                else:
+                                    from gemini_parser import analyze_job_with_gemini
+                                    gemini_res = analyze_job_with_gemini(
+                                        title=job_data["job_title"],
+                                        company=job_data["company"],
+                                        location=job_data["location"],
+                                        description_text=full_desc,
+                                        raw_pay=job_data.get("pay", "N/A"),
+                                        raw_type=job_data.get("job_type_extracted", "N/A"),
+                                        raw_schedule=job_data.get("shift_schedule", "N/A")
+                                    )
+                                    log_unregistered_employer(
+                                        name=job_data.get("company", ""),
+                                        sample_title=job_data.get("job_title", ""),
+                                        sample_location=job_data.get("location", "")
+                                    )
                             except Exception:
                                 gemini_res = None
 
@@ -3737,7 +3792,7 @@ class JobScraper:
                                 print(f"    [SKIP] Filtered non-entry-level / rejected via Gemini: {job_data['job_title']} ({gemini_res.rejection_reason})")
                                 continue
                             job_data["industry"] = gemini_res.sector
-                            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A"]:
+                            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A", "Unstated"]:
                                 job_data["pay"] = gemini_res.pay_rate
                             job_data["experience"] = extract_key_requirements(
                                 text=full_desc,
@@ -3746,7 +3801,8 @@ class JobScraper:
                             )
                             job_data["requirements"] = job_data["experience"]
                         else:
-                            job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
+                            if not emp_match:
+                                job_data["industry"] = self.determine_industry(job_data["job_title"], job_data["company"], job_data.get("description", ""))
 
                             # Extract structured key requirements for Column I
                             job_data["experience"] = extract_key_requirements(
@@ -4576,20 +4632,65 @@ class JobScraper:
                                     if not job_data['shift_schedule']:
                                         job_data['shift_schedule'] = self.extract_shift(description)
 
+                                # 1. Query Employer Database for verified company baseline & branch location
+                                emp_match, loc_match = None, None
+                                try:
+                                    from employer_db import match_employer, log_unregistered_employer
+                                    emp_match, loc_match = match_employer(
+                                        company_name=job_data.get("company", ""),
+                                        location_hint=f"{job_data.get('location', '')} {full_context}"
+                                    )
+                                except Exception:
+                                    emp_match, loc_match = None, None
+
+                                if emp_match:
+                                    job_data["company"] = emp_match["name"]
+                                    job_data["industry"] = emp_match["industry_sector"]
+                                    if loc_match and loc_match.get("street_address") and loc_match["street_address"] not in ["Redding, CA", ""]:
+                                        job_data["location"] = loc_match["street_address"]
+                                    job_data["phone"] = loc_match.get("phone", "") if loc_match else ""
+                                    job_data["manager_name"] = loc_match.get("manager_name", "") if loc_match else ""
+                                    job_data["felon_friendly"] = emp_match.get("felon_friendly", "Unknown")
+                                    job_data["drug_testing"] = emp_match.get("drug_testing", "Unknown")
+                                    job_data["background_check"] = emp_match.get("background_check", "Unknown")
+                                    job_data["min_age_baseline"] = emp_match.get("min_age_baseline", 18)
+                                    job_data["hs_ged_baseline"] = emp_match.get("hs_ged_baseline", "")
+
                                 # Gemini flash extraction for classification, requirements, pay, and address
                                 gemini_res = None
                                 if description and len(description.strip()) > 30:
                                     try:
-                                        from gemini_parser import analyze_job_with_gemini
-                                        gemini_res = analyze_job_with_gemini(
-                                            title=job_data["job_title"],
-                                            company=job_data["company"],
-                                            location=job_data["location"],
-                                            description_text=description,
-                                            raw_pay=job_data.get("pay") or "Unstated",
-                                            raw_type=job_data.get("job_type_extracted") or "Unstated",
-                                            raw_schedule=job_data.get("shift_schedule") or "Unstated"
-                                        )
+                                        if emp_match:
+                                            from gemini_parser import compare_job_with_employer_baseline
+                                            gemini_res = compare_job_with_employer_baseline(
+                                                title=job_data["job_title"],
+                                                company=emp_match["name"],
+                                                location=job_data.get("location", "Redding, CA"),
+                                                description_text=description,
+                                                employer_baseline={
+                                                    **emp_match,
+                                                    "street_address": job_data.get("location", "Redding, CA")
+                                                },
+                                                raw_pay=job_data.get("pay") or "Unstated",
+                                                raw_type=job_data.get("job_type_extracted") or "Unstated",
+                                                raw_schedule=job_data.get("shift_schedule") or "Unstated"
+                                            )
+                                        else:
+                                            from gemini_parser import analyze_job_with_gemini
+                                            gemini_res = analyze_job_with_gemini(
+                                                title=job_data["job_title"],
+                                                company=job_data["company"],
+                                                location=job_data["location"],
+                                                description_text=description,
+                                                raw_pay=job_data.get("pay") or "Unstated",
+                                                raw_type=job_data.get("job_type_extracted") or "Unstated",
+                                                raw_schedule=job_data.get("shift_schedule") or "Unstated"
+                                            )
+                                            log_unregistered_employer(
+                                                name=job_data.get("company", ""),
+                                                sample_title=job_data.get("job_title", ""),
+                                                sample_location=job_data.get("location", "")
+                                            )
                                     except Exception:
                                         gemini_res = None
 
@@ -4611,7 +4712,8 @@ class JobScraper:
                                     )
                                     job_data['requirements'] = job_data['experience']
                                 else:
-                                    job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
+                                    if not emp_match:
+                                        job_data['industry'] = self.determine_industry(job_data['job_title'], job_data['company'], job_data.get('description', ''))
                                     job_data['experience'] = extract_key_requirements(
                                         text=full_context,
                                         existing_exp=qual_text,

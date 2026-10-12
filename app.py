@@ -644,10 +644,128 @@ def start_review_expired_jobs_endpoint():
 
     return jsonify({"status": "started", "message": "Job expiry review initiated in background."})
 
-@app.route('/api/review-expired-jobs/status', methods=['GET'])
-def get_review_expired_jobs_status():
-    with review_lock:
-        return jsonify(dict(review_job_state))
+# ==============================================================================
+# EMPLOYER DATABASE & PARTICIPANT MATCHING REGISTRY APIS
+# ==============================================================================
+
+@app.route('/api/employers', methods=['GET'])
+def get_employers_endpoint():
+    try:
+        import employer_db
+        employers = employer_db.get_all_employers()
+
+        q = request.args.get('q', '').strip().lower()
+        sector = request.args.get('sector', '').strip()
+        felon_only = request.args.get('fair_chance', '').strip().lower() in ['1', 'true', 'yes']
+        teen_only = request.args.get('teen_friendly', '').strip().lower() in ['1', 'true', 'yes']
+
+        filtered = []
+        for emp in employers:
+            if q:
+                norm_q = employer_db.normalize_name(q)
+                emp_name_lower = emp['name'].lower()
+                aliases_lower = " ".join(emp.get('aliases', [])).lower()
+                addresses = " ".join(l.get('street_address', '') for l in emp.get('locations', [])).lower()
+                if norm_q not in employer_db.normalize_name(emp['name']) and q not in emp_name_lower and q not in aliases_lower and q not in addresses:
+                    continue
+
+            if sector and emp.get('industry_sector') != sector:
+                continue
+
+            if felon_only and str(emp.get('felon_friendly', '')).lower() not in ['yes', 'case-by-case', 'fair chance pledge']:
+                continue
+
+            if teen_only and int(emp.get('min_age_baseline', 18)) >= 18:
+                continue
+
+            filtered.append(emp)
+
+        return jsonify({
+            "status": "success",
+            "total": len(filtered),
+            "employers": filtered
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/employers/<int:emp_id>', methods=['GET'])
+def get_employer_detail_endpoint(emp_id):
+    try:
+        import employer_db
+        emp = employer_db.get_employer(emp_id)
+        if not emp:
+            return jsonify({"status": "error", "message": "Employer not found."}), 404
+        return jsonify({"status": "success", "employer": emp})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/employers', methods=['POST'])
+def save_employer_endpoint():
+    try:
+        data = request.get_json()
+        if not data or not data.get('name'):
+            return jsonify({"status": "error", "message": "Employer name is required."}), 400
+
+        import employer_db
+        emp_id = employer_db.upsert_employer(data)
+
+        # Upsert locations if provided
+        locations = data.get('locations', [])
+        for loc in locations:
+            if loc.get('street_address'):
+                employer_db.upsert_location(emp_id, loc)
+
+        employer_db.export_to_json()
+        employer_db.load_fast_cache(force_reload=True)
+
+        updated_emp = employer_db.get_employer(emp_id)
+        return jsonify({
+            "status": "success",
+            "message": f"Employer '{data['name']}' saved successfully.",
+            "employer": updated_emp
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/employers/sync', methods=['POST'])
+def sync_employers_from_sheet_endpoint():
+    try:
+        import sheets_sync
+        records = sheets_sync.sync_redding_area_employers()
+        return jsonify({
+            "status": "success",
+            "message": f"Successfully synchronized {len(records)} employers from Google Sheets.",
+            "count": len(records)
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/employers/export-sheet', methods=['POST'])
+def export_employers_to_sheet_endpoint():
+    try:
+        import sheets_sync
+        count = sheets_sync.export_employers_to_google_sheet()
+        return jsonify({
+            "status": "success",
+            "message": f"Successfully exported {count} employers to Google Sheet tab 'Area Employers'.",
+            "count": count
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/employers/unregistered', methods=['GET'])
+def get_unregistered_employers_endpoint():
+    try:
+        import employer_db
+        status = request.args.get('status', 'pending')
+        unreg = employer_db.get_unregistered_employers(status=status)
+        return jsonify({
+            "status": "success",
+            "count": len(unreg),
+            "unregistered": unreg
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

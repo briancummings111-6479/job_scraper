@@ -61,9 +61,80 @@ EXPIRED_PHRASES = [
     "job opening has closed",
     "page not found",
     "404 not found",
+    "we can't find this page",
+    "page doesn't exist",
 ]
 
-async def check_job_url(context, job: Dict[str, Any], max_retries: int = 1) -> Dict[str, Any]:
+import re
+
+async def solve_turnstile_if_present(page) -> bool:
+    """
+    Checks if a Cloudflare Turnstile challenge frame is present on the page
+    and clicks the verification checkbox if found.
+    """
+    try:
+        title = (await page.title()).lower()
+        if "just a moment" not in title and "security check" not in title:
+            # Also check if any turnstile frame exists
+            has_cf = any("challenges.cloudflare.com" in f.url for f in page.frames)
+            if not has_cf:
+                return False
+
+        # Wait briefly for Turnstile iframe to finish layout
+        await page.wait_for_timeout(2000)
+        for f in page.frames:
+            if "challenges.cloudflare.com" in f.url:
+                try:
+                    box = await f.locator("body").bounding_box()
+                    if box:
+                        await page.mouse.click(box["x"] + 28, box["y"] + box["height"] / 2)
+                        logger.info("Clicked Cloudflare Turnstile checkbox; waiting for clearance...")
+                        await page.wait_for_timeout(4500)
+                        return True
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return False
+
+
+async def warm_indeed_session(context) -> None:
+    """
+    Opens an Indeed search results page once to establish session cookies and
+    pass Cloudflare Turnstile before worker tasks run.
+    """
+    page = await context.new_page()
+    try:
+        logger.info("Warming Indeed session on search page...")
+        await page.goto(
+            "https://www.indeed.com/jobs?q=driver&l=Redding,+CA",
+            wait_until="domcontentloaded",
+            timeout=20000
+        )
+        await page.wait_for_timeout(2500)
+        await solve_turnstile_if_present(page)
+        title = await page.title()
+        logger.info(f"Indeed session warmed (Title: '{title[:60]}')")
+    except Exception as e:
+        logger.warning(f"Warning during Indeed session warmup: {e}")
+    finally:
+        try:
+            await page.close()
+        except Exception:
+            pass
+
+
+def extract_indeed_jk(url: str) -> Optional[str]:
+    """Extracts the 16-char hex job key (jk) from an Indeed URL if present."""
+    if "indeed.com" not in url.lower():
+        return None
+    m = re.search(r"[?&](?:jk|vjk)=([a-f0-9]{16})", url, re.IGNORECASE)
+    if m:
+        return m.group(1)
+    return None
+
+
+async def check_job_url(context, job: Dict[str, Any], max_retries: int = 2) -> Dict[str, Any]:
     """
     Visits a job URL using an existing Playwright context and evaluates
     whether the job is still active or expired.
@@ -102,25 +173,106 @@ async def check_job_url(context, job: Dict[str, Any], max_retries: int = 1) -> D
 
     page = None
     last_err = None
+    indeed_jk = extract_indeed_jk(url)
+    target_url = (
+        f"https://www.indeed.com/jobs?q=driver&l=Redding,+CA&vjk={indeed_jk}"
+        if indeed_jk else url
+    )
 
     for attempt in range(max_retries + 1):
         try:
             page = await context.new_page()
-            
+
             # Navigate with generous timeout
             resp = await page.goto(
-                url,
+                target_url,
                 wait_until="domcontentloaded",
-                timeout=18000,
-                referer="https://www.google.com/"
+                timeout=20000
             )
-            
+
             # Short wait for client-side rendering / banner display
-            await page.wait_for_timeout(1400)
-            
+            await page.wait_for_timeout(1600)
+
+            # If Cloudflare Turnstile appeared, solve it once
+            if await solve_turnstile_if_present(page):
+                await page.wait_for_timeout(2000)
+
             status_code = resp.status if resp else 0
             final_url = page.url.lower()
             page_title = (await page.title()).lower()
+
+            # Special handling for Indeed vjk right-pane inspection
+            if indeed_jk:
+                pane = page.locator("#jobsearch-ViewjobPaneWrapper, div.jobsearch-JobComponent, .jobsearch-RightPane")
+                pane_count = await pane.count()
+                if pane_count > 0:
+                    pane_text = (await pane.first.inner_text()).lower().strip()
+                else:
+                    pane_text = ""
+
+                if not pane_text:
+                    # Wait a bit longer in case right pane is still hydrating
+                    await page.wait_for_timeout(2000)
+                    await solve_turnstile_if_present(page)
+                    pane_count = await pane.count()
+                    if pane_count > 0:
+                        pane_text = (await pane.first.inner_text()).lower().strip()
+
+                if not pane_text:
+                    body_check = (await page.inner_text("body")).lower()
+                    if any(ph in body_check for ph in EXPIRED_PHRASES):
+                        await page.close()
+                        return {
+                            "row_index": row_idx,
+                            "source": source,
+                            "title": title,
+                            "company": company,
+                            "status": "Expired",
+                            "is_expired": True,
+                            "skipped": False,
+                            "reason": "Indeed page not found / expired"
+                        }
+                    await page.close()
+                    if attempt < max_retries:
+                        await asyncio.sleep(2)
+                        continue
+                    return {
+                        "row_index": row_idx,
+                        "source": source,
+                        "title": title,
+                        "company": company,
+                        "status": "Expired",
+                        "is_expired": True,
+                        "skipped": False,
+                        "reason": "Indeed job pane empty or listing removed"
+                    }
+
+                for phrase in EXPIRED_PHRASES:
+                    if phrase in pane_text:
+                        await page.close()
+                        return {
+                            "row_index": row_idx,
+                            "source": source,
+                            "title": title,
+                            "company": company,
+                            "status": "Expired",
+                            "is_expired": True,
+                            "skipped": False,
+                            "reason": f"Detected expired phrase in Indeed pane: '{phrase}'"
+                        }
+
+                await page.close()
+                return {
+                    "row_index": row_idx,
+                    "source": source,
+                    "title": title,
+                    "company": company,
+                    "status": "Active",
+                    "is_expired": False,
+                    "skipped": False,
+                    "reason": "Active Indeed listing confirmed in job pane"
+                }
+
             body_text = (await page.inner_text("body")).lower()
 
             # 1. Direct HTTP 404 / 410 or missing resource
@@ -257,20 +409,18 @@ async def review_expired_jobs_async(
     if len(all_values) < 2:
         return {"status": "error", "message": "Worksheet does not have enough rows."}
 
-    # Row 2 contains headers
-    header_row = all_values[1]
-    
-    # Map column headers to indices (0-indexed)
+    # Map column headers to indices (0-indexed), scanning Row 1 and Row 2
     col_map = {}
-    for idx, col in enumerate(header_row):
-        col_clean = col.strip().lower()
-        if col_clean:
-            col_map[col_clean] = idx
+    for hdr_row in (all_values[0], all_values[1]):
+        for idx, col in enumerate(hdr_row):
+            col_clean = col.strip().lower()
+            if col_clean:
+                col_map[col_clean] = idx
 
     source_col_idx = col_map.get("source", 0)
     title_col_idx = col_map.get("job title", 1)
     company_col_idx = col_map.get("company", 2)
-    url_col_idx = col_map.get("job posting", col_map.get("job_url", 10))
+    url_col_idx = col_map.get("job posting", col_map.get("job_url", 11))  # Default Column L (index 11)
     status_col_idx = 15  # Column P is 0-indexed index 15 (Column 16)
 
     # Collect jobs from row 3 (index 2) onwards
@@ -341,27 +491,31 @@ async def review_expired_jobs_async(
     if reviewable_jobs:
         async with async_playwright() as p:
             logger.info("Launching browser engine with bot-detection bypass...")
-            browser = await p.chromium.launch(
-                headless=False,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                    "--no-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--window-position=-2000,-2000",
-                    "--window-size=1280,800"
-                ]
-            )
-            context = await browser.new_context(
-                user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/124.0.0.0 Safari/537.36"
-                ),
-                extra_http_headers={
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Referer": "https://www.google.com/"
-                }
-            )
+            try:
+                browser = await p.chromium.launch(
+                    headless=False,
+                    channel="chrome",
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage"
+                    ]
+                )
+            except Exception:
+                browser = await p.chromium.launch(
+                    headless=False,
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage"
+                    ]
+                )
+            context = await browser.new_context()
+
+            # Warm Indeed session and solve Cloudflare Turnstile if any Indeed jobs exist
+            has_indeed = any("indeed.com" in j.get("url", "").lower() for j in reviewable_jobs)
+            if has_indeed:
+                await warm_indeed_session(context)
 
             sem = asyncio.Semaphore(concurrency)
 
@@ -373,6 +527,10 @@ async def review_expired_jobs_async(
                     completed_count += 1
                     if res.get("status") == "Expired":
                         expired_count += 1
+                        logger.info(
+                            f"  [EXPIRED] Row {job['row_index']} [{res.get('source')}]: "
+                            f"{res.get('title')} ({res.get('reason')})"
+                        )
                     elif res.get("status") == "Active":
                         active_count += 1
 
