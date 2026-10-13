@@ -698,7 +698,21 @@ def load_hs_ok_employers() -> set:
         except Exception:
             pass
 
-    # Check redding_area_employers.json (from 'Redding Area Employers' Google Sheet)
+    # Check employers_registry.json / employers.db (from 'Area Employers' Google Sheet)
+    try:
+        from employer_db import load_fast_cache
+        for emp in load_fast_cache():
+            comp_name = str(emp.get("name", "")).strip().lower()
+            min_age_val = int(emp.get("min_age_baseline", 18))
+            hs_ged = str(emp.get("hs_ged_baseline", "")).strip().lower()
+            if comp_name and min_age_val < 18 and hs_ged not in ["yes", "true", "required"]:
+                employers.add(comp_name)
+                for al in emp.get("aliases", []):
+                    employers.add(str(al).strip().lower())
+    except Exception:
+        pass
+
+    # Check redding_area_employers.json fallback
     rae_path = os.path.join(base_dir, "redding_area_employers.json")
     if os.path.exists(rae_path):
         try:
@@ -713,7 +727,7 @@ def load_hs_ok_employers() -> set:
                         
                         if min_age in ['14', '14-15', '14-16', '15', '15-1/2', '16', '16-18', '17']:
                             employers.add(comp_name)
-                        elif hs_ged in ['no', 'false'] and work_exp in ['no', 'false'] and min_age not in ['18', '21']:
+                        elif hs_ged in ['no', 'false', 'not required'] and work_exp in ['no', 'false', 'none', 'none (entry-level)'] and min_age not in ['18', '21']:
                             employers.add(comp_name)
         except Exception:
             pass
@@ -731,12 +745,28 @@ def normalize_company_for_matching(comp: str) -> str:
 
 def check_redding_employer_restrictions(comp: str) -> tuple:
     """
-    Checks if an employer in the Redding Area Employers registry explicitly
+    Checks if an employer in the Area Employers registry explicitly
     requires 18+, a High School Diploma/GED, or prior work experience.
     Returns: (is_disqualified: bool, reason: str)
     """
     if not comp:
         return False, ""
+
+    # 1. Check primary Area Employers database via match_employer
+    try:
+        from employer_db import match_employer
+        emp_m, _ = match_employer(comp)
+        if emp_m:
+            min_age_val = int(emp_m.get("min_age_baseline", 18))
+            hs_ged = str(emp_m.get("hs_ged_baseline", "")).strip().lower()
+            if min_age_val >= 18:
+                return True, f"Employer requires age {min_age_val}+ per Area Employers database"
+            if hs_ged in ['yes', 'true', 'required']:
+                return True, "Employer requires HS Diploma / GED per Area Employers database"
+            return False, ""
+    except Exception:
+        pass
+
     norm = normalize_company_for_matching(comp)
     base_dir = os.path.dirname(os.path.abspath(__file__))
     rae_path = os.path.join(base_dir, "redding_area_employers.json")
@@ -751,7 +781,7 @@ def check_redding_employer_restrictions(comp: str) -> tuple:
                         hs_ged = str(emp.get("hs_ged_required", "")).strip().lower()
                         if min_age in ['18', '21']:
                             return True, f"Employer requires age {min_age}+ per Area Employers database"
-                        if hs_ged in ['yes', 'true']:
+                        if hs_ged in ['yes', 'true', 'required']:
                             return True, "Employer requires HS Diploma / GED per Area Employers database"
         except Exception:
             pass
@@ -923,24 +953,33 @@ def is_teen_friendly(
 
 def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: dict = None) -> str:
     """
-    Extracts, summarizes, and structures key entry-level qualification requirements:
+    Extracts, summarizes, and structures key entry-level qualification requirements
+    using the 2-Layer Rule (Job-specific overrides + Area Employers baseline defaults):
     - Experience level (No experience / On-the-job training vs 1-2 years preferred)
-    - Minimum age (18+, 21+, or 16+ youth) - only if explicitly stated in text
-    - Driver's License & endorsements (Class C, CDL-A, CDL-B)
+    - Minimum age (18+, 21+, or 16+ youth)
+    - Driver's License & endorsements (Class C, CDL-A, CDL-B, or None)
     - Role-specific certifications (CPR, Food Handler, ServSafe, Forklift, Guard card, Cosmetology, etc.)
-    - Education (High School Diploma / GED / None required) - only if explicitly stated in text
-    - Screenings (Drug screen, background check) - only if explicitly stated in text
-    - Physical demands (lifting requirements) - only if explicitly stated in text
+    - Education (High School Diploma / GED / Not Required)
+    - Screenings (Drug screen, background check / Live Scan)
+    - Physical demands (lifting requirements)
     """
     title = ""
     company = ""
     sector = ""
     location = ""
+    resolved_profile = {}
     if job_dict:
         title = str(job_dict.get('title') or job_dict.get('job_title') or '').strip()
         company = str(job_dict.get('company', '')).strip()
         sector = str(job_dict.get('sector') or job_dict.get('industry') or '').strip()
         location = str(job_dict.get('location', '')).strip()
+        resolved_profile = job_dict.get('resolved_profile') or {}
+        if not resolved_profile and company:
+            try:
+                from employer_db import resolve_job_with_employer_profile
+                resolved_profile = resolve_job_with_employer_profile(job_dict)
+            except Exception:
+                resolved_profile = {}
 
     combined_text = f"{title} {company} {sector} {location} {text or ''} {existing_exp or ''}".lower()
 
@@ -951,20 +990,23 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         for part in str(existing_exp).split(";"):
             p_clean = part.strip()
             if p_clean and not any(bad in p_clean for bad in ["00+", "40 years", "50+"]):
-                # Avoid keeping generic 'Valid CA Driver License' if we can determine reliable vehicle / clean DMV
                 if "driver" in p_clean.lower() and "license" in p_clean.lower():
                     continue
                 if p_clean not in items:
                     items.append(p_clean)
 
-    # 1. Concrete Experience / Training Requirements
+    # 1. Concrete Experience / Training Requirements (Job text override -> Area Employers baseline)
     exp_m = re.search(r'\b([1-3])\+?\s*(?:to\s*[2-4])?\s*years?(?:\s+of)?\s+(?:relevant\s+|related\s+|prior\s+)?experience\b', combined_text)
     if exp_m:
         exp_txt = f"{exp_m.group(0).strip().capitalize()} preferred"
         if not any("experience" in it.lower() for it in items):
             items.append(exp_txt)
+    elif resolved_profile.get("work_experience_policy") and resolved_profile["work_experience_policy"] not in ["None", "None (Entry-Level)", "Unknown", ""]:
+        wp = str(resolved_profile["work_experience_policy"]).strip()
+        if not any("experience" in it.lower() for it in items):
+            items.append(f"{wp} experience")
 
-    # 2. Minimum Age & Youth
+    # 2. Minimum Age & Youth (Job text override -> Area Employers baseline)
     explicit_age_m = re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)(\d{2})\b(?:\s*\+|\s*years?(?:\s*old)?|\s*or\s*older)?', combined_text)
     plus_age_m = re.search(r'\b(1[89]|2\d)\s*\+', combined_text)
     bare_age_m = re.search(r'\b(1[89]|2\d)\s*years?(?:\s*old)?\b(?!\s*(?:of\s+)?experience)', combined_text)
@@ -976,13 +1018,15 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         found_age = int(plus_age_m.group(1))
     elif bare_age_m and 16 <= int(bare_age_m.group(1)) <= 65:
         found_age = int(bare_age_m.group(1))
+    elif resolved_profile.get("min_age"):
+        found_age = int(resolved_profile["min_age"])
 
     # Alcohol, gaming, commercial transit role age floors
     if any(k in title.lower() for k in ["bartender", "bar tender", "cocktail server", "casino gaming", "gaming associate", "bus driver", "school bus"]):
         found_age = max(found_age or 18, 21)
 
     has_16_youth = bool(
-        found_age == 16
+        (found_age is not None and found_age < 18)
         or any(w in combined_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"])
     )
 
@@ -995,19 +1039,32 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
         if not any("18+" in it for it in items):
             items.append("Must be 18+ years old")
 
-    # 3. Driver's License, Vehicle, & DMV Record
+    # 3. Driver's License, Vehicle, & DMV Record (with negation guards + Area Employers fallback)
+    explicit_no_dl = bool(re.search(
+        r'\b(?:no\s+driver\'?s?\s*license(?:\s+required)?|driver\'?s?\s*license\s+not\s+required|no\s+dl\s+required|without\s+a\s+driver\'?s?\s*license)\b',
+        combined_text
+    ))
+    optional_cdl = bool(re.search(
+        r'\bcdl[^\.\n;]{0,30}\b(?:a\s+plus|not\s+required|preferred|optional|helpful)\b',
+        combined_text
+    ))
     has_veh = bool(re.search(r'\b(?:reliable\s*(?:vehicle|transportation|auto|car)|personal\s*(?:vehicle|transportation|car)|insured\s*(?:vehicle|car|automobile))\b', combined_text))
     has_dmv = bool(re.search(r'\b(?:clean\s*(?:driving\s*record|dmv|mvr)|clean\s*driving\s*history|good\s*driving\s*record)\b', combined_text))
 
     is_bus_driver = any(k in title.lower() for k in ["bus driver", "school bus", "transit bus", "coach driver"])
+    prof_dl = str(resolved_profile.get("driver_license_policy") or "").lower()
 
-    if re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', combined_text):
+    if not optional_cdl and (re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', combined_text) or "class a" in prof_dl or "cdl-a" in prof_dl):
         if not any("cdl-a" in it.lower() for it in items):
             items.append("Commercial Driver's License (CDL-A) required")
-    elif is_bus_driver or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text):
+    elif not optional_cdl and (is_bus_driver or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', combined_text) or "class b" in prof_dl or "cdl-b" in prof_dl):
         if not any("cdl-b" in it.lower() for it in items):
             items.append("Commercial Driver's License (CDL-B) required")
-    elif re.search(r'\b(?:class\s*c|driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text) or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker", "transport"]):
+    elif not explicit_no_dl and (
+        re.search(r'\b(?:class\s*c|driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record)\b', combined_text)
+        or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker", "transport"])
+        or ("required" in prof_dl and "not required" not in prof_dl)
+    ):
         if has_veh and has_dmv:
             items.append("Valid Driver's License (Class C), reliable vehicle, and clean DMV record required")
         elif has_veh:
@@ -1054,26 +1111,49 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
     if re.search(r'\b(?:dsp[\s\-]?1|dsp[\s\-]?2|direct\s*support\s*professional)\b', combined_text) and not any("dsp" in it.lower() for it in items):
         items.append("Direct Support Professional (DSP) training/certification preferred/provided")
 
-    # 5. Education
+    # 5. Education (Job text override -> Area Employers baseline)
+    prof_hs = str(resolved_profile.get("hs_ged_policy") or "").lower()
     if re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', combined_text):
         if not any("diploma" in it.lower() or "ged" in it.lower() for it in items):
-            if re.search(r'\b(?:no\s*diploma|no\s*degree)\b', combined_text):
+            if re.search(r'\b(?:no\s*(?:high\s*school\s*)?(?:diploma|degree|ged)|(?:diploma|ged)\s+not\s+required)\b', combined_text):
                 items.append("No High School Diploma or Degree required")
             elif "preferred" in combined_text and ("diploma" in combined_text or "ged" in combined_text):
                 items.append("High School Diploma or GED preferred")
             else:
                 items.append("High School Diploma or GED required")
+    elif prof_hs == "required":
+        if not any("diploma" in it.lower() or "ged" in it.lower() for it in items):
+            items.append("High School Diploma or GED required")
+    elif prof_hs == "preferred":
+        if not any("diploma" in it.lower() or "ged" in it.lower() for it in items):
+            items.append("High School Diploma or GED preferred")
 
     if re.search(r'\b(?:48\s*(?:semester\s*)?units|associate(?:\'s)?\s*degree)\b', combined_text) and not any("48" in it for it in items):
         items.append("48+ college semester units or Associate's degree required/preferred")
 
-    # 6. Clearances & Screenings
-    if re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', combined_text):
+    # 6. Clearances & Screenings (with negation guards + Area Employers baseline fallback)
+    explicit_no_drug = bool(re.search(r'\b(?:no\s+drug\s*(?:test|screen)|drug\s*(?:test|screen)\s+not\s+required)\b', combined_text))
+    explicit_no_bg = bool(re.search(r'\b(?:no\s+background\s*check|background\s*check\s+not\s+required)\b', combined_text))
+    prof_drug = str(resolved_profile.get("drug_testing_policy") or "").lower()
+    prof_bg = str(resolved_profile.get("background_check_policy") or "").lower()
+
+    if not explicit_no_drug and (
+        re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', combined_text)
+        or ("required" in prof_drug and "not required" not in prof_drug)
+    ):
         if not any("drug" in it.lower() for it in items):
             items.append("Drug screening required")
-    if re.search(r'\b(?:background\s*check|criminal\s*background|livescan|live\s*scan|fingerprint)\b', combined_text):
+
+    if not explicit_no_bg and (
+        re.search(r'\b(?:background\s*check|criminal\s*background|livescan|live\s*scan|fingerprint)\b', combined_text)
+        or ("live scan" in prof_bg or "standard" in prof_bg or "required" in prof_bg)
+    ):
         if not any("background" in it.lower() or "live scan" in it.lower() for it in items):
-            items.append("Background check / Live Scan required")
+            if "live scan" in combined_text or "livescan" in combined_text or "live scan" in prof_bg:
+                items.append("Background check / Live Scan required")
+            else:
+                items.append("Background check required")
+
     if re.search(r'\b(?:tb\s*(?:test|clearance|screen)|tuberculosis)\b', combined_text):
         if not any("tb" in it.lower() for it in items):
             items.append("TB (Tuberculosis) clearance required")
@@ -1131,18 +1211,20 @@ def extract_key_requirements(text: str = "", existing_exp: str = "", job_dict: d
 
 def standardize_driver_license_requirement(exp_str: str, text_context: str = "", gemini_license: str = None) -> str:
     """
-    Ensures that Commercial Driver License (Class A or Class B) requirements are never missed or downgraded to Class C.
+    Ensures that Commercial Driver License (Class A or Class B) requirements are never missed or downgraded to Class C,
+    while respecting optional CDL phrases ('CDL a plus, not required').
     """
     clean_exp = str(exp_str or "").strip()
     comb = f"{clean_exp} {text_context}".lower()
-    
-    is_class_a = bool(
+    optional_cdl = bool(re.search(r'\bcdl[^\.\n;]{0,30}\b(?:a\s+plus|not\s+required|preferred|optional|helpful)\b', comb))
+
+    is_class_a = not optional_cdl and bool(
         (gemini_license and "class a" in gemini_license.lower())
-        or re.search(r'\b(?:class\s*a|cdl[\s\-]?a)\b', comb)
+        or re.search(r'\b(?:class\s*a\s*cdl|cdl[\s\-]?a)\b', comb)
     )
-    is_class_b = bool(
+    is_class_b = not optional_cdl and bool(
         (gemini_license and "class b" in gemini_license.lower())
-        or re.search(r'\b(?:class\s*b|cdl[\s\-]?b)\b', comb)
+        or re.search(r'\b(?:class\s*b\s*cdl|cdl[\s\-]?b)\b', comb)
         or any(b in comb for b in ["bus driver", "school bus", "transit bus", "coach driver", "passenger bus"])
     )
     
@@ -4901,23 +4983,42 @@ class JobScraper:
                 except:
                     pass
             
-            job['location'] = resolve_business_address(
+            resolved = {}
+            try:
+                from employer_db import resolve_job_with_employer_profile
+                resolved = resolve_job_with_employer_profile(job)
+            except Exception:
+                resolved = {}
+
+            job['resolved_profile'] = resolved
+            if resolved.get('company_brand'):
+                job['company'] = resolved['company_brand']
+
+            job['location'] = clean_location_str(resolved['location_full']) if resolved.get('location_full') else resolve_business_address(
                 company=job.get('company', ''),
                 location=job.get('location', 'Redding, CA'),
                 description=job.get('description', '')
             )
-            if not job.get('industry') or job['industry'] in ['Other', 'N/A', '']:
+            if resolved.get('industry_sector') and resolved['industry_sector'] not in ['Other', 'N/A', '']:
+                job['industry'] = resolved['industry_sector']
+            elif not job.get('industry') or job['industry'] in ['Other', 'N/A', '']:
                 job['industry'] = self.determine_industry(job.get('job_title'), job.get('company'), job.get('description', ''))
-            
+
+            if not job.get('pay') or str(job.get('pay', '')).strip().lower() in ['n/a', 'none', '', 'unstated']:
+                job['pay'] = resolved.get('pay_rate', '')
+
             if not job.get('experience') or job['experience'] in ['N/A', 'None', '', 'Entry-level / No prior experience required']:
                 job['experience'] = extract_key_requirements(
                     text=job.get('description', ''),
                     existing_exp='',
                     job_dict=job
                 )
-
-            if not job.get('pay') or str(job.get('pay', '')).strip().lower() in ['n/a', 'none', '', 'unstated']:
-                job['pay'] = ''
+            else:
+                job['experience'] = extract_key_requirements(
+                    text=job.get('description', ''),
+                    existing_exp=job.get('experience', ''),
+                    job_dict=job
+                )
 
             if not job.get('job_type_extracted') or job['job_type_extracted'] in ['N/A', 'None', '']:
                 job['job_type_extracted'] = 'Unstated'
@@ -4938,6 +5039,21 @@ class JobScraper:
                 job_dict=job,
                 gemini_teen_friendly=job.get('teen_friendly')
             )
+
+            # Populate Area Employers aligned fields
+            job['branch_name'] = resolved.get('branch_name', '')
+            job['city'] = resolved.get('city', 'Redding')
+            job['state'] = resolved.get('state', 'CA')
+            job['zip_code'] = resolved.get('zip_code', '')
+            job['phone'] = resolved.get('phone', '')
+            job['min_age'] = str(resolved.get('min_age', 18))
+            job['fair_chance'] = resolved.get('fair_chance', 'Unknown')
+            job['drug_testing_policy'] = resolved.get('drug_testing_policy', 'None')
+            job['background_check_policy'] = resolved.get('background_check_policy', 'None')
+            job['driver_license_policy'] = resolved.get('driver_license_policy', 'Not Required')
+            job['hs_ged_policy'] = resolved.get('hs_ged_policy', 'Not Required')
+            job['work_experience_policy'] = resolved.get('work_experience_policy', 'None (Entry-Level)')
+            job['location_transit_notes'] = resolved.get('location_transit_notes', '')
 
             # Standardize requirements with semicolons to eliminate CSV comma delimiter bleed
             if job.get('experience'):
@@ -4985,11 +5101,15 @@ class JobScraper:
             'source', 'job_title', 'company', 'location', 'pay', 
             'job_type_extracted', 'shift_schedule', 'experience', 
             'hs_ok', 'description', 'date_posted', 'job_url', 
-            'industry', 'last_updated'
+            'industry', 'last_updated',
+            'branch_name', 'city', 'state', 'zip_code', 'phone',
+            'min_age', 'fair_chance', 'drug_testing_policy',
+            'background_check_policy', 'driver_license_policy',
+            'hs_ged_policy', 'work_experience_policy', 'location_transit_notes'
         ]
         for col in column_order:
             if col not in df.columns:
-                df[col] = "N/A"
+                df[col] = ""
             
         df = df[column_order]
         df.sort_values(by="date_posted", ascending=False, inplace=True)
@@ -5008,7 +5128,20 @@ class JobScraper:
             'date_posted': 'Date Posted',
             'job_url': 'Job Posting',
             'industry': 'Industry Sector',
-            'last_updated': 'Last Updated'
+            'last_updated': 'Last Updated',
+            'branch_name': 'Branch / Location Name',
+            'city': 'City',
+            'state': 'State',
+            'zip_code': 'Zip Code',
+            'phone': 'Phone',
+            'min_age': 'Min Age',
+            'fair_chance': 'Fair Chance / Felon Friendly',
+            'drug_testing_policy': 'Drug Testing Policy',
+            'background_check_policy': 'Background Check Policy',
+            'driver_license_policy': 'Driver License',
+            'hs_ged_policy': 'HS Dip / GED',
+            'work_experience_policy': 'Work Experience',
+            'location_transit_notes': 'Location & Transit Notes'
         }
         df.rename(columns=display_headers, inplace=True)
 

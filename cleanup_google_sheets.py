@@ -5,7 +5,8 @@ import pandas as pd
 import gspread
 import sheets_sync
 import firestore_sync
-from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay, is_teen_friendly
+import employer_db
+from scrapper import is_rejected_job, is_expired_job_content, clean_job_title, extract_key_requirements, generate_key_description, clean_location_str, is_shasta_county_location, extract_pay, evaluate_hs_ok
 
 SHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
 
@@ -43,23 +44,50 @@ def cleanup_sheets(dry_run=True):
         title = j.get("title", "")
         company = j.get("company", "")
         cleaned_t = clean_job_title(title)
-        sector = j.get("sector") or j.get("category") or "Other"
-        raw_pay = j.get("pay") or "N/A"
-        job_type = j.get("jobType") or "N/A"
-        schedule = j.get("schedule") or j.get("shift") or "N/A"
         raw_desc = str(j.get("description") or "").strip()
         raw_exp = str(j.get("requirements") or j.get("experience") or "").strip()
 
         is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower() or "position with" in raw_desc.lower())
         true_desc = "" if is_boilerplate else raw_desc
 
+        # Resolve 2-Layer Employer Baseline + Job Override
+        resolved_profile = employer_db.resolve_job_with_employer_profile({
+            "title": cleaned_t,
+            "company": company,
+            "location": cleaned_loc,
+            "description": true_desc,
+            "experience": raw_exp,
+            "sector": j.get("sector") or j.get("category") or "",
+            "pay": j.get("pay") or "N/A",
+            "resolved_profile": j.get("resolved_profile"),
+        })
+
+        sector = j.get("sector") or j.get("category") or resolved_profile.get("industry_sector") or "Other"
+        if sector in ("N/A", "General", "Other") and resolved_profile.get("industry_sector"):
+            sector = resolved_profile["industry_sector"]
+
+        raw_pay = j.get("pay") or "N/A"
+        job_type = j.get("jobType") or "N/A"
+        schedule = j.get("schedule") or j.get("shift") or "N/A"
+
         desc_pay = extract_pay(true_desc)
         if desc_pay:
             final_pay = desc_pay
         elif j.get('source') == 'Snagajob' and raw_pay in ['$15 per hour', '$17.90', '$20.25', '$14 per hour', '$15', '$14', '$18 per hour', '$26 per hour']:
-            final_pay = 'N/A'
+            final_pay = resolved_profile.get("starting_wage_baseline") or 'N/A'
+        elif not raw_pay or raw_pay in ('N/A', 'Not stated', 'Competitive'):
+            final_pay = resolved_profile.get("starting_wage_baseline") or 'N/A'
         else:
-            final_pay = raw_pay or 'N/A'
+            final_pay = raw_pay
+
+        if resolved_profile.get("physical_address") and (
+            not cleaned_loc or cleaned_loc.lower() in ("redding, ca", "anderson, ca", "shasta lake, ca", "palo cedro, ca", "cottonwood, ca", "burney, ca")
+        ):
+            addr = resolved_profile["physical_address"]
+            city_val = resolved_profile.get("city") or "Redding"
+            state_val = resolved_profile.get("state") or "CA"
+            zip_val = resolved_profile.get("zip_code") or ""
+            cleaned_loc = f"{addr}, {city_val}, {state_val} {zip_val}".strip()
 
         is_exp = is_expired_job_content(true_desc) or is_expired_job_content(cleaned_t)
         is_rej, _ = is_rejected_job(cleaned_t, company, true_desc, pay=final_pay, location=cleaned_loc)
@@ -69,7 +97,7 @@ def cleanup_sheets(dry_run=True):
         exp_req = extract_key_requirements(
             text=true_desc,
             existing_exp="",
-            job_dict={"title": cleaned_t, "company": company, "sector": sector, "location": cleaned_loc}
+            job_dict={"title": cleaned_t, "company": company, "sector": sector, "location": cleaned_loc, "resolved_profile": resolved_profile}
         )
         
         final_desc = generate_key_description(
@@ -83,12 +111,12 @@ def cleanup_sheets(dry_run=True):
             requirements=exp_req
         )
 
-        is_teen = is_teen_friendly(
+        hs_ok_val = evaluate_hs_ok(
             title=cleaned_t,
             company=company,
             text=true_desc,
             requirements=exp_req,
-            job_dict=j,
+            job_dict={**j, "resolved_profile": resolved_profile},
             gemini_teen_friendly=j.get("isTeenFriendly") or j.get("is_teen_friendly") or j.get("teenFriendly")
         )
 
@@ -101,12 +129,25 @@ def cleanup_sheets(dry_run=True):
             "Full / Part Time": job_type,
             "Schedule / Shift": schedule,
             "Experience / Requirements": exp_req,
-            "Teen Friendly": is_teen,
+            "H.S. OK": hs_ok_val,
             "Job Description Summary": final_desc,
             "Date Posted": j.get("datePosted") or datetime.now().strftime("%Y-%m-%d"),
             "Job Posting": j.get("jobUrl") or j.get("url") or "",
             "Industry Sector": sector,
-            "Last Updated": datetime.now().strftime("%Y-%m-%d")
+            "Last Updated": datetime.now().strftime("%Y-%m-%d"),
+            "Branch / Location Name": resolved_profile.get("branch_name") or "",
+            "City": resolved_profile.get("city") or "Redding",
+            "State": resolved_profile.get("state") or "CA",
+            "Zip Code": resolved_profile.get("zip_code") or "",
+            "Phone": resolved_profile.get("phone") or "",
+            "Min Age": str(resolved_profile.get("min_age") or 18),
+            "Fair Chance / Felon Friendly": resolved_profile.get("fair_chance_policy") or "Unknown / Unverified",
+            "Drug Testing Policy": resolved_profile.get("drug_testing_policy") or "Unknown / Unverified",
+            "Background Check Policy": resolved_profile.get("background_check_policy") or "Unknown / Unverified",
+            "Driver License": resolved_profile.get("driver_license_policy") or "Not Required",
+            "HS Dip / GED": resolved_profile.get("hs_diploma_policy") or "Not Required",
+            "Work Experience": resolved_profile.get("work_experience_policy") or "None Required (Entry-Level)",
+            "Location & Transit Notes": resolved_profile.get("transit_notes") or "",
         })
 
     df_auto = pd.DataFrame(fresh_auto_rows)
@@ -185,8 +226,8 @@ def cleanup_sheets(dry_run=True):
         ws_auto.update(values=[df_auto.columns.values.tolist()] + df_auto.values.tolist(), range_name="A1")
         try:
             col_names = df_auto.columns.values.tolist()
-            if "Teen Friendly" in col_names and len(df_auto) > 0:
-                teen_col_idx = col_names.index("Teen Friendly")
+            if "H.S. OK" in col_names and len(df_auto) > 0:
+                hs_col_idx = col_names.index("H.S. OK")
                 body = {
                     "requests": [
                         {
@@ -195,23 +236,17 @@ def cleanup_sheets(dry_run=True):
                                     "sheetId": ws_auto.id,
                                     "startRowIndex": 1,
                                     "endRowIndex": len(df_auto) + 1,
-                                    "startColumnIndex": teen_col_idx,
-                                    "endColumnIndex": teen_col_idx + 1
+                                    "startColumnIndex": hs_col_idx,
+                                    "endColumnIndex": hs_col_idx + 1
                                 },
-                                "rule": {
-                                    "condition": {
-                                        "type": "BOOLEAN"
-                                    },
-                                    "showCustomUi": True
-                                }
+                                "rule": None
                             }
                         }
                     ]
                 }
                 spreadsheet.batch_update(body)
-                print(f"Applied native checkbox validation to column '{teen_col_idx + 1}' (Teen Friendly).")
         except Exception as cb_err:
-            print(f"[WARN] Could not set checkbox validation on Automated_Posts: {cb_err}")
+            print(f"[WARN] Could not clear validation on Automated_Posts: {cb_err}")
         print(f"Successfully updated 'Automated_Posts' with {len(df_auto)} verified listings.")
 
     # 2. Update Redding Area Job Postings

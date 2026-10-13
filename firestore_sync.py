@@ -207,50 +207,28 @@ def parse_job_requirements(job: dict) -> dict:
     experience = str(job.get("experience") or job.get("requirements") or "").strip()
     description = str(job.get("description") or "").strip()
 
+    resolved = job.get("resolved_profile") or {}
+    if not resolved:
+        try:
+            from employer_db import resolve_job_with_employer_profile
+            resolved = resolve_job_with_employer_profile(job)
+        except Exception:
+            resolved = {}
+
+    if resolved.get("location_full"):
+        location = resolved["location_full"]
+
     full_text = f"{title} {company} {location} {experience} {description}".lower()
 
-    # 1. Drug Testing
-    requires_drug_test = bool(
-        re.search(r'\b(?:drug\s*test|drug\s*screen|drug-free\s*workplace|substance\s*screen)\b', full_text)
-    )
+    requires_drug_test = bool(resolved.get("requiresDrugTest", False))
+    requires_background_check = bool(resolved.get("requiresBackgroundCheck", False))
+    requires_driver_license = bool(resolved.get("requiresDriverLicense", False))
+    driver_license_type = str(resolved.get("driverLicenseType") or "None")
+    requires_hs_ged = bool(resolved.get("requiresHsDiplomaOrGed", False))
+    min_age = int(resolved.get("min_age", 18))
+    is_youth_friendly = (min_age < 18)
 
-    # 2. Background Check
-    requires_background_check = bool(
-        re.search(r'\b(?:background\s*check|criminal\s*background|livescan|fingerprint)\b', full_text)
-    )
-
-    # 3. Driver's License & CDL
-    requires_driver_license = bool(
-        re.search(r'\b(?:driver\'?s?\s*license|valid\s*driver|clean\s*dmv|clean\s*driving\s*record|cdl)\b', full_text)
-        or any(k in title.lower() for k in ["driver", "delivery", "courier", "shuttle", "hauling", "trucker"])
-    )
-
-    driver_license_type = "None"
-    if requires_driver_license:
-        if "cdl-a" in full_text or "class a" in full_text:
-            driver_license_type = "Commercial Class A (CDL-A)"
-        elif "cdl-b" in full_text or "class b" in full_text:
-            driver_license_type = "Commercial Class B (CDL-B)"
-        else:
-            driver_license_type = "Class C (Standard)"
-
-    # 4. High School Diploma / GED (Strict word boundaries)
-    requires_hs_ged = bool(
-        re.search(r'\b(?:high\s*school\s*(?:diploma|equivalent)|ged|h\.?s\.?\s*diploma)\b', full_text)
-    )
-
-    # 5. Age & Youth Friendly (Strict word boundary patterns)
-    min_age = 18
-    is_youth_friendly = False
-    if re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)21\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b21\+\b', full_text) or any(k in title.lower() for k in ["bartender", "gaming"]):
-        min_age = 21
-    elif re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)16\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b16\+\b', full_text) or any(w in full_text for w in ["minor", "youth friendly", "youth-friendly", "teen", "student position"]):
-        min_age = 16
-        is_youth_friendly = True
-    elif re.search(r'\b(?:must\s*be\s*|minimum\s*age(?:\s*of)?\s*|at\s*least\s*|age\s*)18\s*(?:\+|years?(?:\s*old)?|\s*or\s*older)\b', full_text) or re.search(r'\b18\+\b', full_text):
-        min_age = 18
-
-    # 6. Shasta County Neighborhoods / Zones
+    # Shasta County Neighborhoods / Zones
     neighborhood = None
     if "downtown" in full_text:
         neighborhood = "Downtown Redding"
@@ -264,10 +242,14 @@ def parse_job_requirements(job: dict) -> dict:
         neighborhood = "Palo Cedro"
     elif "burney" in full_text:
         neighborhood = "Burney"
-    elif "hilltop" in full_text or "dana" in full_text:
+    elif "hilltop" in full_text or "dana" in full_text or "churn creek" in full_text:
         neighborhood = "East Redding / Hilltop"
 
-    transit_info = evaluate_raba_transit(location, full_text)
+    transit_info = evaluate_raba_transit(location, f"{full_text} {resolved.get('location_transit_notes', '')}")
+    if resolved.get("raba_accessible") and not transit_info["transitAccessible"]:
+        transit_info["transitAccessible"] = True
+        if resolved.get("raba_stop"):
+            transit_info["transitStopName"] = resolved["raba_stop"]
 
     return {
         "requiresDrugTest": requires_drug_test,
@@ -282,7 +264,8 @@ def parse_job_requirements(job: dict) -> dict:
         "transitStopName": transit_info["transitStopName"],
         "transitRoutes": transit_info["transitRoutes"],
         "transitDistanceMiles": transit_info["transitDistanceMiles"],
-        "description": description if description else experience
+        "description": description if description else experience,
+        "resolved_profile": resolved
     }
 
 def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
@@ -301,9 +284,23 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
         if not clean_title or clean_title == "N/A" or is_bogus_title(clean_title):
             continue
 
-        raw_loc = job.get("location", "Redding, CA")
-        cleaned_loc = resolve_business_address(
-            company=job.get("company", ""),
+        job_copy = dict(job)
+        job_copy["job_title"] = clean_title
+
+        resolved = {}
+        try:
+            from employer_db import resolve_job_with_employer_profile
+            resolved = resolve_job_with_employer_profile(job_copy)
+        except Exception:
+            resolved = {}
+
+        job_copy["resolved_profile"] = resolved
+        if resolved.get("company_brand"):
+            job_copy["company"] = resolved["company_brand"]
+
+        raw_loc = resolved.get("location_full") or job.get("location", "Redding, CA")
+        cleaned_loc = clean_location_str(raw_loc) if resolved.get("location_full") else resolve_business_address(
+            company=job_copy.get("company", ""),
             location=raw_loc,
             description=job.get("description", "")
         )
@@ -317,14 +314,15 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             print(f"[FIRESTORE] Skipping expired job: {clean_title}")
             continue
 
-        is_rej, rej_reason = is_rejected_job(clean_title, job.get("company", ""), raw_desc, pay=job.get("pay", ""), location=cleaned_loc)
+        effective_pay = resolved.get("pay_rate") or job.get("pay") or ""
+        is_rej, rej_reason = is_rejected_job(clean_title, job_copy.get("company", ""), raw_desc, pay=effective_pay, location=cleaned_loc)
         if is_rej:
             print(f"[FIRESTORE] Skipping non-entry-level / rejected job: {clean_title} ({rej_reason})")
             continue
 
         doc_id = generate_job_id(
             source=job.get("source", "Web"),
-            company=job.get("company", "N/A"),
+            company=job_copy.get("company", "N/A"),
             title=clean_title,
             location=cleaned_loc
         )
@@ -333,30 +331,21 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             continue
 
         doc_ref = db.collection(collection_name).document(doc_id)
-        job_copy = dict(job)
-        job_copy["job_title"] = clean_title
         job_copy["location"] = cleaned_loc
         parsed_attrs = parse_job_requirements(job_copy)
 
         is_boilerplate = bool("industry sector:" in raw_desc.lower() or "key requirements:" in raw_desc.lower())
         true_desc = "" if is_boilerplate else raw_desc
 
-        # Check Employer Database for verified company baseline & branch location
-        emp_match, loc_match = None, None
+        emp_match = None
         try:
             from employer_db import match_employer
-            emp_match, loc_match = match_employer(
-                company_name=job.get("company", ""),
+            emp_match, _ = match_employer(
+                company_name=job_copy.get("company", ""),
                 location_hint=f"{cleaned_loc} {true_desc}"
             )
         except Exception:
-            emp_match, loc_match = None, None
-
-        if emp_match:
-            job_copy["company"] = emp_match["name"]
-            if loc_match and loc_match.get("street_address") and loc_match["street_address"] not in ["Redding, CA", ""]:
-                cleaned_loc = loc_match["street_address"]
-                job_copy["location"] = cleaned_loc
+            emp_match = None
 
         gemini_res = None
         if true_desc and len(true_desc) > 30:
@@ -372,7 +361,7 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
                             **emp_match,
                             "street_address": cleaned_loc
                         },
-                        raw_pay=job.get("pay") or "N/A",
+                        raw_pay=effective_pay or "N/A",
                         raw_type=job.get("job_type_extracted") or "N/A",
                         raw_schedule=job.get("shift_schedule") or "N/A"
                     )
@@ -380,10 +369,10 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
                     from gemini_parser import analyze_job_with_gemini
                     gemini_res = analyze_job_with_gemini(
                         title=clean_title,
-                        company=job.get("company", ""),
+                        company=job_copy.get("company", ""),
                         location=cleaned_loc,
                         description_text=true_desc,
-                        raw_pay=job.get("pay") or "N/A",
+                        raw_pay=effective_pay or "N/A",
                         raw_type=job.get("job_type_extracted") or "N/A",
                         raw_schedule=job.get("shift_schedule") or "N/A"
                     )
@@ -395,13 +384,13 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
                 print(f"[FIRESTORE] Skipping rejected job via Gemini: {clean_title} ({gemini_res.rejection_reason})")
                 _REJECTED_JOB_IDS.add(doc_id)
                 continue
-            sector = gemini_res.sector
-            if gemini_res.pay_rate and gemini_res.pay_rate != "N/A" and (not job.get("pay") or job.get("pay") == "N/A"):
-                job["pay"] = gemini_res.pay_rate
+            sector = gemini_res.sector or resolved.get("industry_sector") or "Other"
+            if gemini_res.pay_rate and gemini_res.pay_rate not in ["N/A", "Unstated"] and not effective_pay:
+                effective_pay = gemini_res.pay_rate
             exp_req = extract_key_requirements(
                 text=true_desc,
                 existing_exp=gemini_res.experience_requirements,
-                job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
+                job_dict={"title": clean_title, "company": job_copy.get("company", ""), "sector": sector, "location": cleaned_loc, "resolved_profile": resolved}
             )
             final_desc = gemini_res.job_description_summary if (not true_desc or len(true_desc) < 30) else true_desc
             parsed_attrs["requiresDrugTest"] = gemini_res.requires_drug_test
@@ -413,60 +402,65 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             parsed_attrs["isYouthFriendly"] = gemini_res.is_youth_friendly
             parsed_attrs["isTeenFriendly"] = gemini_res.is_teen_friendly
         else:
-            sector = job.get("industry")
+            sector = resolved.get("industry_sector") or job.get("industry")
             if not sector or sector == "Other":
-                sector = determine_industry(clean_title, job.get("company", ""), true_desc)
+                sector = determine_industry(clean_title, job_copy.get("company", ""), true_desc)
 
             exp_req = extract_key_requirements(
                 text=true_desc,
                 existing_exp=job.get("experience") or job.get("requirements"),
-                job_dict={"title": clean_title, "company": job.get("company", ""), "sector": sector, "location": cleaned_loc}
+                job_dict={"title": clean_title, "company": job_copy.get("company", ""), "sector": sector, "location": cleaned_loc, "resolved_profile": resolved}
             )
 
             final_desc = true_desc
             if not final_desc or final_desc == "N/A" or len(final_desc.strip()) < 30:
                 final_desc = generate_key_description(
                     title=clean_title,
-                    company=job.get("company", ""),
+                    company=job_copy.get("company", ""),
                     location=cleaned_loc,
                     sector=sector,
                     job_type=job.get("job_type_extracted") or "N/A",
                     schedule=job.get("shift_schedule") or "N/A",
-                    pay=job.get("pay") or "N/A",
+                    pay=effective_pay or "N/A",
                     requirements=exp_req
                 )
 
         exp_req = standardize_driver_license_requirement(
             exp_req,
-            text_context=f"{clean_title} {job.get('company', '')} {true_desc}",
-            gemini_license=getattr(gemini_res, "driver_license_type", None) if gemini_res else None
+            text_context=f"{clean_title} {job_copy.get('company', '')} {true_desc}",
+            gemini_license=(getattr(gemini_res, "driver_license_type", None) if gemini_res else None) or resolved.get("driverLicenseType")
         )
 
         gemini_tf = getattr(gemini_res, "is_teen_friendly", None) if gemini_res else None
         teen_friendly = is_teen_friendly(
             title=clean_title,
-            company=job.get("company", ""),
+            company=job_copy.get("company", ""),
             text=true_desc,
             requirements=exp_req,
-            job_dict=job,
+            job_dict=job_copy,
             gemini_teen_friendly=gemini_tf
         )
 
         payload = {
             "title": clean_title,
-            "company": job.get("company", "").strip(),
+            "company": job_copy.get("company", "").strip(),
+            "branchName": resolved.get("branch_name", ""),
             "location": cleaned_loc,
+            "city": resolved.get("city", "Redding"),
+            "state": resolved.get("state", "CA"),
+            "zipCode": resolved.get("zip_code", ""),
+            "phone": resolved.get("phone", ""),
             "sector": sector,
             "category": sector,
-            "pay": job.get("pay") or "N/A",
+            "pay": effective_pay or "N/A",
             "jobType": job.get("job_type_extracted") or "N/A",
             "schedule": job.get("shift_schedule") or "N/A",
             "shift": job.get("shift_schedule") or "N/A",
             "experience": exp_req,
             "requirements": exp_req,
             "description": final_desc,
-            "jobUrl": job.get("job_url") or "",
-            "url": job.get("job_url") or "",
+            "jobUrl": job.get("job_url") or resolved.get("career_url") or "",
+            "url": job.get("job_url") or resolved.get("career_url") or "",
             "source": job.get("source") or "Direct",
             "datePosted": job.get("date_posted") or datetime.now().strftime("%Y-%m-%d"),
             "requiresDrugTest": parsed_attrs.get("requiresDrugTest"),
@@ -478,6 +472,13 @@ def sync_jobs_to_firestore(jobs_list: list, collection_name: str = "jobs"):
             "isYouthFriendly": teen_friendly,
             "isTeenFriendly": teen_friendly,
             "teenFriendly": teen_friendly,
+            "fairChancePolicy": resolved.get("fair_chance", "Unknown"),
+            "drugTestingPolicy": resolved.get("drug_testing_policy", "None"),
+            "backgroundCheckPolicy": resolved.get("background_check_policy", "None"),
+            "driverLicensePolicy": resolved.get("driver_license_policy", "Not Required"),
+            "hsGedPolicy": resolved.get("hs_ged_policy", "Not Required"),
+            "workExperiencePolicy": resolved.get("work_experience_policy", "None (Entry-Level)"),
+            "locationTransitNotes": resolved.get("location_transit_notes", ""),
             "neighborhood": parsed_attrs.get("neighborhood"),
             "transitAccessible": parsed_attrs.get("transitAccessible", False),
             "transitStopName": parsed_attrs.get("transitStopName"),

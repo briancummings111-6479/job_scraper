@@ -76,15 +76,24 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
 
     today_str = datetime.now().strftime("%Y-%m-%d")
     cutoff_date = (datetime.now() - timedelta(days=15)).strftime("%Y-%m-%d")
-    
+
+    try:
+        from employer_db import resolve_job_with_employer_profile
+    except ImportError:
+        resolve_job_with_employer_profile = None
+
     rows = []
     for j in jobs_data:
         clean_title = clean_job_title(j.get("job_title", ""))
         if not clean_title or clean_title == "N/A":
             continue
 
-        raw_loc = j.get("location", "Redding, CA")
-        cleaned_loc = resolve_business_address(
+        j_copy = dict(j)
+        j_copy["job_title"] = clean_title
+        resolved = resolve_job_with_employer_profile(j_copy) if resolve_job_with_employer_profile else {}
+
+        raw_loc = resolved.get("location_full") or j.get("location", "Redding, CA")
+        cleaned_loc = clean_location_str(raw_loc) if resolved.get("location_full") else resolve_business_address(
             company=j.get("company", ""),
             location=raw_loc,
             description=j.get("description", "")
@@ -97,7 +106,13 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if is_expired_job_content(raw_desc) or is_expired_job_content(clean_title):
             continue
 
-        is_rej, _ = is_rejected_job(clean_title, j.get("company", ""), raw_desc, pay=j.get("pay", ""), location=cleaned_loc)
+        company_name = resolved.get("company_brand") or j.get("company", "")
+        clean_pay = resolved.get("pay_rate") if resolved else ""
+        if not clean_pay:
+            raw_pay = j.get("pay")
+            clean_pay = str(raw_pay).strip() if raw_pay and str(raw_pay).strip().lower() not in ["n/a", "none", "", "unstated", "nan"] else ""
+
+        is_rej, _ = is_rejected_job(clean_title, company_name, raw_desc, pay=clean_pay, location=cleaned_loc)
         if is_rej:
             continue
 
@@ -107,54 +122,60 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         if posted_date < cutoff_date:
             continue
 
-        sector = j.get("industry")
+        sector = resolved.get("industry_sector") or j.get("industry")
         if not sector or sector in ["Other", "N/A", ""]:
-            sector = determine_industry(clean_title, j.get("company", ""), raw_desc)
+            sector = determine_industry(clean_title, company_name, raw_desc)
+
+        j_enriched = {
+            **j_copy,
+            "company": company_name,
+            "location": cleaned_loc,
+            "industry": sector,
+            "pay": clean_pay,
+            "resolved_profile": resolved
+        }
 
         exp_req = j.get("experience") or j.get("requirements")
         exp_req = extract_key_requirements(
             text=raw_desc,
             existing_exp=exp_req or "",
-            job_dict=j
+            job_dict=j_enriched
         )
 
         exp_req = standardize_driver_license_requirement(
             exp_req,
-            text_context=f"{clean_title} {j.get('company', '')} {raw_desc}",
-            gemini_license=j.get("driverLicenseType") or j.get("driver_license_type")
+            text_context=f"{clean_title} {company_name} {raw_desc}",
+            gemini_license=resolved.get("driverLicenseType") or j.get("driverLicenseType") or j.get("driver_license_type")
         )
 
         final_desc = raw_desc
         if not final_desc or str(final_desc).strip() in ["N/A", "None", ""]:
             final_desc = generate_key_description(
                 title=clean_title,
-                company=j.get("company", ""),
+                company=company_name,
                 location=cleaned_loc,
                 sector=sector,
                 job_type=j.get("job_type_extracted") or "Unstated",
                 schedule=j.get("shift_schedule") or "Unstated",
-                pay=j.get("pay") or "Unstated",
+                pay=clean_pay or "Unstated",
                 requirements=exp_req
             )
 
-        raw_pay = j.get("pay")
-        clean_pay = str(raw_pay).strip() if raw_pay and str(raw_pay).strip().lower() not in ["n/a", "none", "", "unstated", "nan"] else ""
-
         hs_ok_val = evaluate_hs_ok(
             title=clean_title,
-            company=j.get("company", ""),
+            company=company_name,
             text=raw_desc,
             requirements=exp_req,
             job_type=j.get("job_type_extracted") or "",
             shift=j.get("shift_schedule") or "",
-            job_dict=j,
+            job_dict=j_enriched,
             gemini_teen_friendly=j.get("isTeenFriendly") or j.get("is_teen_friendly") or j.get("teen_friendly")
         )
 
         rows.append({
             "Source": j.get("source") or "Direct",
             "Job Title": clean_title,
-            "Company": j.get("company", ""),
+            "Company": company_name,
             "Location": cleaned_loc,
             "Pay Rate": clean_pay,
             "Full / Part Time": j.get("job_type_extracted") if j.get("job_type_extracted") and str(j.get("job_type_extracted")).strip() not in ["N/A", "None", "", "nan"] else "Unstated",
@@ -163,9 +184,22 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "H.S. OK": hs_ok_val,
             "Job Description Summary": final_desc,
             "Date Posted": posted_date,
-            "Job Posting": j.get("job_url") or "",
+            "Job Posting": j.get("job_url") or resolved.get("career_url") or "",
             "Industry Sector": sector,
-            "Last Updated": today_str
+            "Last Updated": today_str,
+            "Branch / Location Name": resolved.get("branch_name", ""),
+            "City": resolved.get("city", "Redding"),
+            "State": resolved.get("state", "CA"),
+            "Zip Code": resolved.get("zip_code", ""),
+            "Phone": resolved.get("phone", ""),
+            "Min Age": str(resolved.get("min_age", 18)),
+            "Fair Chance / Felon Friendly": resolved.get("fair_chance", "Unknown"),
+            "Drug Testing Policy": resolved.get("drug_testing_policy", "None"),
+            "Background Check Policy": resolved.get("background_check_policy", "None"),
+            "Driver License": resolved.get("driver_license_policy", "Not Required"),
+            "HS Dip / GED": resolved.get("hs_ged_policy", "Not Required"),
+            "Work Experience": resolved.get("work_experience_policy", "None (Entry-Level)"),
+            "Location & Transit Notes": resolved.get("location_transit_notes", "")
         })
 
     if not rows:
@@ -184,7 +218,7 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
         worksheet = spreadsheet.worksheet(tab_name)
     except gspread.exceptions.WorksheetNotFound:
         print(f"[SHEETS] Tab '{tab_name}' not found. Creating it...")
-        worksheet = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=20)
+        worksheet = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=30)
     except Exception as e:
         print(f"[WARN] Error finding '{tab_name}': {e}. Defaulting to first sheet.")
         worksheet = spreadsheet.sheet1
@@ -222,8 +256,8 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
 
 def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU", output_json: str = None) -> list:
     """
-    Reads the 'Area Employers' (or legacy 'Redding Area Employers' / 'Burney Area Employers (draft)') tab,
-    dynamically maps columns, and syncs into the local SQLite employers.db and fast JSON cache.
+    Reads the 'Area Employers' (gid=1114754984) 21-column tab (or legacy fallback tabs),
+    dynamically maps all 21 columns, and syncs into the local SQLite employers.db and fast JSON cache.
     """
     if not output_json:
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -285,37 +319,46 @@ def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6
                 phone = get_c("phone")
                 manager = get_c("manager") or get_c("contact")
                 sector = get_c("sector") or get_c("industry")
-                min_age = get_c("age", "18")
+                min_age = get_c("min age") or get_c("age", "18")
                 fair_chance = get_c("fair chance") or get_c("felon")
                 drug_testing = get_c("drug")
                 bg_check = get_c("background") or get_c("clean record")
                 dl = get_c("driver") or get_c("dl")
-                hs_ged = get_c("high school") or get_c("hs dip") or get_c("ged")
-                wage = get_c("wage") or get_c("pay")
-                entry_roles = get_c("roles") or get_c("entry")
-                career_url = get_c("career") or get_c("website")
-                notes = get_c("note") or get_c("barrier")
-                is_prim_str = get_c("primary", "yes").lower()
-                is_primary = 1 if is_prim_str in ["yes", "true", "1"] else 0
+                hs_ged = get_c("hs dip") or get_c("high school") or get_c("ged")
+                work_exp = get_c("work exp") or get_c("experience") or "None (Entry-Level)"
+                wage = get_c("starting wage") or get_c("wage") or get_c("pay")
+                career_url = get_c("career")
+                indeed_url = get_c("indeed")
+                notes = get_c("location & transit") or get_c("transit") or get_c("note") or get_c("barrier")
+                review_status = get_c("review status") or get_c("status") or "Verified"
 
+                is_first_branch = comp not in structured_employers
                 loc_item = {
-                    "location_name": branch,
+                    "location_name": branch or ("Main Location" if is_first_branch else "Branch Location"),
                     "street_address": street,
                     "city": city if city else "Redding",
                     "state": state if state else "CA",
                     "zip_code": zip_code,
                     "phone": phone,
                     "manager_name": manager,
-                    "is_primary": is_primary,
+                    "is_primary": 1 if is_first_branch else 0,
                     "notes": notes
                 }
 
-                if comp not in structured_employers:
-                    aliases = [corp] if corp and corp.lower() != comp.lower() else []
+                # Expand slash-separated aliases while keeping full string first for round-trip export
+                aliases_list = []
+                if corp:
+                    aliases_list.append(corp)
+                    for sub_al in re.split(r'[\/;]', corp):
+                        s_clean = sub_al.strip()
+                        if s_clean and s_clean.lower() != comp.lower() and s_clean not in aliases_list:
+                            aliases_list.append(s_clean)
+
+                if is_first_branch:
                     structured_employers[comp] = {
                         "name": comp,
                         "company": comp,
-                        "aliases": aliases,
+                        "aliases": aliases_list,
                         "industry_sector": sector,
                         "min_age": min_age,
                         "min_age_baseline": min_age,
@@ -328,33 +371,48 @@ def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6
                         "drivers_license": dl,
                         "hs_ged_required": hs_ged,
                         "hs_ged_baseline": hs_ged,
+                        "work_experience": work_exp,
+                        "work_experience_required": work_exp,
                         "wage": wage,
                         "starting_wage": wage,
-                        "typical_entry_roles": entry_roles,
                         "career_url": career_url,
+                        "indeed_url": indeed_url,
                         "notes": notes,
+                        "review_status": review_status,
+                        "is_verified": review_status.lower() not in ["pending", "unverified", "draft"],
                         "locations": [loc_item]
                     }
                 else:
                     structured_employers[comp]["locations"].append(loc_item)
+                    for al in aliases_list:
+                        if al not in structured_employers[comp]["aliases"]:
+                            structured_employers[comp]["aliases"].append(al)
 
                 all_combined_records.append({
                     "company": comp,
+                    "corporate_aliases": corp,
+                    "branch_name": branch,
+                    "street_address": street,
+                    "city": city,
+                    "state": state,
+                    "zip_code": zip_code,
                     "address": f"{street}, {city}, {state} {zip_code}".strip(", "),
                     "min_age": min_age,
                     "hs_ged_required": hs_ged,
                     "drivers_license_required": dl,
                     "clean_record_required": bg_check,
-                    "work_experience_required": "None",
+                    "background_check": bg_check,
+                    "work_experience_required": work_exp,
                     "wage": wage,
                     "career_url": career_url,
-                    "indeed_url": "",
+                    "indeed_url": indeed_url,
                     "phone": phone,
                     "manager_name": manager,
                     "felon_friendly": fair_chance,
                     "drug_testing": drug_testing,
                     "industry_sector": sector,
-                    "notes": notes
+                    "notes": notes,
+                    "review_status": review_status
                 })
 
         else:
@@ -470,7 +528,7 @@ def sync_redding_area_employers(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6
     except Exception as e:
         print(f"[SHEETS] Error ingesting to employer_db: {e}")
 
-    print(f"[SHEETS] Cached {len(all_combined_records)} employers from Google Sheets to {output_json}")
+    print(f"[SHEETS] Cached {len(all_combined_records)} employer branch rows from Google Sheets to {output_json}")
     return all_combined_records
 
 sync_area_employers = sync_redding_area_employers
@@ -478,7 +536,7 @@ sync_area_employers = sync_redding_area_employers
 def export_employers_to_google_sheet(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU") -> int:
     """
     Exports the verified employers from local SQLite employers.db back to the
-    'Area Employers' Google Sheet tab, including multi-location and contact data.
+    'Area Employers' Google Sheet tab using the exact 21-column schema.
     """
     try:
         import employer_db
@@ -499,31 +557,61 @@ def export_employers_to_google_sheet(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK
                 ws = spreadsheet.add_worksheet(title="Area Employers", rows=500, cols=25)
 
         headers = [
-            "Employer Name", "Corporate / Parent Entity", "Branch / Location Name",
-            "Worksite Street Address", "City", "State", "Zip Code", "Phone Number",
-            "Manager / Contact", "Industry Sector", "Min Hiring Age", "Fair Chance / Felon Friendly",
-            "Drug Screen Required", "Background Check Required", "Driver License Required",
-            "High School / GED Required", "Starting Wage / Range", "Typical Entry Roles",
-            "Careers / Application URL", "Custom Notes / Barrier Fit", "Multi-Location Flag", "Is Primary Branch"
+            "Company / Brand Name",
+            "Corporate Name / Aliases",
+            "Branch / Location Name",
+            "Physical Street Address",
+            "City",
+            "State",
+            "Zip Code",
+            "Phone",
+            "Industry Sector",
+            "Min Age",
+            "Fair Chance / Felon Friendly",
+            "Drug Testing Policy",
+            "Background Check Policy",
+            "Driver License",
+            "HS Dip / GED",
+            "Work Experience",
+            "Starting Wage",
+            "Career Website",
+            "Indeed Website",
+            "Location & Transit Notes",
+            "Review Status"
         ]
 
         rows = [headers]
         for emp in employers:
             locations = emp.get("locations", [])
             corp = emp.get("aliases", [emp.get("name", "")])[0] if emp.get("aliases") else emp.get("name", "")
-            is_multi = "Yes" if len(locations) > 1 else "No"
+            rev_status = emp.get("review_status") or ("Verified" if emp.get("is_verified", 1) else "Pending")
             
             if not locations:
                 rows.append([
-                    emp.get("name", ""), corp, "Main Location", "Redding, CA", "Redding", "CA", "96001",
-                    "", "", emp.get("industry_sector", ""), str(emp.get("min_age_baseline", "18")),
-                    emp.get("felon_friendly", ""), emp.get("drug_testing", ""), emp.get("background_check", ""),
-                    emp.get("drivers_license", ""), emp.get("hs_ged_baseline", ""), emp.get("starting_wage", ""),
-                    "", emp.get("career_url", ""), emp.get("notes", ""), "No", "Yes"
+                    emp.get("name", ""),
+                    corp,
+                    "Main Location",
+                    "Redding, CA",
+                    "Redding",
+                    "CA",
+                    "96001",
+                    "",
+                    emp.get("industry_sector", ""),
+                    str(emp.get("min_age_baseline", "18")),
+                    emp.get("felon_friendly", ""),
+                    emp.get("drug_testing", ""),
+                    emp.get("background_check", ""),
+                    emp.get("drivers_license", ""),
+                    emp.get("hs_ged_baseline", ""),
+                    emp.get("work_experience", "None (Entry-Level)"),
+                    emp.get("starting_wage", ""),
+                    emp.get("career_url", ""),
+                    emp.get("indeed_url", ""),
+                    emp.get("notes", ""),
+                    rev_status
                 ])
             else:
-                for idx, loc in enumerate(locations):
-                    is_prim = "Yes" if loc.get("is_primary") or idx == 0 else "No"
+                for loc in locations:
                     rows.append([
                         emp.get("name", ""),
                         corp,
@@ -533,7 +621,6 @@ def export_employers_to_google_sheet(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK
                         loc.get("state", "CA"),
                         loc.get("zip_code", ""),
                         loc.get("phone", ""),
-                        loc.get("manager_name", ""),
                         emp.get("industry_sector", ""),
                         str(emp.get("min_age_baseline", "18")),
                         emp.get("felon_friendly", ""),
@@ -541,12 +628,12 @@ def export_employers_to_google_sheet(sheet_id: str = "1uGL7w8fpb5P0D-kNIPces9nOK
                         emp.get("background_check", ""),
                         emp.get("drivers_license", ""),
                         emp.get("hs_ged_baseline", ""),
+                        emp.get("work_experience", "None (Entry-Level)"),
                         emp.get("starting_wage", ""),
-                        "",
                         emp.get("career_url", ""),
+                        emp.get("indeed_url", ""),
                         loc.get("notes") or emp.get("notes", ""),
-                        is_multi,
-                        is_prim
+                        rev_status
                     ])
 
         ws.clear()
