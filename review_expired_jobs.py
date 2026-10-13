@@ -1,10 +1,10 @@
 """
 Review Expired Jobs Engine
 ==========================
-Audits job postings in the Google Sheet ("Redding Area Job Postings" tab)
+Audits job postings in the Google Sheet ("Automated_Posts" tab, gid=280720545)
 sourced from Indeed, Snagajob, Glassdoor, ZipRecruiter, and other job portals.
 Checks whether each job is still active or expired.
-In Column P (Column 16), writes "Expired" if the job is no longer active.
+Writes "Expired" or "Active" in the Status column (Column AB / Column 28 for Automated_Posts).
 Jobs where Source == "Company" are strictly skipped.
 """
 
@@ -385,7 +385,7 @@ async def review_expired_jobs_async(
     row_limit: Optional[int] = None
 ) -> Dict[str, Any]:
     """
-    Reviews all jobs in the Google Sheet and updates Column P.
+    Reviews all jobs in the Google Sheet and updates the Status column.
     """
     from playwright.async_api import async_playwright
 
@@ -410,7 +410,7 @@ async def review_expired_jobs_async(
         return {"status": "error", "message": "Worksheet does not have enough rows."}
 
     # Map column headers to indices (0-indexed)
-    is_automated_posts = ("automated_posts" in worksheet.title.strip().lower())
+    is_automated_posts = ("automated_posts" in worksheet.title.strip().lower() or worksheet.id == TARGET_GID)
     
     # Check if Row 1 has headers (e.g. Source, Job Title)
     row1_lower = [c.strip().lower() for c in all_values[0]]
@@ -596,6 +596,17 @@ async def review_expired_jobs_async(
             col_status_values.append([""])
 
     if update_sheet and len(col_status_values) > 1:
+        # Dynamic expansion of sheet grid if status column or rows exceed current grid limits
+        if status_col_idx >= worksheet.col_count:
+            cols_needed = (status_col_idx + 1) - worksheet.col_count
+            logger.info(f"Expanding worksheet grid by {cols_needed} column(s) to accommodate Status column ({status_col_letter})...")
+            worksheet.add_cols(cols_needed)
+
+        if last_row_index > worksheet.row_count:
+            rows_needed = last_row_index - worksheet.row_count
+            logger.info(f"Expanding worksheet grid by {rows_needed} row(s) to accommodate row range ({last_row_index})...")
+            worksheet.add_rows(rows_needed)
+
         range_target = f"{status_col_letter}{header_row_num}:{status_col_letter}{last_row_index}"
         logger.info(f"Writing {len(col_status_values)} rows to Google Sheet range '{range_target}'...")
         worksheet.update(values=col_status_values, range_name=range_target)

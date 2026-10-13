@@ -3,9 +3,9 @@
  */
 
 const CONFIG = {
-  sheetName: "Redding Area Job Postings", // Updated to match your sheet
-  urlColumnIndex: 10, // Column J is the 10th column
-  statusColumnIndex: 11, // Column K (11) to write the status
+  sheetName: "Automated_Posts", // Updated to match Automated_Posts gid=280720545
+  urlColumnIndex: 12, // Column L is the 12th column ("Job Posting")
+  statusColumnIndex: 28, // Column AB (28) to write the status
   jobTitleColumnIndex: 2, // Column B for the Job Title
   addressColumnIndex: 4, // Column D for Job Site Address
   startRow: 2, 
@@ -57,6 +57,7 @@ function checkExpiredJobs() {
   }
   const urlCol = colMap["job posting"] || colMap["job_url"] || colMap["job url"] || colMap["url"] || CONFIG.urlColumnIndex;
   const titleCol = colMap["job title"] || colMap["job_title"] || colMap["title"] || CONFIG.jobTitleColumnIndex;
+  const statusCol = colMap["status"] || CONFIG.statusColumnIndex;
 
   for (let i = lastRow; i >= CONFIG.startRow; i--) {
     const jobTitle = String(sheet.getRange(i, titleCol).getValue()).trim();
@@ -90,7 +91,7 @@ function checkExpiredJobs() {
 
     // If it still doesn't look like a URL, log that we skipped it and move on
     if (!url.startsWith("http")) {
-      sheet.getRange(i, CONFIG.statusColumnIndex).setValue("Skipped - Not a valid URL: " + url.substring(0, 20));
+      sheet.getRange(i, statusCol).setValue("Skipped - Not a valid URL: " + url.substring(0, 20));
       continue;
     }
 
@@ -247,13 +248,13 @@ function checkExpiredJobs() {
 
     if (isInvalid) {
       if (CONFIG.deleteInvalidRows) {
-        sheet.getRange(i, CONFIG.statusColumnIndex).setValue("Expired/Invalid");
+        sheet.getRange(i, statusCol).setValue("Expired/Invalid");
       } else {
-        sheet.getRange(i, CONFIG.statusColumnIndex).setValue(statusMessage);
+        sheet.getRange(i, statusCol).setValue(statusMessage);
       }
     } else {
       if (!CONFIG.deleteInvalidRows || statusMessage.indexOf("Job Title not found") !== -1) {
-         sheet.getRange(i, CONFIG.statusColumnIndex).setValue(statusMessage);
+         sheet.getRange(i, statusCol).setValue(statusMessage);
       }
     }
   }
@@ -395,9 +396,9 @@ function setupCheckboxes() {
  * Scans the checkboxes in Column N and exports checked rows to a copyable text block and Google Doc.
  */
 function exportSelectedJobs() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Redding Area Job Postings");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.sheetName || "Automated_Posts");
   if (!sheet) {
-    SpreadsheetApp.getUi().alert("Sheet 'Redding Area Job Postings' not found.");
+    SpreadsheetApp.getUi().alert("Sheet '" + (CONFIG.sheetName || "Automated_Posts") + "' not found.");
     return;
   }
   
@@ -595,7 +596,7 @@ function showCopyDialog(text, docUrl, checkedRowsIndices) {
  * Callback function to uncheck selected checkboxes after export.
  */
 function clearCheckboxesInSheet(checkedRowsIndices) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Redding Area Job Postings");
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.sheetName || "Automated_Posts");
   if (!sheet || !checkedRowsIndices || checkedRowsIndices.length === 0) return;
   
   // Find column mapping to get the export/checkbox column

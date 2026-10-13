@@ -26,10 +26,19 @@ def cleanup_sheets(dry_run=True):
     ws_auto = None
     try:
         ws_auto = spreadsheet.worksheet("Automated_Posts")
-        curr_auto_rows = ws_auto.get_all_values()
-        print(f"Current rows in Automated_Posts: {len(curr_auto_rows)}")
-    except Exception as e:
-        print(f"Could not read Automated_Posts: {e}")
+    except Exception:
+        matched = [ws for ws in spreadsheet.worksheets() if ws.id == 280720545]
+        if matched:
+            ws_auto = matched[0]
+    
+    if ws_auto:
+        try:
+            curr_auto_rows = ws_auto.get_all_values()
+            print(f"Current rows in Automated_Posts: {len(curr_auto_rows)}")
+        except Exception as e:
+            print(f"Could not read Automated_Posts: {e}")
+    else:
+        print("Could not find Automated_Posts worksheet (gid=280720545)")
 
     # Build the fresh rows from Firestore verified jobs
     fresh_auto_rows = []
@@ -148,6 +157,7 @@ def cleanup_sheets(dry_run=True):
             "HS Dip / GED": resolved_profile.get("hs_diploma_policy") or "Not Required",
             "Work Experience": resolved_profile.get("work_experience_policy") or "None Required (Entry-Level)",
             "Location & Transit Notes": resolved_profile.get("transit_notes") or "",
+            "Status": j.get("status") or "",
         })
 
     df_auto = pd.DataFrame(fresh_auto_rows)
@@ -222,6 +232,8 @@ def cleanup_sheets(dry_run=True):
     # 1. Update Automated_Posts
     if ws_auto:
         print("Updating 'Automated_Posts' tab...")
+        if ws_auto.col_count < len(df_auto.columns):
+            ws_auto.add_cols(len(df_auto.columns) - ws_auto.col_count)
         ws_auto.clear()
         ws_auto.update(values=[df_auto.columns.values.tolist()] + df_auto.values.tolist(), range_name="A1")
         try:

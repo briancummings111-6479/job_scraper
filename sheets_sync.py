@@ -199,7 +199,8 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
             "Driver License": resolved.get("driver_license_policy", "Not Required"),
             "HS Dip / GED": resolved.get("hs_ged_policy", "Not Required"),
             "Work Experience": resolved.get("work_experience_policy", "None (Entry-Level)"),
-            "Location & Transit Notes": resolved.get("location_transit_notes", "")
+            "Location & Transit Notes": resolved.get("location_transit_notes", ""),
+            "Status": j.get("status", "")
         })
 
     if not rows:
@@ -214,14 +215,24 @@ def update_google_sheet(jobs_data: list, sheet_id: str = "1uGL7w8fpb5P0D-kNIPces
     spreadsheet = client.open_by_key(sheet_id)
     
     tab_name = "Automated_Posts"
+    target_gid = 280720545
+    worksheet = None
     try:
         worksheet = spreadsheet.worksheet(tab_name)
-    except gspread.exceptions.WorksheetNotFound:
-        print(f"[SHEETS] Tab '{tab_name}' not found. Creating it...")
-        worksheet = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=30)
-    except Exception as e:
-        print(f"[WARN] Error finding '{tab_name}': {e}. Defaulting to first sheet.")
-        worksheet = spreadsheet.sheet1
+    except Exception:
+        matched = [ws for ws in spreadsheet.worksheets() if ws.id == target_gid]
+        if matched:
+            worksheet = matched[0]
+        else:
+            try:
+                print(f"[SHEETS] Tab '{tab_name}' not found. Creating it...")
+                worksheet = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=30)
+            except Exception as e:
+                print(f"[WARN] Error creating '{tab_name}': {e}. Defaulting to first sheet.")
+                worksheet = spreadsheet.sheet1
+
+    if worksheet.col_count < len(df.columns):
+        worksheet.add_cols(len(df.columns) - worksheet.col_count)
 
     worksheet.clear()
     worksheet.update(values=[df.columns.values.tolist()] + df.values.tolist(), range_name="A1")
