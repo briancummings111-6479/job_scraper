@@ -29,8 +29,8 @@ logging.basicConfig(
 logger = logging.getLogger("ReviewExpiredJobs")
 
 DEFAULT_SPREADSHEET_ID = "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU"
-DEFAULT_TAB_NAME = "Redding Area Job Postings"
-TARGET_GID = 778721942
+DEFAULT_TAB_NAME = "Automated_Posts"
+TARGET_GID = 280720545
 
 EXPIRED_PHRASES = [
     "this job has expired on indeed",
@@ -409,25 +409,41 @@ async def review_expired_jobs_async(
     if len(all_values) < 2:
         return {"status": "error", "message": "Worksheet does not have enough rows."}
 
-    # Map column headers to indices (0-indexed), scanning Row 1 and Row 2
+    # Map column headers to indices (0-indexed)
+    is_automated_posts = ("automated_posts" in worksheet.title.strip().lower())
+    
+    # Check if Row 1 has headers (e.g. Source, Job Title)
+    row1_lower = [c.strip().lower() for c in all_values[0]]
+    row1_has_headers = any(c in ["source", "job title", "title"] for c in row1_lower)
+    
+    header_row_idx = 0 if row1_has_headers else 1
+    header_row = all_values[header_row_idx]
+    data_start_idx = header_row_idx + 1  # 0-indexed: index 1 is row 2, index 2 is row 3
+
     col_map = {}
-    for hdr_row in (all_values[0], all_values[1]):
-        for idx, col in enumerate(hdr_row):
-            col_clean = col.strip().lower()
-            if col_clean:
-                col_map[col_clean] = idx
+    for idx, col in enumerate(header_row):
+        col_clean = col.strip().lower()
+        if col_clean:
+            col_map[col_clean] = idx
 
     source_col_idx = col_map.get("source", 0)
     title_col_idx = col_map.get("job title", 1)
     company_col_idx = col_map.get("company", 2)
     url_col_idx = col_map.get("job posting", col_map.get("job_url", 11))  # Default Column L (index 11)
-    status_col_idx = 15  # Column P is 0-indexed index 15 (Column 16)
+    
+    # Determine Status column index:
+    if "status" in col_map:
+        status_col_idx = col_map["status"]
+    elif is_automated_posts:
+        status_col_idx = len(header_row)  # Append Status column after all existing columns
+    else:
+        status_col_idx = 15  # Column P is 0-indexed index 15 (Column 16)
 
-    # Collect jobs from row 3 (index 2) onwards
+    # Collect jobs from data_start_idx onwards
     jobs_to_process: List[Dict[str, Any]] = []
     total_data_rows = 0
 
-    for i in range(2, len(all_values)):
+    for i in range(data_start_idx, len(all_values)):
         row = all_values[i]
         # Check if row has any meaningful content
         has_content = any(c.strip() for c in row[:14])
@@ -557,27 +573,33 @@ async def review_expired_jobs_async(
             await asyncio.gather(*tasks)
             await browser.close()
 
-    # Prepare Column P values for batch write
-    # Row 2 (header): "Status"
-    last_row_index = jobs_to_process[-1]["row_index"] if jobs_to_process else 2
+    # Prepare Status column values for batch write
+    last_row_index = jobs_to_process[-1]["row_index"] if jobs_to_process else (data_start_idx + 1)
     
-    col_p_values = [["Status"]]  # P2 header
-    for i in range(3, last_row_index + 1):
-        if i in results:
-            res = results[i]
-            if res.get("skipped"):
-                # Preserve existing or leave blank
-                col_p_values.append([res.get("status", "")])
-            else:
-                col_p_values.append([res.get("status", "")])
-        else:
-            col_p_values.append([""])
+    def _col_idx_to_letter(col_idx: int) -> str:
+        res = ""
+        c = col_idx + 1
+        while c > 0:
+            c, rem = divmod(c - 1, 26)
+            res = chr(65 + rem) + res
+        return res
 
-    if update_sheet and len(col_p_values) > 1:
-        range_target = f"P2:P{last_row_index}"
-        logger.info(f"Writing {len(col_p_values)} rows to Google Sheet range '{range_target}'...")
-        worksheet.update(values=col_p_values, range_name=range_target)
-        logger.info("[SUCCESS] Column P batch update completed in Google Sheets.")
+    status_col_letter = _col_idx_to_letter(status_col_idx)
+    header_row_num = header_row_idx + 1
+    
+    col_status_values = [["Status"]]
+    for row_num in range(data_start_idx + 1, last_row_index + 1):
+        if row_num in results:
+            res = results[row_num]
+            col_status_values.append([res.get("status", "")])
+        else:
+            col_status_values.append([""])
+
+    if update_sheet and len(col_status_values) > 1:
+        range_target = f"{status_col_letter}{header_row_num}:{status_col_letter}{last_row_index}"
+        logger.info(f"Writing {len(col_status_values)} rows to Google Sheet range '{range_target}'...")
+        worksheet.update(values=col_status_values, range_name=range_target)
+        logger.info(f"[SUCCESS] Column {status_col_letter} batch update completed in Google Sheets.")
 
     summary = {
         "status": "success",

@@ -1304,7 +1304,7 @@
                         <div class="action-row" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.03);">
                             <div class="action-details">
                                 <h3 class="action-name" style="color: #fbbf24;">📋 Review Active Listings in Sheet</h3>
-                                <p class="action-desc">Audit Indeed, Snagajob, ZipRecruiter & other portal postings in Google Sheet ("Redding Area Job Postings"). Flags inactive postings as "Expired" in Column P, and skips Company source jobs.</p>
+                                <p class="action-desc">Audit Indeed, Snagajob, ZipRecruiter & other portal postings in Google Sheet ("Automated_Posts"). Flags inactive postings as "Expired" and skips Company source jobs.</p>
                             </div>
                             <button id="btn-review-expired" type="button" class="action-btn" onclick="startReviewExpiredJobs()"
                                 style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);">
@@ -2199,13 +2199,13 @@
                                 statusText.className = 'success-msg';
                                 statusText.style.color = 'var(--success)';
 
-                                const sheetUrl = status.sheet_url || 'https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=778721942#gid=778721942';
+                                const sheetUrl = status.sheet_url || 'https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=280720545#gid=280720545';
                                 downloadLink.href = sheetUrl;
                                 downloadLink.innerHTML = `
                                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                         <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                     </svg>
-                                    Open Google Sheet (Redding Area Job Postings)
+                                    Open Google Sheet (Automated_Posts)
                                 `;
                                 downloadLink.style.display = 'inline-flex';
 

@@ -554,7 +554,7 @@ review_job_state = {
     "completed": False,
     "error": None,
     "result": None,
-    "sheet_url": "https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=778721942#gid=778721942"
+    "sheet_url": "https://docs.google.com/spreadsheets/d/1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU/edit?gid=280720545#gid=280720545"
 }
 review_lock = threading.Lock()
 
@@ -593,7 +593,7 @@ def _background_review_task(sheet_id, tab_name, concurrency, update_sheet):
             review_job_state["message"] = (
                 f"Completed! {res.get('reviewed_jobs', 0)} jobs audited: "
                 f"{res.get('expired_count', 0)} Expired, {res.get('active_count', 0)} Active. "
-                f"{res.get('company_skipped', 0)} Company jobs skipped. Column P updated in Google Sheet."
+                f"{res.get('company_skipped', 0)} Company jobs skipped. Google Sheet updated."
             )
     except Exception as e:
         import traceback
@@ -609,7 +609,7 @@ def start_review_expired_jobs_endpoint():
     global review_job_state
     data = request.get_json() or {}
     sheet_id = data.get("sheet_id", "1uGL7w8fpb5P0D-kNIPces9nOK4Ctt6Bfg5jlA6J-_CU")
-    tab_name = data.get("tab_name", "Redding Area Job Postings")
+    tab_name = data.get("tab_name", "Automated_Posts")
     concurrency = int(data.get("concurrency", 3))
     update_sheet = bool(data.get("update_sheet", True))
 
@@ -632,7 +632,7 @@ def start_review_expired_jobs_endpoint():
             "completed": False,
             "error": None,
             "result": None,
-            "sheet_url": f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit?gid=778721942#gid=778721942"
+            "sheet_url": f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit?gid=280720545#gid=280720545"
         }
 
     thread = threading.Thread(

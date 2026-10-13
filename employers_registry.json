@@ -20,11 +20,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Abm-Industries-Inc.-2?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9kbk8dgpbf800&fromjk=8b03e17494461a41",
     "notes": "Contract commercial custodial and facility maintenance across Shasta County. | Dispatched to commercial client facilities across Redding area.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 503,
+        "id": 855,
         "employer_id": 2,
         "location_name": "Area Facilities Operations",
         "street_address": "Area Commercial Facilities Dispatch (Redding, CA)",
@@ -61,11 +61,11 @@
     "indeed_url": "",
     "notes": "",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified",
     "locations": [
       {
-        "id": 350,
+        "id": 701,
         "employer_id": 263,
         "location_name": "R1104 - Store 007108",
         "street_address": "4670 Churn Creek Road",
@@ -102,11 +102,11 @@
     "indeed_url": "",
     "notes": "Furniture/appliance lease-to-own; delivery driver and customer service roles. | Near Dana Dr shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 502,
+        "id": 854,
         "employer_id": 1,
         "location_name": "Redding Store",
         "street_address": "1670 Churn Creek Rd",
@@ -143,11 +143,11 @@
     "indeed_url": "",
     "notes": "Staffing and recruiting agency placing light industrial, clerical, and warehouse personnel. | Client worksite staffing placements.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 504,
+        "id": 856,
         "employer_id": 3,
         "location_name": "Shasta Regional Branch",
         "street_address": "Local Dispatch / Client Placements (Redding, CA)",
@@ -186,11 +186,11 @@
     "indeed_url": "",
     "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 5 & 18 accessible.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 8)",
     "locations": [
       {
-        "id": 365,
+        "id": 716,
         "employer_id": 4,
         "location_name": "Crown Ace - Hartnell",
         "street_address": "1350 Hartnell Ave",
@@ -205,7 +205,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 5 & 18 accessible."
       },
       {
-        "id": 366,
+        "id": 717,
         "employer_id": 4,
         "location_name": "Crown Ace - Westside",
         "street_address": "4490 Westside Rd",
@@ -220,7 +220,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 7 accessible."
       },
       {
-        "id": 367,
+        "id": 718,
         "employer_id": 4,
         "location_name": "Ace Hardware - Hilltop",
         "street_address": "2010 Hilltop Dr",
@@ -235,7 +235,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 11 accessible."
       },
       {
-        "id": 368,
+        "id": 719,
         "employer_id": 4,
         "location_name": "Ace Hardware - Railroad Ave",
         "street_address": "3400 Railroad Ave",
@@ -250,7 +250,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 7 accessible."
       },
       {
-        "id": 369,
+        "id": 720,
         "employer_id": 4,
         "location_name": "Anderson Ace Hardware",
         "street_address": "2650 Gateway Dr",
@@ -265,7 +265,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 9 (Anderson) accessible."
       },
       {
-        "id": 370,
+        "id": 721,
         "employer_id": 4,
         "location_name": "Shasta Lake Ace Hardware",
         "street_address": "4172 Shasta Dam Blvd",
@@ -280,7 +280,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | RABA Route 1 (Shasta Lake) accessible."
       },
       {
-        "id": 371,
+        "id": 722,
         "employer_id": 4,
         "location_name": "Burney Ace Hardware",
         "street_address": "37375 Highway 299 E",
@@ -295,7 +295,7 @@
         "notes": "Store ID: ca44ad1f = 1350 Hartnell Ave, Redding, | e191628a = 4490 Westside Rd, Redding, | | Youth-friendly employer; 8 branch locations serving all Shasta County communities. | Eastern Shasta County regional hardware hub."
       },
       {
-        "id": 372,
+        "id": 723,
         "employer_id": 4,
         "location_name": "Cottonwood Ace Hardware",
         "street_address": "20625 Gas Point Rd",
@@ -332,11 +332,11 @@
     "indeed_url": "",
     "notes": "Remote corporate employer hiring field merchandisers and retail brand reps inside local Redding stores (Best Buy, Target). | Dispatched to local retail storefronts across Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 505,
+        "id": 857,
         "employer_id": 5,
         "location_name": "Field Dispatched / Retail Rep",
         "street_address": "Field Dispatched / Mobile (Redding, CA)",
@@ -373,11 +373,11 @@
     "indeed_url": "",
     "notes": "KRDD Delivery Station; major local employer for package sorting, staging, and material handling. | Stillwater Business Park; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 506,
+        "id": 858,
         "employer_id": 6,
         "location_name": "KRDD Delivery Station",
         "street_address": "5855 Venture Pkwy",
@@ -414,11 +414,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly storefront retail; clothing sales associate and cashiering. | Mt Shasta Mall; central RABA Transfer Center transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 373,
+        "id": 724,
         "employer_id": 7,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste D-05",
@@ -455,11 +455,11 @@
     "indeed_url": "",
     "notes": "Aviation propeller overhaul and mechanical repair facility near Redding Airport. | Redding Airport industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 507,
+        "id": 859,
         "employer_id": 8,
         "location_name": "Redding Aviation Facility",
         "street_address": "20208 Charlanne Dr",
@@ -496,11 +496,11 @@
     "indeed_url": "",
     "notes": "Regional and OTR commercial freight trucking dispatched out of Shasta County. | Commercial freight dispatch.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 692,
+        "id": 1044,
         "employer_id": 9,
         "location_name": "Redding / Anderson Freight Dispatch",
         "street_address": "Field Dispatched / Freight Route (Redding, CA)",
@@ -537,11 +537,11 @@
     "indeed_url": "",
     "notes": "Boutique hotel in downtown Redding; front desk reception and housekeeping. | Downtown Redding; RABA Downtown Terminal hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 508,
+        "id": 860,
         "employer_id": 10,
         "location_name": "Downtown Hotel",
         "street_address": "1241 Market St",
@@ -578,11 +578,11 @@
     "indeed_url": "",
     "notes": "Physical therapy clinic; physical therapy aide and front desk receptionist roles. | RABA Route 9 (Anderson) accessible.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 509,
+        "id": 861,
         "employer_id": 11,
         "location_name": "Anderson Clinic",
         "street_address": "2835 Childress Dr",
@@ -619,11 +619,11 @@
     "indeed_url": "",
     "notes": "In-home caregiving agency; personal care aide and certified nursing assistant positions. | RABA Route 18 accessible; caregivers dispatched to client residences.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 510,
+        "id": 862,
         "employer_id": 12,
         "location_name": "Redding Regional Office",
         "street_address": "1090 E Cypress Ave, Ste B",
@@ -660,11 +660,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Armed-Guard-Private-Security-Inc.-1?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqobovfgstg801&fromjk=173c098a3c9667ee",
     "notes": "Unarmed and armed security guard positions at retail, commercial, and event sites. | Guards dispatched to client worksites across Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 511,
+        "id": 863,
         "employer_id": 13,
         "location_name": "Shasta Security Operations",
         "street_address": "Field Dispatched / Security Site Postings (Redding, CA)",
@@ -701,11 +701,11 @@
     "indeed_url": "",
     "notes": "Auto parts retail; sales associate and parts delivery roles. | RABA Route 5 & 7.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 4)",
     "locations": [
       {
-        "id": 374,
+        "id": 725,
         "employer_id": 14,
         "location_name": "Redding - Cypress",
         "street_address": "1205 Cypress Ave",
@@ -720,7 +720,7 @@
         "notes": "Auto parts retail; sales associate and parts delivery roles. | RABA Route 5 & 7."
       },
       {
-        "id": 375,
+        "id": 726,
         "employer_id": 14,
         "location_name": "Redding - Lake Blvd",
         "street_address": "2450 Lake Blvd",
@@ -735,7 +735,7 @@
         "notes": "Auto parts retail; sales associate and parts delivery roles. | RABA Route 3."
       },
       {
-        "id": 376,
+        "id": 727,
         "employer_id": 14,
         "location_name": "Anderson Store",
         "street_address": "2580 Balls Ferry Rd",
@@ -750,7 +750,7 @@
         "notes": "Auto parts retail; sales associate and parts delivery roles. | RABA Route 9."
       },
       {
-        "id": 377,
+        "id": 728,
         "employer_id": 14,
         "location_name": "Shasta Lake Store",
         "street_address": "4220 Shasta Dam Blvd",
@@ -787,11 +787,11 @@
     "indeed_url": "",
     "notes": "Non-emergency medical transportation driver dispatched throughout Shasta County. | Non-emergency patient transport route dispatch.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 693,
+        "id": 1045,
         "employer_id": 15,
         "location_name": "Medical Transit Route Dispatch",
         "street_address": "Field Dispatched / Mobile Route (Redding, CA)",
@@ -828,11 +828,11 @@
     "indeed_url": "",
     "notes": "Bookseller and cafe barista positions. | Promenade at Hilltop; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 378,
+        "id": 729,
         "employer_id": 16,
         "location_name": "Hilltop Dr Store",
         "street_address": "1140 Hilltop Dr",
@@ -871,11 +871,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly ice cream scooper and cashier roles; hires at 15 with work permit. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 358,
+        "id": 709,
         "employer_id": 17,
         "location_name": "Lake Blvd Store",
         "street_address": "125 Lake Blvd",
@@ -890,7 +890,7 @@
         "notes": "Youth-friendly ice cream scooper and cashier roles; hires at 15 with work permit. | RABA Route 2 & 3."
       },
       {
-        "id": 359,
+        "id": 710,
         "employer_id": 17,
         "location_name": "Bechelli Lane Location",
         "street_address": "4861 Bechelli Ln, Suite 200",
@@ -927,11 +927,11 @@
     "indeed_url": "",
     "notes": "Retail associate, cashier, and seasonal sales support at Mt Shasta Mall. | Mt Shasta Mall; central RABA hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 512,
+        "id": 864,
         "employer_id": 18,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-04",
@@ -968,11 +968,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Batteries-Plus-a6cd93df",
     "notes": "Device repair technician, sales associate, and battery assembly. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 513,
+        "id": 865,
         "employer_id": 19,
         "location_name": "Churn Creek Store",
         "street_address": "1320 Churn Creek Rd, Ste 100",
@@ -1011,11 +1011,11 @@
     "indeed_url": "",
     "notes": "Cashier and stocking associate; 21+ for tobacco/alcohol sales shifts. | RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 514,
+        "id": 866,
         "employer_id": 20,
         "location_name": "Bechelli Ln Store",
         "street_address": "2735 Bechelli Ln",
@@ -1052,11 +1052,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Beneficial-Insectary?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqohttpgsu8800&fromjk=443e5a9bec1c5983",
     "notes": "Agricultural insect production, packaging, and greenhouse maintenance. | Industrial agricultural corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 515,
+        "id": 867,
         "employer_id": 21,
         "location_name": "Redding Production Facility",
         "street_address": "9625 Tanqueray Ct",
@@ -1071,7 +1071,7 @@
         "notes": "Agricultural insect production, packaging, and greenhouse maintenance. | Industrial agricultural corridor."
       },
       {
-        "id": 516,
+        "id": 868,
         "employer_id": 21,
         "location_name": "Westside Rd Facility",
         "street_address": "5110 Westside Rd",
@@ -1086,7 +1086,7 @@
         "notes": "Agricultural insect production, packaging, and greenhouse maintenance. | RABA Route 7 accessible."
       },
       {
-        "id": 517,
+        "id": 869,
         "employer_id": 21,
         "location_name": "Bella Vista Facility",
         "street_address": "22360 Meyer Rd",
@@ -1123,11 +1123,11 @@
     "indeed_url": "",
     "notes": "Full-service dining restaurant in Anderson; host, busser, server, prep cook. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 379,
+        "id": 730,
         "employer_id": 22,
         "location_name": "Anderson Restaurant",
         "street_address": "2083 Balls Ferry Rd",
@@ -1164,11 +1164,11 @@
     "indeed_url": "",
     "notes": "Electronics sales advisor, customer service specialist, inventory specialist. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 380,
+        "id": 731,
         "employer_id": 23,
         "location_name": "Redding Store",
         "street_address": "2500 Hilltop Dr",
@@ -1208,11 +1208,11 @@
     "indeed_url": "",
     "notes": "Online auction warehouse; merchandise processor, auction pickup clerk, stocker. | RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 518,
+        "id": 870,
         "employer_id": 24,
         "location_name": "Athens Ave Facility",
         "street_address": "2355 Athens Ave",
@@ -1249,11 +1249,11 @@
     "indeed_url": "",
     "notes": "Sporting goods retail; retail sales associate, cashier, inventory receiver. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 519,
+        "id": 871,
         "employer_id": 25,
         "location_name": "Redding Store",
         "street_address": "2500 Hilltop Dr, Ste B",
@@ -1290,11 +1290,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Grupo-Bimbo-98111fb4",
     "notes": "Bakery depot and distribution center; loader, merchandiser, route sales. | North Redding industrial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 520,
+        "id": 872,
         "employer_id": 26,
         "location_name": "Redding Distribution Depot",
         "street_address": "1475 George Dr",
@@ -1331,11 +1331,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Blach-Beverage-LLC-1?campaignid=mobvjcmp&from=mobviewjob&tk=1jteakpi7go4v803&fromjk=a2d7edb1f1c4a9f9",
     "notes": "Beverage wholesaler; warehouse loader, beverage merchandiser (18+), delivery driver (21+). | Mountain Lakes industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 521,
+        "id": 873,
         "employer_id": 27,
         "location_name": "Redding Distribution Center",
         "street_address": "1530 Beltline Rd",
@@ -1372,11 +1372,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Black-Bear-Diner?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9lkvnri0ia800&fromjk=0591d8a202db45c1",
     "notes": "Full service family diner; line cook, prep cook, dishwasher, server, host. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 381,
+        "id": 732,
         "employer_id": 28,
         "location_name": "Redding Diner",
         "street_address": "2605 Hilltop Dr",
@@ -1413,11 +1413,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Black-Diamond-Lounge?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9l2afaijuu800&fromjk=8bf303dea0a8ef8b",
     "notes": "Downtown lounge and entertainment venue; 21+ mandatory due to alcohol service. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 694,
+        "id": 1046,
         "employer_id": 29,
         "location_name": "Downtown Lounge",
         "street_address": "1729 California St",
@@ -1454,11 +1454,11 @@
     "indeed_url": "",
     "notes": "Western apparel and workwear retail; sales associate, cashier, freight coordinator. | Shasta Outlets; RABA Route 9.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 522,
+        "id": 874,
         "employer_id": 30,
         "location_name": "Shasta Outlets Store",
         "street_address": "1699 State Hwy 273, Ste C",
@@ -1496,11 +1496,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly novelty pop-culture retail at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 523,
+        "id": 875,
         "employer_id": 31,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste D-12",
@@ -1537,11 +1537,11 @@
     "indeed_url": "",
     "notes": "Home health and community living support services dispatched to client homes. | Mobile home caregiving dispatch.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 524,
+        "id": 876,
         "employer_id": 32,
         "location_name": "Shasta County Services",
         "street_address": "In-Home Client Residence Dispatch (Redding, CA)",
@@ -1580,11 +1580,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Brightstar-Care?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqok5j4go7n800&fromjk=1f8412b750fd568c",
     "notes": "In-home personal care and medical staffing. | Caregivers dispatched across Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 525,
+        "id": 877,
         "employer_id": 33,
         "location_name": "Shasta Regional Office",
         "street_address": "1750 South St",
@@ -1621,11 +1621,11 @@
     "indeed_url": "",
     "notes": "Hospice care agency; certified hospice aide and administrative roles. | Park Marina office park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 526,
+        "id": 878,
         "employer_id": 34,
         "location_name": "Redding Office",
         "street_address": "2701 Park Marina Dr",
@@ -1662,11 +1662,11 @@
     "indeed_url": "",
     "notes": "Apparel and denim sales teammate at Mt Shasta Mall. | Mt Shasta Mall.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 382,
+        "id": 733,
         "employer_id": 35,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-12",
@@ -1679,6 +1679,45 @@
         "raba_accessible": 1,
         "raba_stop": "RABA Corridor",
         "notes": "Apparel and denim sales teammate at Mt Shasta Mall. | Mt Shasta Mall."
+      }
+    ]
+  },
+  {
+    "id": 264,
+    "name": "Buffalo Wild Wings",
+    "name_normalized": "buffalo wild wings",
+    "aliases": [],
+    "industry_sector": "Food & Restaurant",
+    "secondary_sector": "",
+    "min_age_baseline": 18,
+    "hs_ged_baseline": "Not Required",
+    "felon_friendly": "Unknown",
+    "background_check": "Unknown",
+    "drug_testing": "Unknown",
+    "drivers_license": "Not Required",
+    "work_experience": "None (Entry-Level)",
+    "starting_wage": "",
+    "career_url": "https://careers.buffalowildwings.com/jobs?location_type=1&location_name=96003&keyword=team%20member",
+    "indeed_url": "",
+    "notes": "",
+    "is_verified": 1,
+    "last_updated": "2026-10-13 05:44:20",
+    "review_status": "Verified",
+    "locations": [
+      {
+        "id": 734,
+        "employer_id": 264,
+        "location_name": "Main Location",
+        "street_address": "1315 Churn Creek Road",
+        "city": "Redding",
+        "state": "CA",
+        "zip_code": "",
+        "phone": "(925) 465-6825",
+        "manager_name": "",
+        "is_primary": 1,
+        "raba_accessible": 1,
+        "raba_stop": "RABA Corridor",
+        "notes": ""
       }
     ]
   },
@@ -1704,11 +1743,11 @@
     "indeed_url": "",
     "notes": "Fast food crew member, cashier, prep cook. | RABA Route 2.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 383,
+        "id": 735,
         "employer_id": 36,
         "location_name": "Eureka Way Store",
         "street_address": "2225 Eureka Way",
@@ -1723,7 +1762,7 @@
         "notes": "Fast food crew member, cashier, prep cook. | RABA Route 2."
       },
       {
-        "id": 384,
+        "id": 736,
         "employer_id": 36,
         "location_name": "Cypress Ave Store",
         "street_address": "995 E Cypress Ave",
@@ -1738,7 +1777,7 @@
         "notes": "Fast food crew member, cashier, prep cook. | RABA Route 18."
       },
       {
-        "id": 385,
+        "id": 737,
         "employer_id": 36,
         "location_name": "Anderson Store",
         "street_address": "2600 Gateway Dr",
@@ -1775,11 +1814,11 @@
     "indeed_url": "",
     "notes": "Retail associate, cashier, receiving and stock associate. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 527,
+        "id": 879,
         "employer_id": 37,
         "location_name": "Redding Store",
         "street_address": "1235 Dana Dr",
@@ -1816,11 +1855,11 @@
     "indeed_url": "",
     "notes": "Upscale casual dining restaurant adjoining Best Western Plus Hilltop. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 386,
+        "id": 738,
         "employer_id": 38,
         "location_name": "Hilltop Grille",
         "street_address": "2300 Hilltop Dr",
@@ -1859,11 +1898,11 @@
     "indeed_url": "",
     "notes": "In-store food and product demonstrator operating inside Redding Costco. | Inside Costco Wholesale; RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 532,
+        "id": 884,
         "employer_id": 45,
         "location_name": "Costco Demonstration Hub",
         "street_address": "4805 Bechelli Ln",
@@ -1900,11 +1939,11 @@
     "indeed_url": "",
     "notes": "Outpatient mental health and behavioral support services. | Knollcrest medical and professional park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 534,
+        "id": 886,
         "employer_id": 55,
         "location_name": "Redding Clinic",
         "street_address": "415 Knollcrest Dr, Ste 101",
@@ -1941,11 +1980,11 @@
     "indeed_url": "",
     "notes": "Retail store associate, cashier, pharmacy technician trainee. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 399,
+        "id": 751,
         "employer_id": 62,
         "location_name": "Redding - Cypress",
         "street_address": "1060 E Cypress Ave",
@@ -1960,7 +1999,7 @@
         "notes": "Retail store associate, cashier, pharmacy technician trainee. | RABA Route 18."
       },
       {
-        "id": 400,
+        "id": 752,
         "employer_id": 62,
         "location_name": "Redding - Court St",
         "street_address": "2025 Court St",
@@ -1975,7 +2014,7 @@
         "notes": "Retail store associate, cashier, pharmacy technician trainee. | RABA Route 5."
       },
       {
-        "id": 401,
+        "id": 753,
         "employer_id": 62,
         "location_name": "Anderson Store",
         "street_address": "2680 Gateway Dr",
@@ -2012,11 +2051,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Camping-World/locations/CA/Anderson",
     "notes": "RV dealership and outdoor gear retail; retail associate, RV detailer, parts specialist. | Rhonda Rd commercial hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 528,
+        "id": 880,
         "employer_id": 39,
         "location_name": "Anderson Dealership",
         "street_address": "5200 Rhonda Rd",
@@ -2053,11 +2092,11 @@
     "indeed_url": "",
     "notes": "In-home caregiving and domestic service dispatch platform. | Dispatched directly to private residences.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 529,
+        "id": 881,
         "employer_id": 40,
         "location_name": "Client Home Dispatch",
         "street_address": "Client Residence Dispatch (Redding, CA)",
@@ -2096,11 +2135,11 @@
     "indeed_url": "",
     "notes": "In-home professional caregiving network dispatched to client residences. | Dispatched directly to private client residences.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 530,
+        "id": 882,
         "employer_id": 41,
         "location_name": "Client Home Dispatch",
         "street_address": "Client Residence Dispatch (Redding, CA)",
@@ -2138,11 +2177,11 @@
     "indeed_url": "",
     "notes": "Fast food crew member, cashier, biscuit maker, grill cook. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 387,
+        "id": 739,
         "employer_id": 42,
         "location_name": "Churn Creek Store",
         "street_address": "1800 Churn Creek Rd",
@@ -2157,7 +2196,7 @@
         "notes": "Fast food crew member, cashier, biscuit maker, grill cook. | RABA Route 18."
       },
       {
-        "id": 388,
+        "id": 740,
         "employer_id": 42,
         "location_name": "Lake Blvd Store",
         "street_address": "255 Lake Blvd",
@@ -2172,7 +2211,7 @@
         "notes": "Fast food crew member, cashier, biscuit maker, grill cook. | RABA Route 2 & 3."
       },
       {
-        "id": 389,
+        "id": 741,
         "employer_id": 42,
         "location_name": "Anderson Store",
         "street_address": "2690 Gateway Dr",
@@ -2209,11 +2248,11 @@
     "indeed_url": "",
     "notes": "Locally owned appliance showroom; delivery installer, warehouse associate, sales. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 531,
+        "id": 883,
         "employer_id": 43,
         "location_name": "Redding Showroom",
         "street_address": "2330 Churn Creek Rd",
@@ -2250,11 +2289,11 @@
     "indeed_url": "",
     "notes": "Western steakhouse; meat cutter, line cook, host, busser, server. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 390,
+        "id": 742,
         "employer_id": 44,
         "location_name": "Redding Steakhouse",
         "street_address": "2184 Hilltop Dr",
@@ -2291,11 +2330,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Cheesecakes-Unlimited/jobs",
     "notes": "Downtown cafe and bakery; barista, counter cashier, baker assistant. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 391,
+        "id": 743,
         "employer_id": 46,
         "location_name": "Downtown Bakery",
         "street_address": "1135 Pine St",
@@ -2332,11 +2371,11 @@
     "indeed_url": "",
     "notes": "Seasonal holiday event photography and customer service at Mt Shasta Mall. | Mt Shasta Mall; RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 392,
+        "id": 744,
         "employer_id": 47,
         "location_name": "Mt Shasta Mall Event Set",
         "street_address": "900 Dana Dr",
@@ -2373,11 +2412,11 @@
     "indeed_url": "",
     "notes": "https://www.workstream.us/j/6385df45/chick-fil-a/redding-130857/front-of-house-team-member-73c36908?referer_source=corporate_feed_36 | Youth-friendly quick-service restaurant; front-of-house team member and kitchen prep. | Cypress Ave & Hilltop; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 351,
+        "id": 702,
         "employer_id": 48,
         "location_name": "Redding Restaurant",
         "street_address": "1610 E Cypress Ave",
@@ -2414,11 +2453,11 @@
     "indeed_url": "",
     "notes": "Quick-service dining; crew member, cashier, prep cook, grill cook. | Dana Dr shopping center; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 393,
+        "id": 745,
         "employer_id": 49,
         "location_name": "Dana Dr Restaurant",
         "street_address": "904 Dana Dr",
@@ -2433,7 +2472,7 @@
         "notes": "Quick-service dining; crew member, cashier, prep cook, grill cook. | Dana Dr shopping center; RABA Route 18."
       },
       {
-        "id": 394,
+        "id": 746,
         "employer_id": 49,
         "location_name": "South Bonnyview Restaurant",
         "street_address": "2540 S Bonnyview Rd",
@@ -2470,11 +2509,11 @@
     "indeed_url": "",
     "notes": "Wood-fired pizzeria; prep cook, pizza maker, dishwasher, counter server. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 395,
+        "id": 747,
         "employer_id": 50,
         "location_name": "Downtown Restaurant",
         "street_address": "1415 Market St",
@@ -2511,11 +2550,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly movie theater; theater team member, concessions, usher, box office. | Near Dana Dr corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 396,
+        "id": 748,
         "employer_id": 51,
         "location_name": "Cinemark Redding 14",
         "street_address": "980 Old Alturas Rd",
@@ -2552,11 +2591,11 @@
     "indeed_url": "",
     "notes": "Municipal government; utility maintenance, parks groundskeeper, clerical aide. | Redding Civic Center; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 533,
+        "id": 885,
         "employer_id": 52,
         "location_name": "City Hall",
         "street_address": "777 Cypress Ave",
@@ -2593,11 +2632,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly jewelry and accessory sales at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 397,
+        "id": 749,
         "employer_id": 53,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-39",
@@ -2635,11 +2674,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly crew member; ice cream scooper and counter cashier. | Dana Dr shopping center; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 398,
+        "id": 750,
         "employer_id": 54,
         "location_name": "Dana Dr Store",
         "street_address": "1055 Dana Dr, Ste 100",
@@ -2678,11 +2717,11 @@
     "indeed_url": "",
     "notes": "Supported Living Services for individuals with developmental disabilities. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 535,
+        "id": 887,
         "employer_id": 56,
         "location_name": "Redding Headquarters",
         "street_address": "1020 Market St",
@@ -2719,11 +2758,11 @@
     "indeed_url": "",
     "notes": "Independent Living Services (ILS) and Direct Support Professional roles. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 536,
+        "id": 888,
         "employer_id": 57,
         "location_name": "Redding Headquarters",
         "street_address": "1020 Market St",
@@ -2760,11 +2799,11 @@
     "indeed_url": "",
     "notes": "Skilled nursing facility; CNA, dietary aide, housekeeper, activity assistant. | Near Cypress Ave; RABA Route 5 & 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 537,
+        "id": 889,
         "employer_id": 58,
         "location_name": "Hartnell Care Center",
         "street_address": "201 Hartnell Ave",
@@ -2801,11 +2840,11 @@
     "indeed_url": "",
     "notes": "Major membership warehouse; cashier assistant, stocker, bakery, food court, tire center. | Bechelli Ln retail corridor; RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 538,
+        "id": 890,
         "employer_id": 59,
         "location_name": "Redding Warehouse",
         "street_address": "4805 Bechelli Ln",
@@ -2842,11 +2881,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Crown-Motors?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvmscm4h3mv800&fromjk=4f7c3d18504214fd",
     "notes": "Automotive dealership; lot porter, detailer, lube technician, parts clerk. | Cypress Ave & Market St; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 539,
+        "id": 891,
         "employer_id": 60,
         "location_name": "Redding Dealership",
         "street_address": "555 Cypress Ave",
@@ -2883,11 +2922,11 @@
     "indeed_url": "",
     "notes": "Local staffing agency placing administrative, accounting, and clerical staff. | Hilltop / Mission De Oro commercial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 540,
+        "id": 892,
         "employer_id": 61,
         "location_name": "Redding Office",
         "street_address": "999 Mission De Oro Dr, Ste 208",
@@ -2924,11 +2963,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Dick's-Sporting-Goods/jobs?jk=636754bf7f9af4fe&start=0",
     "notes": "Retail sales associate, cashier, operations associate. | Near Hilltop Dr; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 544,
+        "id": 896,
         "employer_id": 69,
         "location_name": "Redding Store",
         "street_address": "885 Browning St",
@@ -2965,11 +3004,11 @@
     "indeed_url": "",
     "notes": "Residential home remodeling; field marketing canvasser, appointment setter, sales. | Eureka Way business complex; RABA Route 2.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 541,
+        "id": 893,
         "employer_id": 63,
         "location_name": "Redding Branch",
         "street_address": "2701 Old Eureka Way, Ste 2J",
@@ -3006,11 +3045,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly fast food crew member, cashier, soft serve specialist. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 402,
+        "id": 754,
         "employer_id": 64,
         "location_name": "Churn Creek Store",
         "street_address": "1700 Churn Creek Rd",
@@ -3047,11 +3086,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Dave's-Hot-Chicken/jobs?q=&l=Redding%2C+CA#cmp-skip-header-desktop",
     "notes": "Fast-casual restaurant; fry cook, cashier, kitchen prep. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 403,
+        "id": 755,
         "employer_id": 65,
         "location_name": "Dana Dr Restaurant",
         "street_address": "917 Dana Dr",
@@ -3088,11 +3127,11 @@
     "indeed_url": "",
     "notes": "Bistro and wine bar; dishwasher, prep cook, line cook, host, server (21+). | Hemsted Dr commercial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 542,
+        "id": 894,
         "employer_id": 66,
         "location_name": "Hemsted Dr Restaurant",
         "street_address": "202 Hemsted Dr",
@@ -3129,11 +3168,11 @@
     "indeed_url": "",
     "notes": "24-hour family diner; host, busser, server, prep cook, line cook. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 404,
+        "id": 756,
         "employer_id": 67,
         "location_name": "Hilltop Diner",
         "street_address": "2608 Hilltop Dr",
@@ -3170,11 +3209,11 @@
     "indeed_url": "",
     "notes": "Network infrastructure and IT communications contractor near Redding Airport. | Redding Airport industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:25",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 543,
+        "id": 895,
         "employer_id": 68,
         "location_name": "Redding Facility",
         "street_address": "6704 Lockheed Dr",
@@ -3212,11 +3251,11 @@
     "indeed_url": "",
     "notes": "Major regional healthcare health system operating Mercy Medical Center and outpatient clinics. | Mercy hospital campus; RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 545,
+        "id": 897,
         "employer_id": 70,
         "location_name": "Mercy Medical Center Campus",
         "street_address": "2175 Rosaline Ave",
@@ -3253,11 +3292,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly discount retail; sales floor associate, cashier, stocking. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Multi-Location Branch (1 of 5)",
     "locations": [
       {
-        "id": 405,
+        "id": 757,
         "employer_id": 71,
         "location_name": "Lake Blvd Store",
         "street_address": "120 Lake Blvd",
@@ -3272,7 +3311,7 @@
         "notes": "Youth-friendly discount retail; sales floor associate, cashier, stocking. | RABA Route 2 & 3."
       },
       {
-        "id": 406,
+        "id": 758,
         "employer_id": 71,
         "location_name": "Churn Creek Store",
         "street_address": "2625 Churn Creek Rd",
@@ -3287,7 +3326,7 @@
         "notes": "Youth-friendly discount retail; sales floor associate, cashier, stocking. | RABA Route 18."
       },
       {
-        "id": 407,
+        "id": 759,
         "employer_id": 71,
         "location_name": "Cypress Ave Store",
         "street_address": "1620 E Cypress Ave",
@@ -3302,7 +3341,7 @@
         "notes": "Youth-friendly discount retail; sales floor associate, cashier, stocking. | RABA Route 18."
       },
       {
-        "id": 408,
+        "id": 760,
         "employer_id": 71,
         "location_name": "Anderson Store",
         "street_address": "2600 Gateway Dr",
@@ -3317,7 +3356,7 @@
         "notes": "Youth-friendly discount retail; sales floor associate, cashier, stocking. | RABA Route 9."
       },
       {
-        "id": 409,
+        "id": 761,
         "employer_id": 71,
         "location_name": "Shasta Lake Store",
         "street_address": "4160 Shasta Dam Blvd",
@@ -3354,11 +3393,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | Mt Shasta Mall / Dana Dr; RABA central hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Multi-Location Branch (1 of 8)",
     "locations": [
       {
-        "id": 410,
+        "id": 762,
         "employer_id": 72,
         "location_name": "Dana Dr Kiosk",
         "street_address": "900 Dana Dr",
@@ -3373,7 +3412,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | Mt Shasta Mall / Dana Dr; RABA central hub."
       },
       {
-        "id": 411,
+        "id": 763,
         "employer_id": 72,
         "location_name": "Cypress Ave Kiosk",
         "street_address": "1650 E Cypress Ave",
@@ -3388,7 +3427,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 18."
       },
       {
-        "id": 412,
+        "id": 764,
         "employer_id": 72,
         "location_name": "Hartnell Ave Kiosk",
         "street_address": "1332 Hartnell Ave",
@@ -3403,7 +3442,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 5 & 18."
       },
       {
-        "id": 413,
+        "id": 765,
         "employer_id": 72,
         "location_name": "Lake Blvd Kiosk",
         "street_address": "1115 Lake Blvd",
@@ -3418,7 +3457,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 2 & 3."
       },
       {
-        "id": 414,
+        "id": 766,
         "employer_id": 72,
         "location_name": "Eureka Way Kiosk",
         "street_address": "2101 Eureka Way",
@@ -3433,7 +3472,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 2."
       },
       {
-        "id": 415,
+        "id": 767,
         "employer_id": 72,
         "location_name": "Churn Creek Kiosk",
         "street_address": "2665 Churn Creek Rd",
@@ -3448,7 +3487,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 18."
       },
       {
-        "id": 416,
+        "id": 768,
         "employer_id": 72,
         "location_name": "Anderson Kiosk",
         "street_address": "2740 Balls Ferry Rd",
@@ -3463,7 +3502,7 @@
         "notes": "Youth-friendly drive-thru coffee roaster; high volume broista and cashiering. | RABA Route 9."
       },
       {
-        "id": 417,
+        "id": 769,
         "employer_id": 72,
         "location_name": "Shasta Lake Kiosk",
         "street_address": "4156 Shasta Dam Blvd",
@@ -3501,11 +3540,11 @@
     "indeed_url": "",
     "notes": "Outdoor lifestyle apparel; sales associate and cashier at Shasta Outlets. | Shasta Outlets; RABA Route 9.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 418,
+        "id": 770,
         "employer_id": 73,
         "location_name": "Shasta Outlets Store",
         "street_address": "1699 State Hwy 273, Ste E",
@@ -3542,11 +3581,11 @@
     "indeed_url": "",
     "notes": "Fire-grilled chicken restaurant; cashier, grill cook, food prep. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:21",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 419,
+        "id": 771,
         "employer_id": 74,
         "location_name": "Cypress Ave Store",
         "street_address": "1640 E Cypress Ave",
@@ -3583,11 +3622,11 @@
     "indeed_url": "",
     "notes": "Steakhouse and food truck operation serving eastern Shasta County. | CA-299 East corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 420,
+        "id": 772,
         "employer_id": 75,
         "location_name": "Bella Vista Restaurant",
         "street_address": "22025 CA-299",
@@ -3627,11 +3666,11 @@
     "indeed_url": "",
     "notes": "Automotive service detailer, lot driver, customer service representative. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 546,
+        "id": 898,
         "employer_id": 76,
         "location_name": "Cypress Ave Branch",
         "street_address": "1245 E Cypress Ave",
@@ -3646,7 +3685,7 @@
         "notes": "Automotive service detailer, lot driver, customer service representative. | RABA Route 18."
       },
       {
-        "id": 547,
+        "id": 899,
         "employer_id": 76,
         "location_name": "Redding Municipal Airport Terminal",
         "street_address": "6751 Woodrum Cir",
@@ -3683,11 +3722,11 @@
     "indeed_url": "",
     "notes": "Commercial landscaping, turf, and irrigation supply counter and warehouse. | Crossroads commercial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 548,
+        "id": 900,
         "employer_id": 77,
         "location_name": "Redding Branch",
         "street_address": "3015 Crossroads Dr",
@@ -3724,11 +3763,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Express-Employment-Professionals?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqo29ucgglq801&fromjk=0a14e0a535769647",
     "notes": "Premier local staffing agency placing warehouse, commercial, and office staff. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 549,
+        "id": 901,
         "employer_id": 78,
         "location_name": "Redding Office",
         "street_address": "2697 Victor Ave, Ste B",
@@ -3767,11 +3806,11 @@
     "indeed_url": "",
     "notes": "Affordable housing residential community maintenance and service coordination. | Affordable housing communities across Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 555,
+        "id": 907,
         "employer_id": 85,
         "location_name": "Redding Communities Operations",
         "street_address": "Redding Senior Communities (Redding, CA)",
@@ -3810,11 +3849,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Fairfield-Inn-&-Suites-801e9f7a?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvnc517gqld800&fromjk=acf6c28407f48118",
     "notes": "Hotel hospitality; front desk associate, night auditor, room attendant/housekeeping. | North Redding corridor; Caterpillar Rd.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 550,
+        "id": 902,
         "employer_id": 79,
         "location_name": "Redding Hotel",
         "street_address": "5164 Caterpillar Rd",
@@ -3852,11 +3891,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Famous-Footwear?campaignid=mobvjcmp&from=mobviewjob&tk=1jou05lv8ge61800&fromjk=1cbe4840107789d3",
     "notes": "Youth-friendly footwear sales associate, stock associate, cashier. | Mt Shasta Mall; RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 421,
+        "id": 773,
         "employer_id": 80,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-01",
@@ -3871,7 +3910,7 @@
         "notes": "Youth-friendly footwear sales associate, stock associate, cashier. | Mt Shasta Mall; RABA transit hub."
       },
       {
-        "id": 422,
+        "id": 774,
         "employer_id": 80,
         "location_name": "Shasta Outlets Store",
         "street_address": "1699 State Hwy 273",
@@ -3909,11 +3948,11 @@
     "indeed_url": "",
     "notes": "Industrial construction fastening and contractor tool outlet; counter sales, warehouse staging. | Industrial commercial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 551,
+        "id": 903,
         "employer_id": 81,
         "location_name": "Redding Tool Outlet",
         "street_address": "3721 Electro Way",
@@ -3952,11 +3991,11 @@
     "indeed_url": "https://www.indeed.com/cmp/FedEx?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvni6r3ivai801&fromjk=509694c62f65094b",
     "notes": "Package handler, warehouse sort technician, delivery courier. | Redding Airport commercial aviation park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 552,
+        "id": 904,
         "employer_id": 82,
         "location_name": "FedEx Express Airport Hub",
         "street_address": "6775 Woodrum Cir",
@@ -3971,7 +4010,7 @@
         "notes": "Package handler, warehouse sort technician, delivery courier. | Redding Airport commercial aviation park."
       },
       {
-        "id": 553,
+        "id": 905,
         "employer_id": 82,
         "location_name": "FedEx Ground Sort Facility",
         "street_address": "5750 Mountain Lakes Blvd",
@@ -4008,11 +4047,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Finl-Draft-Brewing?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9ri1l1i9un803&fromjk=043b90d77ac516a5",
     "notes": "Craft brewery and pub; line cook, dishwasher, server, host. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 554,
+        "id": 906,
         "employer_id": 83,
         "location_name": "Downtown Pub",
         "street_address": "1600 California St",
@@ -4049,11 +4088,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly discount retail; sales associate, cashier, stocker. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 423,
+        "id": 775,
         "employer_id": 84,
         "location_name": "Dana Dr Store",
         "street_address": "1150 Dana Dr",
@@ -4090,11 +4129,11 @@
     "indeed_url": "https://www.indeed.com/cmp/From-the-Hearth-1",
     "notes": "Locally renowned bakery & cafe with multiple Shasta locations; barista, cashier, baker, prep cook. | RABA Route 5 & 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 424,
+        "id": 776,
         "employer_id": 86,
         "location_name": "Hartnell Cafe",
         "street_address": "290 Hartnell Ave",
@@ -4109,7 +4148,7 @@
         "notes": "Locally renowned bakery & cafe with multiple Shasta locations; barista, cashier, baker, prep cook. | RABA Route 5 & 18."
       },
       {
-        "id": 425,
+        "id": 777,
         "employer_id": 86,
         "location_name": "Churn Creek Cafe",
         "street_address": "2650 Churn Creek Rd",
@@ -4124,7 +4163,7 @@
         "notes": "Locally renowned bakery & cafe with multiple Shasta locations; barista, cashier, baker, prep cook. | RABA Route 18."
       },
       {
-        "id": 426,
+        "id": 778,
         "employer_id": 86,
         "location_name": "Market St Downtown Cafe",
         "street_address": "1427 Market St",
@@ -4161,11 +4200,11 @@
     "indeed_url": "",
     "notes": "Commercial contract janitorial services; janitor, floor cleaner, commercial custodian. | Dispatched to commercial client facilities across Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 560,
+        "id": 912,
         "employer_id": 90,
         "location_name": "Area Commercial Accounts Dispatch",
         "street_address": "Area Commercial Facilities Dispatch (Redding, CA)",
@@ -4202,11 +4241,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Gnc?campaignid=mobvjcmp&from=mobviewjob&tk=1jou070smge61801&fromjk=1c6073f4c665e5a9",
     "notes": "Health and nutritional supplement retail; sales associate and cashier. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 561,
+        "id": 913,
         "employer_id": 91,
         "location_name": "Dana Dr Store",
         "street_address": "1055 Dana Dr, Ste 130",
@@ -4243,11 +4282,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Gamestop?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqotuidgo7b801&fromjk=912db57e8f5baf60",
     "notes": "Video game and electronics retail; guest advisor, cashier, trade technician. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 556,
+        "id": 908,
         "employer_id": 87,
         "location_name": "Dana Dr Store",
         "street_address": "1160 Dana Dr, Ste A",
@@ -4262,7 +4301,7 @@
         "notes": "Video game and electronics retail; guest advisor, cashier, trade technician. | Dana Drive shopping plaza; RABA Route 18."
       },
       {
-        "id": 557,
+        "id": 909,
         "employer_id": 87,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-20",
@@ -4299,11 +4338,11 @@
     "indeed_url": "",
     "notes": "Fresh produce distributor; order selector, warehouse loader, delivery driver. | Dispatched to regional grocery and restaurant accounts.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 558,
+        "id": 910,
         "employer_id": 88,
         "location_name": "Redding Distribution Hub",
         "street_address": "Commercial Produce Hub (Redding, CA)",
@@ -4340,11 +4379,11 @@
     "indeed_url": "",
     "notes": "Youth empowerment nonprofit; program facilitator, youth leader, after-school instructor. | Churn Creek professional building; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 559,
+        "id": 911,
         "employer_id": 89,
         "location_name": "Redding Office",
         "street_address": "2881 Churn Creek Rd, Ste A",
@@ -4381,11 +4420,11 @@
     "indeed_url": "",
     "notes": "Fair-chance nonprofit employer; donation attendant, sorter, pricer, cashier. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 562,
+        "id": 914,
         "employer_id": 92,
         "location_name": "Churn Creek Store",
         "street_address": "1600 Churn Creek Rd",
@@ -4424,11 +4463,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Goodyear?campaignid=mobvjcmp&from=mobviewjob&tk=1jou0q1fi23jj000&fromjk=8d1231196f20e263",
     "notes": "Tire service center; lube & tire technician, general service worker. | Redding automotive corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 563,
+        "id": 915,
         "employer_id": 93,
         "location_name": "Redding Commercial Tire Center",
         "street_address": "Commercial Tire Center (Redding, CA)",
@@ -4465,11 +4504,11 @@
     "indeed_url": "",
     "notes": "Micro-fulfillment center; warehouse associate / order picker and staging. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 564,
+        "id": 916,
         "employer_id": 94,
         "location_name": "Hilltop Micro-Fulfillment Center",
         "street_address": "1320 Hilltop Dr",
@@ -4506,11 +4545,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Grange-Co--op?campaignid=mobvjcmp&from=mobviewjob&tk=1jrqp4n13ge5h800&fromjk=4c87f4f91d17929f",
     "notes": "Farm, garden, pet, and feed co-op retail; retail sales associate, yard loader, cashier. | Rhonda Rd commercial hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 565,
+        "id": 917,
         "employer_id": 95,
         "location_name": "Anderson Store",
         "street_address": "5046 Rhonda Rd",
@@ -4547,11 +4586,11 @@
     "indeed_url": "",
     "notes": "Licensed early childhood education; teacher aide, preschool assistant. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 566,
+        "id": 918,
         "employer_id": 96,
         "location_name": "Anderson Preschool",
         "street_address": "2220 Balls Ferry Rd",
@@ -4588,11 +4627,11 @@
     "indeed_url": "",
     "notes": "Hair salon franchise; licensed hairstylist, barber, salon receptionist. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 567,
+        "id": 919,
         "employer_id": 97,
         "location_name": "Dana Dr Salon",
         "street_address": "1130 Dana Dr",
@@ -4607,7 +4646,7 @@
         "notes": "Hair salon franchise; licensed hairstylist, barber, salon receptionist. | Dana Drive shopping plaza; RABA Route 18."
       },
       {
-        "id": 568,
+        "id": 920,
         "employer_id": 97,
         "location_name": "Anderson Salon",
         "street_address": "2620 Balls Ferry Rd",
@@ -4644,11 +4683,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Grocery-Outlet/jobs?q=&l=Redding%2C+CA#cmp-skip-header-desktop",
     "notes": "Independent supermarket operator; grocery clerk, cashier, stocker, receiver. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 499,
+        "id": 851,
         "employer_id": 98,
         "location_name": "Redding - Churn Creek",
         "street_address": "2261 Churn Creek Rd",
@@ -4663,7 +4702,7 @@
         "notes": "Independent supermarket operator; grocery clerk, cashier, stocker, receiver. | RABA Route 18."
       },
       {
-        "id": 500,
+        "id": 852,
         "employer_id": 98,
         "location_name": "Shasta Lake Store",
         "street_address": "4150 Cascade Blvd",
@@ -4702,11 +4741,11 @@
     "indeed_url": "",
     "notes": "Recycling buyback attendant; weighing, sorting containers, cash payout handling. | South Redding recycling station.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 569,
+        "id": 921,
         "employer_id": 99,
         "location_name": "Churn Creek Recycling Hub",
         "street_address": "4746 Churn Creek Rd",
@@ -4743,11 +4782,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Harbor-Freight-Tools?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvo0uplhifh801&fromjk=e19a97ef4f2e9640",
     "notes": "Tool and equipment retail; retail sales associate, stocking associate, cashier. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 427,
+        "id": 779,
         "employer_id": 100,
         "location_name": "Redding Store",
         "street_address": "1660 Churn Creek Rd",
@@ -4784,11 +4823,11 @@
     "indeed_url": "",
     "notes": "Motorcycle dealership; motorclothes apparel associate, parts counter, motorcycle detailer. | Twin View industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 570,
+        "id": 922,
         "employer_id": 101,
         "location_name": "Twin View Dealership",
         "street_address": "1268 Twin View Blvd",
@@ -4825,11 +4864,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Harry-Ritchie's-Jewelers-2?campaignid=mobvjcmp&from=mobviewjob&tk=1jou08u46gp9g800&fromjk=03c8525d5a1c328a",
     "notes": "Fine jewelry retail; sales associate, customer service, cashier. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:40",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 571,
+        "id": 923,
         "employer_id": 102,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-10",
@@ -4866,11 +4905,11 @@
     "indeed_url": "",
     "notes": "Convenience store and retail fuel; cashier, stocker, customer service. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 572,
+        "id": 924,
         "employer_id": 103,
         "location_name": "Lake Blvd Store",
         "street_address": "1495 Lake Blvd",
@@ -4907,11 +4946,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Healthcare-Services-Group?campaignid=mobvjcmp&from=mobviewjob&tk=1jqa08u0iiva8801&fromjk=4ae22b648dcb33f5",
     "notes": "Contract environmental services (housekeeping/laundry) inside Redding skilled nursing facilities. | Onsite at skilled nursing facilities across Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:26",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 573,
+        "id": 925,
         "employer_id": 104,
         "location_name": "Healthcare Facilities Operations",
         "street_address": "Skilled Nursing Facility Accounts (Redding, CA)",
@@ -4950,11 +4989,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Hibbett-2?campaignid=mobvjcmp&from=mobviewjob&tk=1jqa0e2hjgst6800&fromjk=39edae8146603f5c",
     "notes": "Youth-friendly athletic apparel and footwear sales at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 428,
+        "id": 780,
         "employer_id": 105,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-15",
@@ -4991,11 +5030,11 @@
     "indeed_url": "",
     "notes": "Community health center; medical assistant, dental assistant, patient service representative. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 574,
+        "id": 926,
         "employer_id": 106,
         "location_name": "Redding Health Center",
         "street_address": "1401 Gold St",
@@ -5010,7 +5049,7 @@
         "notes": "Community health center; medical assistant, dental assistant, patient service representative. | Downtown Redding; RABA Downtown Terminal."
       },
       {
-        "id": 575,
+        "id": 927,
         "employer_id": 106,
         "location_name": "Round Mountain Clinic",
         "street_address": "29632 CA-299",
@@ -5049,11 +5088,11 @@
     "indeed_url": "",
     "notes": "Independent senior living community; dining room server, kitchen prep, housekeeper. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 576,
+        "id": 928,
         "employer_id": 107,
         "location_name": "Hilltop Community",
         "street_address": "451 Hilltop Dr",
@@ -5092,11 +5131,11 @@
     "indeed_url": "",
     "notes": "Assisted living and memory care; resident caregiver, dining aide, housekeeper. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 577,
+        "id": 929,
         "employer_id": 108,
         "location_name": "Hilltop Springs Community",
         "street_address": "7 Hilltop Dr",
@@ -5133,11 +5172,11 @@
     "indeed_url": "",
     "notes": "Arts and crafts retail; retail associate, custom framer, cashier, stocker. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 429,
+        "id": 781,
         "employer_id": 109,
         "location_name": "Dana Dr Store",
         "street_address": "1235 Dana Dr",
@@ -5175,11 +5214,11 @@
     "indeed_url": "",
     "notes": "Full service hotel; front desk agent, room attendant, banquet server, maintenance. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 578,
+        "id": 930,
         "employer_id": 110,
         "location_name": "Hilltop Hotel",
         "street_address": "1900 Hilltop Dr",
@@ -5216,11 +5255,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Holiday-Market?campaignid=mobvjcmp&from=mobviewjob&tk=1jqjvhehti9tb802&fromjk=5a7269b6a7945a63",
     "notes": "Locally employee-owned regional supermarket chain; courtesy clerk, cashier, deli clerk, stocker. | RABA Route 2 & 7.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 430,
+        "id": 782,
         "employer_id": 111,
         "location_name": "Placer St Store",
         "street_address": "3315 Placer St",
@@ -5235,7 +5274,7 @@
         "notes": "Locally employee-owned regional supermarket chain; courtesy clerk, cashier, deli clerk, stocker. | RABA Route 2 & 7."
       },
       {
-        "id": 431,
+        "id": 783,
         "employer_id": 111,
         "location_name": "Cottonwood Store",
         "street_address": "20633 Gas Point Rd",
@@ -5272,11 +5311,11 @@
     "indeed_url": "",
     "notes": "Home improvement retail; customer service/sales associate, freight team associate, cashier. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 432,
+        "id": 784,
         "employer_id": 112,
         "location_name": "Redding Store #6605",
         "street_address": "1200 Churn Creek Rd",
@@ -5315,11 +5354,11 @@
     "indeed_url": "",
     "notes": "Home decor and furnishings retail; merchandise associate, cashier, backroom coordinator. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 433,
+        "id": 785,
         "employer_id": 113,
         "location_name": "Dana Dr Store",
         "street_address": "1120 Dana Dr",
@@ -5356,11 +5395,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly music and pop-culture apparel retail at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 434,
+        "id": 786,
         "employer_id": 114,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-08",
@@ -5397,11 +5436,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly industry-leading starting wage; store associate, cleanup/prep. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 435,
+        "id": 787,
         "employer_id": 115,
         "location_name": "Dana Dr Restaurant",
         "street_address": "1275 Dana Dr",
@@ -5416,7 +5455,7 @@
         "notes": "Youth-friendly industry-leading starting wage; store associate, cleanup/prep. | Dana Drive shopping corridor; RABA Route 18."
       },
       {
-        "id": 436,
+        "id": 788,
         "employer_id": 115,
         "location_name": "South Bonnyview Restaurant",
         "street_address": "2480 S Bonnyview Rd",
@@ -5453,11 +5492,11 @@
     "indeed_url": "",
     "notes": "Property management staffing agency placing apartment leasing agents and maintenance techs. | Dispatched to residential apartment complexes.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 579,
+        "id": 931,
         "employer_id": 116,
         "location_name": "Residential Property Staffing",
         "street_address": "Property Management Accounts (Redding, CA)",
@@ -5494,11 +5533,11 @@
     "indeed_url": "",
     "notes": "Healthcare staffing and recruiting firm placing clinic staff. | Dispatched to local clinic partners.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 580,
+        "id": 932,
         "employer_id": 117,
         "location_name": "Healthcare Recruiting Placements",
         "street_address": "Healthcare Partner Placements (Redding, CA)",
@@ -5535,11 +5574,11 @@
     "indeed_url": "",
     "notes": "Department store retail associate, cashier, omnichannel fulfillment specialist. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 441,
+        "id": 793,
         "employer_id": 121,
         "location_name": "Mt Shasta Mall Anchor",
         "street_address": "900 Dana Dr, Ste 100",
@@ -5576,11 +5615,11 @@
     "indeed_url": "",
     "notes": "Adult residential care facility network supporting individuals with developmental disabilities. | Adult residential facilities operating across Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 582,
+        "id": 934,
         "employer_id": 122,
         "location_name": "Redding Corporate Office",
         "street_address": "13578 Lynda Lynn Way",
@@ -5617,11 +5656,11 @@
     "indeed_url": "",
     "notes": "Fast food team member, cashier, prep cook, drive-thru. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 437,
+        "id": 789,
         "employer_id": 118,
         "location_name": "Hilltop Dr Store",
         "street_address": "1805 Hilltop Dr",
@@ -5636,7 +5675,7 @@
         "notes": "Fast food team member, cashier, prep cook, drive-thru. | RABA Route 11."
       },
       {
-        "id": 438,
+        "id": 790,
         "employer_id": 118,
         "location_name": "Railroad Ave Store",
         "street_address": "3425 Railroad Ave",
@@ -5651,7 +5690,7 @@
         "notes": "Fast food team member, cashier, prep cook, drive-thru. | RABA Route 7."
       },
       {
-        "id": 439,
+        "id": 791,
         "employer_id": 118,
         "location_name": "Anderson Store",
         "street_address": "2595 Gateway Dr",
@@ -5688,11 +5727,11 @@
     "indeed_url": "",
     "notes": "Historic downtown steakhouse established in 1938; host, busser, server, cook. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 581,
+        "id": 933,
         "employer_id": 119,
         "location_name": "Downtown Steakhouse",
         "street_address": "1743 California St",
@@ -5730,11 +5769,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly smoothie maker and cashier at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 440,
+        "id": 792,
         "employer_id": 120,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-15",
@@ -5771,11 +5810,11 @@
     "indeed_url": "",
     "notes": "Local casual steak and dining restaurant; line cook, dishwasher, server. | Cypress Ave corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 583,
+        "id": 935,
         "employer_id": 123,
         "location_name": "Cypress Ave Restaurant",
         "street_address": "400 E Cypress Ave",
@@ -5814,11 +5853,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly footwear sales associate and cashier at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 442,
+        "id": 794,
         "employer_id": 124,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-08",
@@ -5855,11 +5894,11 @@
     "indeed_url": "",
     "notes": "Local staffing agency placing manufacturing, construction, and office workers. | RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 584,
+        "id": 936,
         "employer_id": 125,
         "location_name": "Bechelli Ln Office",
         "street_address": "2807 Bechelli Ln",
@@ -5898,11 +5937,11 @@
     "indeed_url": "",
     "notes": "General construction labor, jobsite cleanup, and property development staffing. | Parkview business district.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 585,
+        "id": 937,
         "employer_id": 126,
         "location_name": "Redding Office",
         "street_address": "1011 Parkview Ave, Ste A",
@@ -5941,11 +5980,11 @@
     "indeed_url": "https://www.indeed.com/viewjob?jk=0591d8a202db45c1",
     "notes": "Fast food team member, cook, cashier, customer service. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 444,
+        "id": 796,
         "employer_id": 129,
         "location_name": "Lake Blvd Store",
         "street_address": "135 Lake Blvd E",
@@ -5982,11 +6021,11 @@
     "indeed_url": "",
     "notes": "Department store retail associate, cashier, freight stocker, customer service. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 445,
+        "id": 797,
         "employer_id": 132,
         "location_name": "Redding Store",
         "street_address": "1260 Dana Dr",
@@ -6023,11 +6062,11 @@
     "indeed_url": "",
     "notes": "Locally owned butcher shop, grocery, and deli; counter clerk, cashier, stocker. | Historic downtown Anderson; RABA Route 9.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:22",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 443,
+        "id": 795,
         "employer_id": 127,
         "location_name": "Anderson Store",
         "street_address": "3609 Ferry St",
@@ -6064,11 +6103,11 @@
     "indeed_url": "",
     "notes": "Redding beverage distribution center; warehouse loader, beverage merchandiser, route sales. | Viking Way industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 586,
+        "id": 938,
         "employer_id": 128,
         "location_name": "Redding Distribution Center",
         "street_address": "19414 Viking Way",
@@ -6105,11 +6144,11 @@
     "indeed_url": "",
     "notes": "Automotive dealership; lot porter, detailer, lube tech, service advisor. | Cypress Ave automotive corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 587,
+        "id": 939,
         "employer_id": 130,
         "location_name": "Cypress Ave Dealership",
         "street_address": "418 E Cypress Ave",
@@ -6146,11 +6185,11 @@
     "indeed_url": "",
     "notes": "Industrial fiberglass insulation plant in Shasta Lake; production line operator, packaging. | Ashby Rd industrial park; RABA Route 1.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 588,
+        "id": 940,
         "employer_id": 131,
         "location_name": "Shasta Lake Plant",
         "street_address": "3100 Ashby Rd",
@@ -6187,11 +6226,11 @@
     "indeed_url": "",
     "notes": "Automotive salvage and aftermarket parts warehouse; parts puller, warehouse clerk. | Viking Way industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 598,
+        "id": 950,
         "employer_id": 140,
         "location_name": "Viking Way Distribution Hub",
         "street_address": "2850 Viking Way",
@@ -6228,11 +6267,11 @@
     "indeed_url": "",
     "notes": "Executive search and personnel recruitment agency. | Professional talent placement.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 589,
+        "id": 941,
         "employer_id": 133,
         "location_name": "Regional Recruiting Dispatch",
         "street_address": "Local Personnel Recruiting (Redding, CA)",
@@ -6269,11 +6308,11 @@
     "indeed_url": "",
     "notes": "Laundromat attendant, wash-dry-fold processor, customer service. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 590,
+        "id": 942,
         "employer_id": 134,
         "location_name": "Lake Blvd Store",
         "street_address": "1555 Lake Blvd",
@@ -6288,7 +6327,7 @@
         "notes": "Laundromat attendant, wash-dry-fold processor, customer service. | RABA Route 2 & 3."
       },
       {
-        "id": 591,
+        "id": 943,
         "employer_id": 134,
         "location_name": "Churn Creek Store",
         "street_address": "1770 Churn Creek Rd",
@@ -6327,11 +6366,11 @@
     "indeed_url": "",
     "notes": "Residential gutter and water filtration installation dispatched locally to client homes. | Installers dispatched to residential sites across Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 592,
+        "id": 944,
         "employer_id": 135,
         "location_name": "Field Dispatched / Home Services",
         "street_address": "Field Dispatched / Mobile (Redding, CA)",
@@ -6368,11 +6407,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Les-Schwab-Tire-Centers-7?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvphsg92b8g000&fromjk=e65e9310ec979bd5",
     "notes": "Tire and brake service center; general service technician, brake tech, alignment. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 593,
+        "id": 945,
         "employer_id": 136,
         "location_name": "Redding - Cypress",
         "street_address": "1140 E Cypress Ave",
@@ -6387,7 +6426,7 @@
         "notes": "Tire and brake service center; general service technician, brake tech, alignment. | RABA Route 18."
       },
       {
-        "id": 594,
+        "id": 946,
         "employer_id": 136,
         "location_name": "Anderson Store",
         "street_address": "2695 Gateway Dr",
@@ -6424,11 +6463,11 @@
     "indeed_url": "",
     "notes": "Insurance policy administrator; customer service representative, data entry specialist. | Innsbruck Dr office park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 595,
+        "id": 947,
         "employer_id": 137,
         "location_name": "Redding Headquarters",
         "street_address": "2990 Innsbruck Dr",
@@ -6466,11 +6505,11 @@
     "indeed_url": "",
     "notes": "Automotive dealership; lot attendant, vehicle detailer, lube tech, service advisor. | Cypress Ave automotive corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 596,
+        "id": 948,
         "employer_id": 138,
         "location_name": "Cypress Ave Dealership",
         "street_address": "200 E Cypress Ave",
@@ -6508,11 +6547,11 @@
     "indeed_url": "",
     "notes": "Automotive dealership; lot porter, detailer, express lube technician. | Cypress Ave automotive corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:27",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 597,
+        "id": 949,
         "employer_id": 139,
         "location_name": "Cypress Ave Dealership",
         "street_address": "250 E Cypress Ave",
@@ -6550,11 +6589,11 @@
     "indeed_url": "",
     "notes": "Casual dining steakhouse; line cook, prep cook, host, busser, server. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 446,
+        "id": 798,
         "employer_id": 141,
         "location_name": "Hilltop Dr Restaurant",
         "street_address": "1955 Hilltop Dr",
@@ -6591,11 +6630,11 @@
     "indeed_url": "",
     "notes": "Armored transit car service; armed courier / driver, vault clerk. | Mountain Lakes industrial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 695,
+        "id": 1047,
         "employer_id": 142,
         "location_name": "Redding Branch Terminal",
         "street_address": "3715 Mountain Lakes Blvd",
@@ -6632,11 +6671,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Lowe's-Home-Improvement?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvplrqtiv9i800&fromjk=b1869cd9fdd7bda4",
     "notes": "Home improvement retail; customer service associate, cashier, receiver/stocker. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 599,
+        "id": 951,
         "employer_id": 143,
         "location_name": "Redding Store #1593",
         "street_address": "1200 E Cypress Ave",
@@ -6673,11 +6712,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Macy's/locations/CA/Redding",
     "notes": "Department store retail sales colleague, merchandising associate, cashier at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 600,
+        "id": 952,
         "employer_id": 144,
         "location_name": "Mt Shasta Mall Anchor",
         "street_address": "900 Dana Dr",
@@ -6714,11 +6753,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Maverik?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvpohc0hied801&fromjk=5104c051622455c0",
     "notes": "Country western music lounge, bar, and event venue in Anderson. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 696,
+        "id": 1048,
         "employer_id": 145,
         "location_name": "Anderson Lounge",
         "street_address": "2083 Balls Ferry Rd",
@@ -6755,11 +6794,11 @@
     "indeed_url": "",
     "notes": "Public healthcare district serving eastern Shasta County; hospital, SNF, and rural clinic. | Eastern Shasta County regional hospital.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 601,
+        "id": 953,
         "employer_id": 146,
         "location_name": "McArthur Hospital & SNF",
         "street_address": "44268 CA-299",
@@ -6774,7 +6813,7 @@
         "notes": "Public healthcare district serving eastern Shasta County; hospital, SNF, and rural clinic. | Eastern Shasta County regional hospital."
       },
       {
-        "id": 602,
+        "id": 954,
         "employer_id": 146,
         "location_name": "Burney Health Center",
         "street_address": "20641 Main St",
@@ -6813,11 +6852,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 6)",
     "locations": [
       {
-        "id": 352,
+        "id": 703,
         "employer_id": 147,
         "location_name": "Dana Dr Store",
         "street_address": "1205 Dana Dr",
@@ -6832,7 +6871,7 @@
         "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 18."
       },
       {
-        "id": 353,
+        "id": 704,
         "employer_id": 147,
         "location_name": "Cypress Ave Store",
         "street_address": "1615 E Cypress Ave",
@@ -6847,7 +6886,7 @@
         "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 18."
       },
       {
-        "id": 354,
+        "id": 705,
         "employer_id": 147,
         "location_name": "Lake Blvd Store",
         "street_address": "1150 Lake Blvd",
@@ -6862,7 +6901,7 @@
         "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 2 & 3."
       },
       {
-        "id": 355,
+        "id": 706,
         "employer_id": 147,
         "location_name": "Churn Creek Store",
         "street_address": "2635 Churn Creek Rd",
@@ -6877,7 +6916,7 @@
         "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 18."
       },
       {
-        "id": 356,
+        "id": 707,
         "employer_id": 147,
         "location_name": "Anderson Store",
         "street_address": "2610 Balls Ferry Rd",
@@ -6892,7 +6931,7 @@
         "notes": "Youth-friendly fast food restaurant; crew person, cashier, grill cook, maintenance. | RABA Route 9."
       },
       {
-        "id": 357,
+        "id": 708,
         "employer_id": 147,
         "location_name": "Shasta Lake Store",
         "street_address": "4235 Shasta Dam Blvd",
@@ -6929,11 +6968,11 @@
     "indeed_url": "",
     "notes": "Antique mall and vintage collectible showroom; sales clerk, cashier. | Viking Way commercial area.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 603,
+        "id": 955,
         "employer_id": 148,
         "location_name": "Viking Way Showroom",
         "street_address": "20263 Viking Way",
@@ -6970,11 +7009,11 @@
     "indeed_url": "",
     "notes": "Janitorial, sanitation, and industrial packaging supply distributor; warehouse worker, delivery driver. | Rancho Rd commercial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 604,
+        "id": 956,
         "employer_id": 149,
         "location_name": "Rancho Rd Warehouse",
         "street_address": "3712 Rancho Rd",
@@ -7011,11 +7050,11 @@
     "indeed_url": "",
     "notes": "Nonprofit developmental and behavioral health provider; Direct Support Professional (DSP). | Innsbruck Dr office park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 605,
+        "id": 957,
         "employer_id": 150,
         "location_name": "Innsbruck Dr Community Services",
         "street_address": "2970 Innsbruck Dr, Ste C",
@@ -7030,7 +7069,7 @@
         "notes": "Nonprofit developmental and behavioral health provider; Direct Support Professional (DSP). | Innsbruck Dr office park."
       },
       {
-        "id": 606,
+        "id": 958,
         "employer_id": 150,
         "location_name": "Old Alturas Residential Home",
         "street_address": "20785 Old Alturas Rd",
@@ -7069,11 +7108,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Commonspirit-Health?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvrisc3ijt3800&fromjk=bcab74e5ba09ecb9",
     "notes": "Flagship regional acute-care hospital and Level II Trauma Center; EVS custodian, food service aide, CNA. | Mercy hospital campus; RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 607,
+        "id": 959,
         "employer_id": 151,
         "location_name": "Hospital Main Campus",
         "street_address": "2175 Rosaline Ave",
@@ -7110,11 +7149,11 @@
     "indeed_url": "",
     "notes": "Arts and crafts retail; sales team member, cashier, framing specialist, early morning stocker. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 447,
+        "id": 799,
         "employer_id": 152,
         "location_name": "Dana Dr Store",
         "street_address": "1070 Dana Dr",
@@ -7151,11 +7190,11 @@
     "indeed_url": "",
     "notes": "Supported living services for adults with intellectual disabilities; Direct Support Professional (DSP). | Skypark business center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 608,
+        "id": 960,
         "employer_id": 153,
         "location_name": "Redding Office",
         "street_address": "19575 Skypark Dr",
@@ -7192,11 +7231,11 @@
     "indeed_url": "",
     "notes": "Forestry management, fire hazard reduction, and brush clearing crew laborer. | Clear Creek forestry yard.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 609,
+        "id": 961,
         "employer_id": 154,
         "location_name": "Clear Creek Base",
         "street_address": "18774 Clear Creek Rd",
@@ -7233,11 +7272,11 @@
     "indeed_url": "",
     "notes": "Residential and office mobile cleaning services dispatched locally in Redding. | Dispatched to client homes and offices.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 610,
+        "id": 962,
         "employer_id": 155,
         "location_name": "Mobile Cleaning Operations",
         "street_address": "Mobile Residential & Office Dispatch (Redding, CA)",
@@ -7274,11 +7313,11 @@
     "indeed_url": "",
     "notes": "Upscale casual dining adjoining Sheraton Redding; host, busser, server, prep cook, line cook. | Sundial Bridge & Turtle Bay park; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 611,
+        "id": 963,
         "employer_id": 156,
         "location_name": "Sundial Bridge Restaurant",
         "street_address": "826 Sundial Bridge Dr",
@@ -7317,11 +7356,11 @@
     "indeed_url": "",
     "notes": "Hotel hospitality; room attendant/housekeeper, front desk agent, night auditor. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 612,
+        "id": 964,
         "employer_id": 157,
         "location_name": "Hilltop Dr Hotel",
         "street_address": "1640 Hilltop Dr",
@@ -7336,7 +7375,7 @@
         "notes": "Hotel hospitality; room attendant/housekeeper, front desk agent, night auditor. | RABA Route 11."
       },
       {
-        "id": 613,
+        "id": 965,
         "employer_id": 157,
         "location_name": "Twin View Blvd Hotel",
         "street_address": "2385 Twin View Blvd",
@@ -7373,11 +7412,11 @@
     "indeed_url": "",
     "notes": "Commercial freight and regional route trucking dispatched out of Shasta County. | Freight route dispatch.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 697,
+        "id": 1049,
         "employer_id": 158,
         "location_name": "Freight Route Dispatch",
         "street_address": "Field Dispatched / Freight Route (Redding, CA)",
@@ -7414,11 +7453,11 @@
     "indeed_url": "",
     "notes": "Prominent regional staffing firm; administrative, professional, and light industrial staffing. | Court St professional district; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 614,
+        "id": 966,
         "employer_id": 159,
         "location_name": "Redding Office",
         "street_address": "1801 Court St",
@@ -7455,11 +7494,11 @@
     "indeed_url": "",
     "notes": "Post-acute rehabilitation and skilled nursing facility in Anderson; CNA, dietary aide, housekeeper. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 615,
+        "id": 967,
         "employer_id": 160,
         "location_name": "Anderson Facility",
         "street_address": "2600 Balls Ferry Rd",
@@ -7496,11 +7535,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Oakmont-Senior-Living?campaignid=mobvjcmp&from=mobviewjob&tk=1js002seogqld800&fromjk=d395705ad45699f5",
     "notes": "Luxury retirement and assisted living community; caregiver, culinary server, housekeeper. | Shasta View residential corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 616,
+        "id": 968,
         "employer_id": 161,
         "location_name": "Shasta View Community",
         "street_address": "2150 Shasta View Dr",
@@ -7538,11 +7577,11 @@
     "indeed_url": "",
     "notes": "Office supplies and print center; sales associate, print specialist, cashier. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 617,
+        "id": 969,
         "employer_id": 162,
         "location_name": "Dana Dr Store",
         "street_address": "1125 Dana Dr",
@@ -7580,11 +7619,11 @@
     "indeed_url": "",
     "notes": "Casual Italian restaurant; host, busser, server, dishwasher, line cook. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 448,
+        "id": 800,
         "employer_id": 163,
         "location_name": "Dana Dr Restaurant",
         "street_address": "1300 Dana Dr",
@@ -7621,11 +7660,11 @@
     "indeed_url": "",
     "notes": "Regional parcel logistics sort facility; package handler, warehouse dock worker. | Stillwater Business Park; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 618,
+        "id": 970,
         "employer_id": 164,
         "location_name": "Redding Sort Facility",
         "street_address": "5850 Venture Pkwy",
@@ -7662,11 +7701,11 @@
     "indeed_url": "",
     "notes": "Adult residential care facility; resident direct support caregiver. | Residential care facility.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 619,
+        "id": 971,
         "employer_id": 165,
         "location_name": "Dakota Way Home",
         "street_address": "1751 Dakota Way",
@@ -7705,11 +7744,11 @@
     "indeed_url": "",
     "notes": "Hotel hospitality; front desk agent, breakfast attendant, room attendant/housekeeper. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 620,
+        "id": 972,
         "employer_id": 166,
         "location_name": "Hilltop Hotel",
         "street_address": "1967 Hilltop Dr",
@@ -7746,11 +7785,11 @@
     "indeed_url": "",
     "notes": "Skilled nursing facility management; supporting local post-acute facilities in Redding. | Onsite at skilled nursing facilities in Redding.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 625,
+        "id": 977,
         "employer_id": 171,
         "location_name": "Redding Healthcare Management",
         "street_address": "Skilled Nursing Partner Facilities (Redding, CA)",
@@ -7787,11 +7826,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Pacific-Coast-Companies,-Inc.?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvmb74qgo4n800&fromjk=49a478215b9a9cfc",
     "notes": "Building materials distributor; warehouse material handler, forklift operator. | Twin View industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:41",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 621,
+        "id": 973,
         "employer_id": 167,
         "location_name": "Twin View Yard",
         "street_address": "1999 Twin View Blvd",
@@ -7828,11 +7867,11 @@
     "indeed_url": "",
     "notes": "Electric and gas utility; utility worker, groundman, gas control clerk. | Caterpillar Rd industrial service center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 622,
+        "id": 974,
         "employer_id": 168,
         "location_name": "Redding Service Center",
         "street_address": "3600 Caterpillar Rd",
@@ -7869,11 +7908,11 @@
     "indeed_url": "",
     "notes": "Post-acute and healthcare facility administrative services. | Edith Ave healthcare campus.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 623,
+        "id": 975,
         "employer_id": 169,
         "location_name": "Edith Ave Operations",
         "street_address": "2620 Edith Ave",
@@ -7910,11 +7949,11 @@
     "indeed_url": "",
     "notes": "Office technology and copier field service; equipment repair tech, sales rep. | Park Marina business center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 624,
+        "id": 976,
         "employer_id": 170,
         "location_name": "Park Marina Office",
         "street_address": "1920 Park Marina Dr",
@@ -7952,11 +7991,11 @@
     "indeed_url": "",
     "notes": "Fast-casual Chinese kitchen; service team member, kitchen helper, cook. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 449,
+        "id": 801,
         "employer_id": 172,
         "location_name": "Dana Dr Restaurant",
         "street_address": "1140 Dana Dr",
@@ -7971,7 +8010,7 @@
         "notes": "Fast-casual Chinese kitchen; service team member, kitchen helper, cook. | Dana Drive shopping plaza; RABA Route 18."
       },
       {
-        "id": 450,
+        "id": 802,
         "employer_id": 172,
         "location_name": "Cypress Ave Restaurant",
         "street_address": "1610 E Cypress Ave",
@@ -7986,7 +8025,7 @@
         "notes": "Fast-casual Chinese kitchen; service team member, kitchen helper, cook. | RABA Route 18."
       },
       {
-        "id": 451,
+        "id": 803,
         "employer_id": 172,
         "location_name": "Anderson Restaurant",
         "street_address": "2610 Gateway Dr",
@@ -8023,11 +8062,11 @@
     "indeed_url": "",
     "notes": "Fast-casual bakery-cafe; team member, cashier, salad/sandwich maker, overnight baker. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:38",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 452,
+        "id": 804,
         "employer_id": 173,
         "location_name": "Dana Dr Bakery-Cafe",
         "street_address": "1060 Dana Dr",
@@ -8066,11 +8105,11 @@
     "indeed_url": "",
     "notes": "John Deere heavy construction and forestry dealership; shop technician, parts specialist, yard porter. | Caterpillar Rd industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 626,
+        "id": 978,
         "employer_id": 174,
         "location_name": "Redding Dealership",
         "street_address": "3901 Caterpillar Rd",
@@ -8107,11 +8146,11 @@
     "indeed_url": "",
     "notes": "In-home personal care and companion agency dispatched to private residences. | Downtown Redding professional office.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 627,
+        "id": 979,
         "employer_id": 175,
         "location_name": "Redding Office",
         "street_address": "2400 Washington Ave",
@@ -8148,11 +8187,11 @@
     "indeed_url": "https://www.indeed.com/q-partnership-healthplan-l-redding,-ca-jobs.html?vjk=a7d32374e04ef307",
     "notes": "Medi-Cal managed care health plan; member services representative, claims coordinator. | Redding Airport professional tech park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 628,
+        "id": 980,
         "employer_id": 176,
         "location_name": "Redding Regional Office",
         "street_address": "3688 Avtech Pkwy",
@@ -8189,11 +8228,11 @@
     "indeed_url": "",
     "notes": "Full service Chinese dining restaurant in Anderson; host, busser, server, kitchen prep. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 453,
+        "id": 805,
         "employer_id": 177,
         "location_name": "Anderson Restaurant",
         "street_address": "2600 Gateway Dr",
@@ -8230,11 +8269,11 @@
     "indeed_url": "",
     "notes": "Shasta Lake marina resort; dock hand, houseboat maintenance, resort housekeeper, marina clerk. | Bridge Bay Marina on Shasta Lake.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 629,
+        "id": 981,
         "employer_id": 178,
         "location_name": "Bridge Bay Marina Resort",
         "street_address": "10300 Bridge Bay Rd",
@@ -8271,11 +8310,11 @@
     "indeed_url": "",
     "notes": "Heritage wool apparel, blanket, and home goods retail at Shasta Outlets. | Shasta Outlets; RABA Route 9.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 630,
+        "id": 982,
         "employer_id": 179,
         "location_name": "Shasta Outlets Store",
         "street_address": "1699 State Hwy 273, Ste F",
@@ -8313,11 +8352,11 @@
     "indeed_url": "",
     "notes": "On-demand general labor staffing agency; jobsite cleanup, event setup, warehouse labor. | Client jobsite staffing placements.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:28",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 631,
+        "id": 983,
         "employer_id": 180,
         "location_name": "Shasta Dispatch",
         "street_address": "On-Demand Labor Placements (Redding, CA)",
@@ -8354,11 +8393,11 @@
     "indeed_url": "",
     "notes": "Pet retail; customer engagement associate, pet bather, cashier, stocking associate. | Promenade at Hilltop; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 454,
+        "id": 806,
         "employer_id": 182,
         "location_name": "Hilltop Dr Store",
         "street_address": "1336 Hilltop Dr",
@@ -8395,11 +8434,11 @@
     "indeed_url": "",
     "notes": "Pet supplies retail; guest advisor, cashier, inventory specialist, pet bather. | RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 632,
+        "id": 984,
         "employer_id": 181,
         "location_name": "Hilltop Dr Store",
         "street_address": "1665 Hilltop Dr",
@@ -8436,11 +8475,11 @@
     "indeed_url": "",
     "notes": "Outpatient physical rehabilitation clinic; physical therapy aide, front desk coordinator. | Court St medical corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 633,
+        "id": 985,
         "employer_id": 183,
         "location_name": "Court St Clinic",
         "street_address": "1388 Court St, Ste E",
@@ -8477,11 +8516,11 @@
     "indeed_url": "",
     "notes": "Self-service auto parts recycling; auto dismantler helper, yard person, cashier, loader. | Viking Way industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 634,
+        "id": 986,
         "employer_id": 184,
         "location_name": "Redding Auto Salvage Yard",
         "street_address": "19919 Viking Way",
@@ -8518,11 +8557,11 @@
     "indeed_url": "",
     "notes": "Fitness club; member services representative, front desk, overnight custodian. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 635,
+        "id": 987,
         "employer_id": 185,
         "location_name": "Dana Dr Club",
         "street_address": "1225 Dana Dr",
@@ -8559,11 +8598,11 @@
     "indeed_url": "",
     "notes": "Commercial and residential concrete construction; concrete finisher helper, site laborer. | Blackhawk industrial park.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 636,
+        "id": 988,
         "employer_id": 186,
         "location_name": "Redding Yard",
         "street_address": "21247 Blackhawk Dr",
@@ -8600,11 +8639,11 @@
     "indeed_url": "",
     "notes": "Locally owned family pizzeria; pizza cook, cashier, counter server, delivery driver. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 455,
+        "id": 807,
         "employer_id": 187,
         "location_name": "Anderson Pizzeria",
         "street_address": "2305 Balls Ferry Rd",
@@ -8641,11 +8680,11 @@
     "indeed_url": "",
     "notes": "Community commercial banking; bank teller, customer service representative. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 637,
+        "id": 989,
         "employer_id": 188,
         "location_name": "Downtown Redding Branch",
         "street_address": "1358 Pine St",
@@ -8684,11 +8723,11 @@
     "indeed_url": "",
     "notes": "Fast food chicken kitchen; crew member, cashier, prep cook, fryer. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 638,
+        "id": 990,
         "employer_id": 189,
         "location_name": "Cypress Ave Store",
         "street_address": "847 E Cypress Ave",
@@ -8703,7 +8742,7 @@
         "notes": "Fast food chicken kitchen; crew member, cashier, prep cook, fryer. | RABA Route 18."
       },
       {
-        "id": 639,
+        "id": 991,
         "employer_id": 189,
         "location_name": "Knighton Rd Store",
         "street_address": "2570 Knighton Rd",
@@ -8740,11 +8779,11 @@
     "indeed_url": "",
     "notes": "Non-emergency medical and pupil passenger transportation service. | Park Marina commercial center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 698,
+        "id": 1050,
         "employer_id": 190,
         "location_name": "Park Marina Operations",
         "street_address": "2150 Park Marina Dr",
@@ -8781,11 +8820,11 @@
     "indeed_url": "",
     "notes": "Quick lube and fluid maintenance service; lube technician, pit tech, customer greeter. | RABA Route 5 & 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Multi-Location Branch (1 of 4)",
     "locations": [
       {
-        "id": 361,
+        "id": 712,
         "employer_id": 191,
         "location_name": "Hartnell Ave Shop",
         "street_address": "1180 Hartnell Ave",
@@ -8800,7 +8839,7 @@
         "notes": "Quick lube and fluid maintenance service; lube technician, pit tech, customer greeter. | RABA Route 5 & 18."
       },
       {
-        "id": 362,
+        "id": 713,
         "employer_id": 191,
         "location_name": "Eureka Way Shop",
         "street_address": "2105 Eureka Way",
@@ -8815,7 +8854,7 @@
         "notes": "Quick lube and fluid maintenance service; lube technician, pit tech, customer greeter. | RABA Route 2."
       },
       {
-        "id": 363,
+        "id": 714,
         "employer_id": 191,
         "location_name": "Anderson Shop",
         "street_address": "2650 Balls Ferry Rd",
@@ -8830,7 +8869,7 @@
         "notes": "Quick lube and fluid maintenance service; lube technician, pit tech, customer greeter. | RABA Route 9."
       },
       {
-        "id": 364,
+        "id": 715,
         "employer_id": 191,
         "location_name": "Bella Vista / Palo Cedro Shop",
         "street_address": "22020 CA-299",
@@ -8867,11 +8906,11 @@
     "indeed_url": "",
     "notes": "Staffing agency placing commercial, warehouse, production, and clerical talent. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 640,
+        "id": 992,
         "employer_id": 192,
         "location_name": "Downtown Office",
         "street_address": "1010 Butte St",
@@ -8908,11 +8947,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Quest-Diagnostics?campaignid=mobvjcmp&from=mobviewjob&tk=1jrvn0ldlgqns800&fromjk=27c0dc83e1cbfa69",
     "notes": "Clinical diagnostic laboratory; certified phlebotomist, specimen processor, lab courier. | RABA Route 2.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 641,
+        "id": 993,
         "employer_id": 193,
         "location_name": "Eureka Way Patient Service Center",
         "street_address": "1848 Eureka Way",
@@ -8949,11 +8988,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Quick-Quack-Car-Wash?campaignid=mobvjcmp&from=mobviewjob&tk=1jss0id6323jt009&fromjk=666ca65afa8d924c",
     "notes": "Express exterior car wash; customer service team member, lane guide, wash technician. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 456,
+        "id": 808,
         "employer_id": 194,
         "location_name": "Redding - Dana Dr",
         "street_address": "1105 Dana Dr",
@@ -8968,7 +9007,7 @@
         "notes": "Express exterior car wash; customer service team member, lane guide, wash technician. | RABA Route 18."
       },
       {
-        "id": 457,
+        "id": 809,
         "employer_id": 194,
         "location_name": "Redding - Cypress",
         "street_address": "1530 E Cypress Ave",
@@ -8983,7 +9022,7 @@
         "notes": "Express exterior car wash; customer service team member, lane guide, wash technician. | RABA Route 18."
       },
       {
-        "id": 458,
+        "id": 810,
         "employer_id": 194,
         "location_name": "Anderson Wash",
         "street_address": "2620 Balls Ferry Rd",
@@ -9020,11 +9059,11 @@
     "indeed_url": "",
     "notes": "Residential and commercial roofing contractor; roof tear-off laborer, shingle installer. | Skypark commercial center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 642,
+        "id": 994,
         "employer_id": 195,
         "location_name": "Skypark Yard",
         "street_address": "19783 Skypark Dr",
@@ -9061,11 +9100,11 @@
     "indeed_url": "",
     "notes": "Field merchandising, price auditing, and barcode scan survey contractor dispatched locally to Shasta County retailers. | Dispatched to local grocery and retail stores across Redding area.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 644,
+        "id": 996,
         "employer_id": 198,
         "location_name": "Mobile Field Operations",
         "street_address": "Field Dispatched / Mobile Retail (Redding, CA)",
@@ -9102,11 +9141,11 @@
     "indeed_url": "",
     "notes": "Tribal resort and casino; table games dealer, slot attendant, security officer, cook, steward, hotel front desk. | Hwy 273 corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 699,
+        "id": 1051,
         "employer_id": 201,
         "location_name": "Win-River Resort & Casino",
         "street_address": "2100 Redding Rancheria Rd",
@@ -9143,11 +9182,11 @@
     "indeed_url": "",
     "notes": "Fast food chicken fingers; restaurant crew, cashier, cook. | Near Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 459,
+        "id": 811,
         "employer_id": 196,
         "location_name": "Friendly Rd Restaurant",
         "street_address": "1470 Friendly Rd",
@@ -9184,11 +9223,11 @@
     "indeed_url": "",
     "notes": "Regional supermarket chain; courtesy clerk, cashier, bakery/deli clerk, grocery clerk. | RABA Route 2 & 3.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 643,
+        "id": 995,
         "employer_id": 197,
         "location_name": "Lake Blvd Store",
         "street_address": "201 Lake Blvd",
@@ -9225,11 +9264,11 @@
     "indeed_url": "",
     "notes": "Hotel hospitality; room attendant/housekeeping, front desk clerk, maintenance. | RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 645,
+        "id": 997,
         "employer_id": 199,
         "location_name": "Bechelli Ln Hotel",
         "street_address": "2975 Bechelli Ln",
@@ -9266,11 +9305,11 @@
     "indeed_url": "",
     "notes": "Skilled nursing and post-acute therapy facility; CNA, dietary aide, housekeeper. | Downtown Redding health corridor; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 646,
+        "id": 998,
         "employer_id": 200,
         "location_name": "Gold St Facility",
         "street_address": "1836 Gold St",
@@ -9307,11 +9346,11 @@
     "indeed_url": "",
     "notes": "Skilled nursing and long-term care facility; certified nursing assistant, dietary server, EVS cleaner. | Edith Ave healthcare campus.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 647,
+        "id": 999,
         "employer_id": 202,
         "location_name": "Edith Ave Facility",
         "street_address": "2620 Edith Ave",
@@ -9348,11 +9387,11 @@
     "indeed_url": "",
     "notes": "Thai dining restaurant; host, busser, server, prep cook, dishwasher. | RABA Route 2.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 460,
+        "id": 812,
         "employer_id": 203,
         "location_name": "Eureka Way Restaurant",
         "street_address": "1350 Eureka Way",
@@ -9389,11 +9428,11 @@
     "indeed_url": "",
     "notes": "In-home caregiving and companion care dispatched to private residences in Shasta County. | Downtown Redding office.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 648,
+        "id": 1000,
         "employer_id": 204,
         "location_name": "Redding Office",
         "street_address": "1335 Pine St",
@@ -9430,11 +9469,11 @@
     "indeed_url": "",
     "notes": "Off-price retail; retail associate, cashier, early morning stocker, store protection. | Near Hilltop Dr; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 461,
+        "id": 813,
         "employer_id": 205,
         "location_name": "Hilltop / Browning Store",
         "street_address": "835 Browning St",
@@ -9449,7 +9488,7 @@
         "notes": "Off-price retail; retail associate, cashier, early morning stocker, store protection. | Near Hilltop Dr; RABA Route 11."
       },
       {
-        "id": 462,
+        "id": 814,
         "employer_id": 205,
         "location_name": "Cypress Ave Store",
         "street_address": "1655 E Cypress Ave",
@@ -9487,11 +9526,11 @@
     "indeed_url": "",
     "notes": "Pizzeria restaurant; dough roller, pizza cook, cashier, counter server, delivery driver. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 463,
+        "id": 815,
         "employer_id": 206,
         "location_name": "Churn Creek Store",
         "street_address": "1926 Churn Creek Rd",
@@ -9506,7 +9545,7 @@
         "notes": "Pizzeria restaurant; dough roller, pizza cook, cashier, counter server, delivery driver. | RABA Route 18."
       },
       {
-        "id": 464,
+        "id": 816,
         "employer_id": 206,
         "location_name": "Lake Blvd Store",
         "street_address": "100 Lake Blvd",
@@ -9521,7 +9560,7 @@
         "notes": "Pizzeria restaurant; dough roller, pizza cook, cashier, counter server, delivery driver. | RABA Route 2 & 3."
       },
       {
-        "id": 465,
+        "id": 817,
         "employer_id": 206,
         "location_name": "Anderson Store",
         "street_address": "2650 Gateway Dr",
@@ -9558,11 +9597,11 @@
     "indeed_url": "",
     "notes": "County educational agency; special education paraprofessional, school bus driver, custodian. | Downtown Redding; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 658,
+        "id": 1010,
         "employer_id": 217,
         "location_name": "Magnolia Ave Administration",
         "street_address": "1644 Magnolia Ave",
@@ -9599,11 +9638,11 @@
     "indeed_url": "",
     "notes": "Residential security and smart home installation; field service technician dispatched to homes. | Technicians dispatched to client homes across Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 649,
+        "id": 1001,
         "employer_id": 207,
         "location_name": "Field Dispatched / Home Security",
         "street_address": "Field Dispatched / Mobile (Redding, CA)",
@@ -9641,11 +9680,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Safeway",
     "notes": "Full service supermarket; courtesy clerk, food clerk, deli/bakery clerk, meat clerk. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 466,
+        "id": 818,
         "employer_id": 208,
         "location_name": "Redding - East Cypress",
         "street_address": "1070 E Cypress Ave",
@@ -9660,7 +9699,7 @@
         "notes": "Full service supermarket; courtesy clerk, food clerk, deli/bakery clerk, meat clerk. | RABA Route 18."
       },
       {
-        "id": 467,
+        "id": 819,
         "employer_id": 208,
         "location_name": "Redding - Downtown Pine St",
         "street_address": "2275 Pine St",
@@ -9675,7 +9714,7 @@
         "notes": "Full service supermarket; courtesy clerk, food clerk, deli/bakery clerk, meat clerk. | Downtown Redding; RABA Route 2 & 3."
       },
       {
-        "id": 468,
+        "id": 820,
         "employer_id": 208,
         "location_name": "Anderson Store",
         "street_address": "2601 Balls Ferry Rd",
@@ -9712,11 +9751,11 @@
     "indeed_url": "",
     "notes": "Community social service and thrift operation; donation sorter, food pantry clerk, thrift cashier. | Larkspur Ln center; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 650,
+        "id": 1002,
         "employer_id": 209,
         "location_name": "Redding Corps & Social Services",
         "street_address": "2691 Larkspur Ln",
@@ -9753,11 +9792,11 @@
     "indeed_url": "https://www.indeed.com/cmp/The-Save-Mart-Companies?campaignid=mobvjcmp&from=mobviewjob&tk=1js02ned2gpbs800&fromjk=fee7e16fb4b53a14",
     "notes": "Regional supermarket; courtesy clerk, cashier, deli clerk, produce stocker. | South Redding shopping center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 469,
+        "id": 821,
         "employer_id": 210,
         "location_name": "Churn Creek Store",
         "street_address": "4631 Churn Creek Rd",
@@ -9794,11 +9833,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly confectionery retail; sales associate, cashier, holiday candy packer. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 470,
+        "id": 822,
         "employer_id": 211,
         "location_name": "Mt Shasta Mall Shop",
         "street_address": "900 Dana Dr, Ste A-06",
@@ -9837,11 +9876,11 @@
     "indeed_url": "",
     "notes": "Commercial janitorial and commercial facility floor maintenance. | Victor Ave commercial corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 651,
+        "id": 1003,
         "employer_id": 212,
         "location_name": "Victor Ave Facility",
         "street_address": "3470 Victor Ave",
@@ -9878,11 +9917,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Shasta-College?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9s4l6fiva8802&fromjk=0de8d9bea8a6831a",
     "notes": "Regional community college; custodial worker, groundskeeper, cafeteria aide, campus safety. | RABA Route 11 (Direct college service).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 652,
+        "id": 1004,
         "employer_id": 213,
         "location_name": "Main Redding Campus",
         "street_address": "11555 Old Oregon Trail",
@@ -9919,11 +9958,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Shasta-Community-Health-Center?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9s9lojg05l800&fromjk=b61ba1b4a67b8322",
     "notes": "Federally Qualified Health Center (FQHC); medical assistant, dental assistant, patient intake. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 653,
+        "id": 1005,
         "employer_id": 214,
         "location_name": "Redding Main Center",
         "street_address": "1035 Placer St",
@@ -9938,7 +9977,7 @@
         "notes": "Federally Qualified Health Center (FQHC); medical assistant, dental assistant, patient intake. | Downtown Redding; RABA Downtown Terminal."
       },
       {
-        "id": 654,
+        "id": 1006,
         "employer_id": 214,
         "location_name": "Anderson Health Center",
         "street_address": "2965 East St",
@@ -9953,7 +9992,7 @@
         "notes": "Federally Qualified Health Center (FQHC); medical assistant, dental assistant, patient intake. | RABA Route 9 (Anderson)."
       },
       {
-        "id": 655,
+        "id": 1007,
         "employer_id": 214,
         "location_name": "Shasta Lake Health Center",
         "street_address": "4215 Front St",
@@ -9990,11 +10029,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Shasta-County",
     "notes": "County government agency; office assistant, roads maintenance worker, eligibility worker trainee. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 656,
+        "id": 1008,
         "employer_id": 215,
         "location_name": "County Administration & Courthouse",
         "street_address": "1450 Court St",
@@ -10033,11 +10072,11 @@
     "indeed_url": "",
     "notes": "Workforce development hub; intake specialist, employment peer specialist, resource clerk. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 657,
+        "id": 1009,
         "employer_id": 216,
         "location_name": "East St Job Center",
         "street_address": "1255 East St, Ste 200",
@@ -10074,11 +10113,11 @@
     "indeed_url": "",
     "notes": "Ophthalmology and optometry clinic; patient receptionist, ophthalmic assistant trainee. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 659,
+        "id": 1011,
         "employer_id": 218,
         "location_name": "Redding Eye Clinic",
         "street_address": "3165 Churn Creek Rd",
@@ -10115,11 +10154,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Shasta-Head-Start-Child-Development?campaignid=mobvjcmp&from=mobviewjob&tk=1jss12undiv9v800&fromjk=2584bd040f830afd",
     "notes": "Early childhood education nonprofit; teacher aide, family service advocate, center cook. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 660,
+        "id": 1012,
         "employer_id": 219,
         "location_name": "Churn Creek Administrative Center",
         "street_address": "2885 Churn Creek Rd",
@@ -10156,11 +10195,11 @@
     "indeed_url": "",
     "notes": "Precast concrete manufacturing plant in Shasta Lake; rebar fabricator, concrete pourer, yard loader. | Ashby Rd industrial corridor; RABA Route 1.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 661,
+        "id": 1013,
         "employer_id": 220,
         "location_name": "Shasta Lake Plant",
         "street_address": "5250 Ashby Rd",
@@ -10198,11 +10237,11 @@
     "indeed_url": "",
     "notes": "Four-diamond riverfront hotel; front desk associate, night auditor, room attendant/housekeeping, banquet server. | Sundial Bridge & Turtle Bay park; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 662,
+        "id": 1014,
         "employer_id": 221,
         "location_name": "Riverfront Hotel",
         "street_address": "820 Sundial Bridge Dr",
@@ -10239,11 +10278,11 @@
     "indeed_url": "",
     "notes": "Largest private lumber manufacturer; sawmill laborer, green chain puller, cleanup crew, planer mill. | Riverside Ave sawmill division; RABA Route 9.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 663,
+        "id": 1015,
         "employer_id": 222,
         "location_name": "Anderson Mill & Division Office",
         "street_address": "19794 Riverside Ave",
@@ -10258,7 +10297,7 @@
         "notes": "Largest private lumber manufacturer; sawmill laborer, green chain puller, cleanup crew, planer mill. | Riverside Ave sawmill division; RABA Route 9."
       },
       {
-        "id": 664,
+        "id": 1016,
         "employer_id": 222,
         "location_name": "Burney Sawmill",
         "street_address": "37350 Highway 299 E",
@@ -10273,7 +10312,7 @@
         "notes": "Largest private lumber manufacturer; sawmill laborer, green chain puller, cleanup crew, planer mill. | Eastern Shasta County regional sawmill operation."
       },
       {
-        "id": 665,
+        "id": 1017,
         "employer_id": 222,
         "location_name": "Shasta Lake Plant",
         "street_address": "3850 Main St",
@@ -10311,11 +10350,11 @@
     "indeed_url": "",
     "notes": "Television broadcast news station; production assistant, camera operator, traffic coordinator. | Civic Center / Auditorium Dr; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:29",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 666,
+        "id": 1018,
         "employer_id": 223,
         "location_name": "KRCR Television Studios",
         "street_address": "755 Auditorium Dr",
@@ -10353,11 +10392,11 @@
     "indeed_url": "",
     "notes": "Fast food drive-in; carhop on skates, cook, fountain prep, cashier. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 471,
+        "id": 823,
         "employer_id": 224,
         "location_name": "Anderson Drive-In",
         "street_address": "2605 Gateway Dr",
@@ -10395,11 +10434,11 @@
     "indeed_url": "",
     "notes": "Telecommunications and broadband provider; retail sales associate, field technician trainee. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 667,
+        "id": 1019,
         "employer_id": 225,
         "location_name": "Dana Dr Retail Store",
         "street_address": "1435 Dana Dr, Ste B",
@@ -10436,11 +10475,11 @@
     "indeed_url": "",
     "notes": "Novelty and pop-culture gift retail at Mt Shasta Mall; sales associate, cashier. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 501,
+        "id": 853,
         "employer_id": 226,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste D-08",
@@ -10477,11 +10516,11 @@
     "indeed_url": "",
     "notes": "Seasonal costume and holiday animatronics retail; sales associate, cashier, setup crew. | Seasonal storefront on Dana Dr; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 472,
+        "id": 824,
         "employer_id": 227,
         "location_name": "Dana Dr Seasonal Store",
         "street_address": "1235 Dana Dr",
@@ -10518,11 +10557,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Sprouts-Farmers-Market?campaignid=mobvjcmp&from=mobviewjob&tk=1jq4otrjeggki801&fromjk=ec3e809f7237b8a9",
     "notes": "Natural grocery and fresh market; courtesy clerk, cashier, produce clerk, bakery/deli clerk. | Browning St shopping center; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 473,
+        "id": 825,
         "employer_id": 228,
         "location_name": "Hilltop / Dana Center Store",
         "street_address": "855 Browning St",
@@ -10559,11 +10598,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly coffee shop; barista, cashier, customer service. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 4)",
     "locations": [
       {
-        "id": 474,
+        "id": 826,
         "employer_id": 229,
         "location_name": "Dana Dr Store",
         "street_address": "1225 Dana Dr",
@@ -10578,7 +10617,7 @@
         "notes": "Youth-friendly coffee shop; barista, cashier, customer service. | RABA Route 18."
       },
       {
-        "id": 475,
+        "id": 827,
         "employer_id": 229,
         "location_name": "Churn Creek Store",
         "street_address": "1720 Churn Creek Rd",
@@ -10593,7 +10632,7 @@
         "notes": "Youth-friendly coffee shop; barista, cashier, customer service. | RABA Route 18."
       },
       {
-        "id": 476,
+        "id": 828,
         "employer_id": 229,
         "location_name": "Lake Blvd Store",
         "street_address": "150 Lake Blvd",
@@ -10608,7 +10647,7 @@
         "notes": "Youth-friendly coffee shop; barista, cashier, customer service. | RABA Route 2 & 3."
       },
       {
-        "id": 477,
+        "id": 829,
         "employer_id": 229,
         "location_name": "Anderson Store",
         "street_address": "2560 Balls Ferry Rd",
@@ -10645,11 +10684,11 @@
     "indeed_url": "",
     "notes": "Premier tennis and fitness facility; front desk receptionist, lifeguard, child center attendant, facility cleaner. | South Redding recreational corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 478,
+        "id": 830,
         "employer_id": 230,
         "location_name": "Argyle Rd Club",
         "street_address": "3452 Argyle Rd",
@@ -10686,11 +10725,11 @@
     "indeed_url": "",
     "notes": "In-home personal care aide and companion services dispatched to client homes. | Dispatched to private client residences across Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 668,
+        "id": 1020,
         "employer_id": 231,
         "location_name": "Mobile Caregiver Dispatch",
         "street_address": "In-Home Client Residence Dispatch (Redding, CA)",
@@ -10729,11 +10768,11 @@
     "indeed_url": "",
     "notes": "Off-price apparel and accessories retail; merchandise associate, cashier, backroom coordinator. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 485,
+        "id": 837,
         "employer_id": 238,
         "location_name": "Dana Dr Store",
         "street_address": "1165 Dana Dr",
@@ -10772,11 +10811,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly fast food restaurant; service champion, food champion, cashier, drive-thru. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:23",
     "review_status": "Multi-Location Branch (1 of 5)",
     "locations": [
       {
-        "id": 479,
+        "id": 831,
         "employer_id": 232,
         "location_name": "Dana Dr Store",
         "street_address": "1105 Dana Dr",
@@ -10791,7 +10830,7 @@
         "notes": "Youth-friendly fast food restaurant; service champion, food champion, cashier, drive-thru. | RABA Route 18."
       },
       {
-        "id": 480,
+        "id": 832,
         "employer_id": 232,
         "location_name": "Cypress Ave Store",
         "street_address": "1625 E Cypress Ave",
@@ -10806,7 +10845,7 @@
         "notes": "Youth-friendly fast food restaurant; service champion, food champion, cashier, drive-thru. | RABA Route 18."
       },
       {
-        "id": 481,
+        "id": 833,
         "employer_id": 232,
         "location_name": "Lake Blvd Store",
         "street_address": "2605 Lake Blvd",
@@ -10821,7 +10860,7 @@
         "notes": "Youth-friendly fast food restaurant; service champion, food champion, cashier, drive-thru. | RABA Route 2 & 3."
       },
       {
-        "id": 482,
+        "id": 834,
         "employer_id": 232,
         "location_name": "Churn Creek Store",
         "street_address": "2355 Churn Creek Rd",
@@ -10836,7 +10875,7 @@
         "notes": "Youth-friendly fast food restaurant; service champion, food champion, cashier, drive-thru. | RABA Route 18."
       },
       {
-        "id": 483,
+        "id": 835,
         "employer_id": 232,
         "location_name": "Anderson Store",
         "street_address": "2620 Balls Ferry Rd",
@@ -10874,11 +10913,11 @@
     "indeed_url": "",
     "notes": "Recruiting process outsourcing and talent acquisition placements. | Client corporate placements.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:42",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 669,
+        "id": 1021,
         "employer_id": 233,
         "location_name": "Shasta Regional Placements",
         "street_address": "Local Talent Placements (Redding, CA)",
@@ -10915,11 +10954,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly retail department store; guest advocate, general merchandise expert, fulfillment. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 484,
+        "id": 836,
         "employer_id": 234,
         "location_name": "Redding Store T-0359",
         "street_address": "1280 Dana Dr",
@@ -10956,11 +10995,11 @@
     "indeed_url": "",
     "notes": "Eco-friendly residential cleaning service dispatched locally in Redding. | Dispatched to client residences.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 670,
+        "id": 1022,
         "employer_id": 235,
         "location_name": "Mobile Residential Cleaning",
         "street_address": "Mobile Residential Dispatch (Redding, CA)",
@@ -10997,11 +11036,11 @@
     "indeed_url": "",
     "notes": "Community social service; shelter support worker, thrift donation attendant, food bank sorter. | Larkspur Ln social services center; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 671,
+        "id": 1023,
         "employer_id": 236,
         "location_name": "Larkspur Ln Center",
         "street_address": "2691 Larkspur Ln",
@@ -11038,11 +11077,11 @@
     "indeed_url": "",
     "notes": "Retail fuel and convenience store; guest service associate, cashier. | South Redding shopping center.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 672,
+        "id": 1024,
         "employer_id": 237,
         "location_name": "Churn Creek Station",
         "street_address": "4631 Churn Creek Rd",
@@ -11079,11 +11118,11 @@
     "indeed_url": "",
     "notes": "Rural lifestyle, pet, livestock, and hardware retail; team member, cashier, receiver. | North Redding corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 486,
+        "id": 838,
         "employer_id": 239,
         "location_name": "Redding - Caterpillar Rd (Twin View)",
         "street_address": "3950 Caterpillar Rd",
@@ -11098,7 +11137,7 @@
         "notes": "Rural lifestyle, pet, livestock, and hardware retail; team member, cashier, receiver. | North Redding corridor."
       },
       {
-        "id": 487,
+        "id": 839,
         "employer_id": 239,
         "location_name": "Redding - Churn Creek",
         "street_address": "2555 Churn Creek Rd",
@@ -11113,7 +11152,7 @@
         "notes": "Rural lifestyle, pet, livestock, and hardware retail; team member, cashier, receiver. | RABA Route 18."
       },
       {
-        "id": 488,
+        "id": 840,
         "employer_id": 239,
         "location_name": "Anderson Store",
         "street_address": "2715 Balls Ferry Rd",
@@ -11150,11 +11189,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Travelcenters-of-America?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9tt80ji9vk801&fromjk=354e2c7651014d7c",
     "notes": "Full service travel plaza; travel store cashier, fuel island attendant, maintenance, truck repair. | I-5 & Knighton Rd interchange.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 673,
+        "id": 1025,
         "employer_id": 240,
         "location_name": "Knighton Rd Travel Center",
         "street_address": "2560 Knighton Rd",
@@ -11193,11 +11232,11 @@
     "indeed_url": "",
     "notes": "Institutional nutrition and food service operations contracted inside local health facilities. | Hospital food service hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 674,
+        "id": 1026,
         "employer_id": 241,
         "location_name": "Redding Food Service Center",
         "street_address": "2175 Rosaline Ave (Mercy Campus)",
@@ -11234,11 +11273,11 @@
     "indeed_url": "",
     "notes": "Hunting, fishing, and shooting sports retail; sales associate, cashier, archery specialist. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 675,
+        "id": 1027,
         "employer_id": 242,
         "location_name": "Dana Dr Store",
         "street_address": "1045 Dana Dr",
@@ -11275,11 +11314,11 @@
     "indeed_url": "",
     "notes": "Cultural park, museum, and botanical garden; guest services associate, park maintenance, forestry aide. | Sundial Bridge & Turtle Bay; RABA Route 11.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 489,
+        "id": 841,
         "employer_id": 243,
         "location_name": "Park Headquarters",
         "street_address": "844 Sundial Bridge Dr",
@@ -11316,11 +11355,11 @@
     "indeed_url": "",
     "notes": "Moving and self-storage; customer service representative, storage facility cleaner, hitch installer. | Twin View corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 676,
+        "id": 1028,
         "employer_id": 244,
         "location_name": "Twin View Moving Center",
         "street_address": "2325 Twin View Blvd",
@@ -11335,7 +11374,7 @@
         "notes": "Moving and self-storage; customer service representative, storage facility cleaner, hitch installer. | Twin View corridor."
       },
       {
-        "id": 677,
+        "id": 1029,
         "employer_id": 244,
         "location_name": "Hartnell Ave Moving Center",
         "street_address": "1270 Hartnell Ave",
@@ -11374,11 +11413,11 @@
     "indeed_url": "",
     "notes": "Commercial building components and roof truss fabrication; truss assembler, yard worker, forklift driver. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 679,
+        "id": 1031,
         "employer_id": 246,
         "location_name": "Redding Truss Plant",
         "street_address": "2851 Churn Creek Rd",
@@ -11415,11 +11454,11 @@
     "indeed_url": "",
     "notes": "Cosmetics and beauty retail at Mt Shasta Mall; beauty advisor, task associate/stocker, cashier. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 678,
+        "id": 1030,
         "employer_id": 245,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste A-02",
@@ -11457,11 +11496,11 @@
     "indeed_url": "",
     "notes": "Veterinary medical hospital; veterinary assistant, kennel technician, client service representative. | RABA Route 14.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 680,
+        "id": 1032,
         "employer_id": 248,
         "location_name": "VCA Gateway Animal Hospital",
         "street_address": "2655 Bechelli Ln",
@@ -11498,11 +11537,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly skate footwear and apparel retail at Mt Shasta Mall; sales associate, stocker. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 490,
+        "id": 842,
         "employer_id": 247,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-12",
@@ -11541,11 +11580,11 @@
     "indeed_url": "",
     "notes": "Wireless telecommunications retail; retail sales specialist, customer service representative. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 681,
+        "id": 1033,
         "employer_id": 249,
         "location_name": "Dana Dr Store",
         "street_address": "1120 Dana Dr",
@@ -11560,7 +11599,7 @@
         "notes": "Wireless telecommunications retail; retail sales specialist, customer service representative. | Dana Drive shopping plaza; RABA Route 18."
       },
       {
-        "id": 682,
+        "id": 1034,
         "employer_id": 249,
         "location_name": "Churn Creek Store",
         "street_address": "1320 Churn Creek Rd",
@@ -11575,7 +11614,7 @@
         "notes": "Wireless telecommunications retail; retail sales specialist, customer service representative. | RABA Route 18."
       },
       {
-        "id": 683,
+        "id": 1035,
         "employer_id": 249,
         "location_name": "Anderson Store",
         "street_address": "2650 Gateway Dr",
@@ -11614,11 +11653,11 @@
     "indeed_url": "",
     "notes": "Long-term acute care hospital and physical rehabilitation center; CNA, dietary aide, housekeeper. | Edith Ave healthcare campus.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 684,
+        "id": 1036,
         "employer_id": 250,
         "location_name": "Edith Ave Hospital Campus",
         "street_address": "2620 Edith Ave",
@@ -11655,11 +11694,11 @@
     "indeed_url": "",
     "notes": "Homestyle family restaurant in Anderson; host, busser, server, prep cook, line cook. | RABA Route 9 (Anderson).",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 491,
+        "id": 843,
         "employer_id": 251,
         "location_name": "Anderson Restaurant",
         "street_address": "2272 Balls Ferry Rd",
@@ -11696,11 +11735,11 @@
     "indeed_url": "",
     "notes": "Remote electrical, structured cabling, and POS retail automation contractor dispatched locally to Shasta County commercial sites. | Dispatched locally across commercial sites in Redding and Shasta County.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Field Dispatched / Mobile",
     "locations": [
       {
-        "id": 685,
+        "id": 1037,
         "employer_id": 252,
         "location_name": "Field Dispatched / Electrical & Telecom",
         "street_address": "Field Dispatched / Mobile (Redding, CA)",
@@ -11737,11 +11776,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Walgreens/jobs",
     "notes": "Retail pharmacy; customer service associate, cashier, pharmacy technician trainee. | RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Multi-Location Branch (1 of 3)",
     "locations": [
       {
-        "id": 492,
+        "id": 844,
         "employer_id": 253,
         "location_name": "Churn Creek Store",
         "street_address": "1150 Churn Creek Rd",
@@ -11756,7 +11795,7 @@
         "notes": "Retail pharmacy; customer service associate, cashier, pharmacy technician trainee. | RABA Route 18."
       },
       {
-        "id": 493,
+        "id": 845,
         "employer_id": 253,
         "location_name": "Eureka Way Store",
         "street_address": "1775 Eureka Way",
@@ -11771,7 +11810,7 @@
         "notes": "Retail pharmacy; customer service associate, cashier, pharmacy technician trainee. | RABA Route 2."
       },
       {
-        "id": 494,
+        "id": 846,
         "employer_id": 253,
         "location_name": "Cypress Ave Store",
         "street_address": "980 E Cypress Ave",
@@ -11808,11 +11847,11 @@
     "indeed_url": "",
     "notes": "Major supercenter retail employer; digital personal shopper/fulfillment, cashier, stocker, cart attendant. | Dana Drive shopping corridor; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 495,
+        "id": 847,
         "employer_id": 254,
         "location_name": "Redding Supercenter #2079",
         "street_address": "1515 Dana Dr",
@@ -11827,7 +11866,7 @@
         "notes": "Major supercenter retail employer; digital personal shopper/fulfillment, cashier, stocker, cart attendant. | Dana Drive shopping corridor; RABA Route 18."
       },
       {
-        "id": 496,
+        "id": 848,
         "employer_id": 254,
         "location_name": "Anderson Supercenter #5136",
         "street_address": "5000 Rhonda Rd",
@@ -11864,11 +11903,11 @@
     "indeed_url": "",
     "notes": "Solid waste, recycling, and environmental services; transfer station sorter, scale clerk, route driver. | Twin View industrial corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 686,
+        "id": 1038,
         "employer_id": 255,
         "location_name": "Redding Transfer Station",
         "street_address": "1980 Twin View Blvd",
@@ -11883,7 +11922,7 @@
         "notes": "Solid waste, recycling, and environmental services; transfer station sorter, scale clerk, route driver. | Twin View industrial corridor."
       },
       {
-        "id": 687,
+        "id": 1039,
         "employer_id": 255,
         "location_name": "Anderson Landfill Facility",
         "street_address": "18703 American Way",
@@ -11920,11 +11959,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly seasonal water amusement park; lifeguard, admissions cashier, food service, park maintenance. | North Redding recreational corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:37",
+    "last_updated": "2026-10-13 05:44:20",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 360,
+        "id": 711,
         "employer_id": 256,
         "location_name": "Redding Waterpark",
         "street_address": "151 N Boulder Dr",
@@ -11961,11 +12000,11 @@
     "indeed_url": "",
     "notes": "Fast-casual sourdough sandwich and soup deli; sandwich artist, cashier, kitchen prep. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 497,
+        "id": 849,
         "employer_id": 257,
         "location_name": "Dana Dr Deli",
         "street_address": "1140 Dana Dr, Ste 10",
@@ -12002,11 +12041,11 @@
     "indeed_url": "https://www.indeed.com/cmp/Win-River-Resort-and-Casino?campaignid=mobvjcmp&from=mobviewjob&tk=1jq9rk2eqgo6c802&fromjk=6edbab4dbf74a36c",
     "notes": "Tribal resort, gaming floor, and event facility; host, server, dealer, security, hotel front desk. | Hwy 273 corridor.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 700,
+        "id": 1052,
         "employer_id": 258,
         "location_name": "Win-River Resort & Casino",
         "street_address": "2100 Redding Rancheria Rd",
@@ -12045,11 +12084,11 @@
     "indeed_url": "",
     "notes": "Automotive dealerships; lot porter, detailer, express lube technician, service receptionist. | Cypress Ave automotive corridor; RABA Route 5.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Multi-Location Branch (1 of 2)",
     "locations": [
       {
-        "id": 688,
+        "id": 1040,
         "employer_id": 259,
         "location_name": "Redding Subaru",
         "street_address": "488 E Cypress Ave",
@@ -12064,7 +12103,7 @@
         "notes": "Automotive dealerships; lot porter, detailer, express lube technician, service receptionist. | Cypress Ave automotive corridor; RABA Route 5."
       },
       {
-        "id": 689,
+        "id": 1041,
         "employer_id": 259,
         "location_name": "Redding Hyundai",
         "street_address": "250 E Cypress Ave",
@@ -12101,11 +12140,11 @@
     "indeed_url": "",
     "notes": "Downtown craft brewery and restaurant; line cook, prep cook, dishwasher, server, host. | Downtown Redding; RABA Downtown Terminal.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 690,
+        "id": 1042,
         "employer_id": 260,
         "location_name": "Downtown Pub",
         "street_address": "1257 Oregon St",
@@ -12142,11 +12181,11 @@
     "indeed_url": "",
     "notes": "Workwear, boots, and industrial safety apparel retail; sales associate, cashier, stocker. | Dana Drive shopping plaza; RABA Route 18.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:43",
+    "last_updated": "2026-10-13 05:44:30",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 691,
+        "id": 1043,
         "employer_id": 261,
         "location_name": "Dana Dr Store",
         "street_address": "1120 Dana Dr, Ste 40",
@@ -12183,11 +12222,11 @@
     "indeed_url": "",
     "notes": "Youth-friendly skate, snowboard, and action sports apparel retail at Mt Shasta Mall. | Mt Shasta Mall; central RABA transit hub.",
     "is_verified": 1,
-    "last_updated": "2026-10-12 13:33:39",
+    "last_updated": "2026-10-13 05:44:24",
     "review_status": "Verified Local Worksite",
     "locations": [
       {
-        "id": 498,
+        "id": 850,
         "employer_id": 262,
         "location_name": "Mt Shasta Mall Store",
         "street_address": "900 Dana Dr, Ste B-04",
